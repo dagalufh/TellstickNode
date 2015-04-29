@@ -1,6 +1,7 @@
 // Include the template view (Do all the presentation(?))
 var template = require('../views/template-main').build;
 var variables = require('../model/variables');
+var sharedfunctions = require('../model/sharedfunctions');
 
 // Include the functions for handling files
 var fs = require('fs');
