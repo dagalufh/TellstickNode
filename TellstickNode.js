@@ -45,6 +45,17 @@ require('./router.js')(app);
 
 async.series([
     function (callback) {
+      fs.exists(__dirname + '/userdata', function (exists) {
+            if (!exists) {
+                fs.mkdir(__dirname + '/userdata', function () {
+                    callback();
+                });
+            } else {
+                callback();
+            }
+      });
+    },
+    function (callback) {
         // Check if the optionsfile already exists or not. otherwise, create it.
         fs.exists(__dirname + '/userdata/options.js', function (exists) {
             var optionsobject = {};
@@ -248,28 +259,34 @@ async.series([
         var sourcefolder = __dirname.replace("\\","/");
     
         // Perhaps limit this to start of application. Then work with schedules stored in memory. Only work with files when removing or adding new schedules.
-        fs.readFile(sourcefolder + '/userdata/schedules.db.js',{'encoding':'utf8'},function(err,data) {
-		//console.log(err);
-            //console.log('Reading the scheduledatabase');
-            if (data.length>1) {
-               var rows = data.split('\n');
-                for (var i=0; i<rows.length; i++) {
-                    if (rows[i].length > 1) {
-                        schedulesarray.push(JSON.parse(rows[i]));
-                    }
-                }
-
-                variables.devices.forEach(function(device) {
-                    //console.log('DeviceID : ' + device.id);
-                    device.schedule.length = 0;
-                    schedulesarray.forEach (function (currentschedule) {
-                        if (device.id == currentschedule.deviceid) {
-                            device.schedule.push(currentschedule);
+        fs.exists(__dirname + '/userdata/schedules.db.js', function (exists) {
+            if(exists) {
+                fs.readFile(sourcefolder + '/userdata/schedules.db.js',{'encoding':'utf8'},function(err,data) {
+                //console.log(err);
+                    //console.log('Reading the scheduledatabase');
+                    if (data.length>1) {
+                       var rows = data.split('\n');
+                        for (var i=0; i<rows.length; i++) {
+                            if (rows[i].length > 1) {
+                                schedulesarray.push(JSON.parse(rows[i]));
+                            }
                         }
-                    });
+
+                        variables.devices.forEach(function(device) {
+                            //console.log('DeviceID : ' + device.id);
+                            device.schedule.length = 0;
+                            schedulesarray.forEach (function (currentschedule) {
+                                if (device.id == currentschedule.deviceid) {
+                                    device.schedule.push(currentschedule);
+                                }
+                            });
+                        });
+                    }
+                    callback();
                 });
+            } else {
+                callback();
             }
-            callback();
         });
     },
     
