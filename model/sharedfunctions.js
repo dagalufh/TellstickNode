@@ -1,3 +1,4 @@
+var variables = require('./variables');
 function DateAdd (ItemType, DateToWorkOn, ValueToBeAdded) {
 			switch (ItemType)
 			{

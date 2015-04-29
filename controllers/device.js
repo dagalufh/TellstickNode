@@ -6,7 +6,7 @@ var exec = require('child_process').exec;
 var schedulefunctions = require('./schedulefunctions');
 var TellstickNode = require('../TellstickNode');
 var sharedfunctions = require('../model/sharedfunctions');
-
+var compareversion = require('compare-version');
 
 // Send a command to a device.
 function send(req,res) {
@@ -34,6 +34,10 @@ function deviceaction (deviceid, action, res) {
             }
             console.log('Sent command ['+action.toLowerCase() +'] to device ['+deviceid+']'); 
             sharedfunctions.log('Sent command ['+action.toLowerCase() +'] to device ['+deviceid+']');
+            if (variables.debug) {
+                sharedfunctions.log('Debug - tdtool set action stderr: ' + stderr);
+                sharedfunctions.log('Debug - tdtool set action stdout: ' + stdout);
+            }
             //listmodule.updatelist();
             // Request an update of the status of devices.
             getdevicestatus();

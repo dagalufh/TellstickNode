@@ -27,7 +27,7 @@ function get(req,res) {
 function post(req,res) {
     var Users;
     var currentSession;
-    fs.readFile(__dirname + '/../model/user.js',{'encoding':'utf8'},function(err,data) {
+    fs.readFile(__dirname + '/../userdata/user.js',{'encoding':'utf8'},function(err,data) {
         if (err) throw err;
         Users = JSON.parse(data);
        

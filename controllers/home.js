@@ -12,7 +12,8 @@ function get(request, response) {
         
     // Define the different parts of the page.
     var headline = 'Home';
-    var body = ['<div class="panel panel-default">',
+    var body = ['<p class="text-info"><button class="btn btn-default" onClick="pause_schedules()">Pause all schedules</button> Schedule status: <span id="schedulestatus">{schedulestatus}</span></p>',
+                '<div class="panel panel-default">',
                      '<div class="panel-heading">',
                         '<h3>Available Devices</h3>',
                     '</div>',
@@ -141,6 +142,11 @@ function get(request, response) {
         body = body.replace(/{select_device}/g,device_options);
         body = body.replace(/{available-devices}/g,available_devices);
         body = body.replace(/{Timers}/g,timers);
+        var schedulestatus = 'Running normal';
+        if(variables.pauseschedules) {
+            schedulestatus = 'Paused';
+        }
+        body = body.replace(/{schedulestatus}/g,schedulestatus);
     
         response.send(template.build(headline,body,true));
     }

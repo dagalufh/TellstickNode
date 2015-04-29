@@ -3,6 +3,7 @@ var fs = require('fs');
 
 var devicecontrol = require('./device');
 var sharedfunctions = require('../model/sharedfunctions');
+var TellstickNode = require('../TellstickNode');
 
 function getremove(req,res) {
     var removeschedulearray = [req.query.scheduleid];
@@ -18,6 +19,7 @@ function removeschedule(schedulesidarray) {
                 //console.log(scheduletoremove + "==" + device.schedule[i].uniqueid);
                 if(scheduletoremove == device.schedule[i].uniqueid) {
                     console.log('Schedule ' + device.schedule[i].uniqueid + ' was removed.');
+                    sharedfunctions.log('Schedule ' + device.schedule[i].uniqueid + ' was removed.');
                     device.schedule.splice(i,1);
                     i=0;
                 }
@@ -133,6 +135,23 @@ function highlightactiveschedule() {
     });
 }
 
+function  getpauseschedules(req,res) {
+    var message = 'Running normal';
+    if (variables.pauseschedules) {
+        variables.pauseschedules = false;
+    } else {
+        variables.pauseschedules = true;
+        message = 'Paused';
+    }
+    
+    console.log('Pause Schedules set to: ' + variables.pauseschedules);
+    sharedfunctions.log('Pause Schedules set to: ' + variables.pauseschedules);
+    
+    TellstickNode.sendtoclient([{device: 'pausedschedules:'+ message}]);
+    res.send(true);
+}
+
+exports.getpauseschedules = getpauseschedules;
 exports.highlightactiveschedule = highlightactiveschedule;
 exports.removeschedule = removeschedule;
 exports.getschedulesbyday = getschedulesbyday;

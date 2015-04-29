@@ -110,6 +110,8 @@ socket.on('message', function(data){
         
         if(device[0] == 'Time') {
             $('#Time').val(device[1] + ":" + device[2]);
+        } else if(device[0] == 'pausedschedules') {
+            $('#schedulestatus').html(device[1]);
         } else {
             $('#commandbutton_'+device[0]).html(device[1]);
         }
@@ -178,8 +180,19 @@ $(function(ready){
     }
 });
 
+function pause_schedules() {
+   $.get('/pauseschedules',function (data) {
+       return true;
+    }); 
+}
 
 function save_options() {
+    var debugselector = false;
+    if($("#debug").prop('checked') == true){
+            debugselector = true;
+    }
+    
+    
  $.post('/options', {city:$('#city').val(),
                      port:$('#port').val(),
                     doubletapcount:$('#doubletapcount').val(),
@@ -187,7 +200,8 @@ function save_options() {
                     weathercodes:$('#weathercodes').val(),
                     autoremote_password:$('#autoremote_password').val(),
                     autoremote_key:$('#autoremote_key').val(),
-                    autoremote_message:$('#autoremote_message').val()
+                    autoremote_message:$('#autoremote_message').val(),
+                    debug:debugselector
                      
                     }, function (data) {
      //alert(data);

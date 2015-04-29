@@ -58,7 +58,7 @@ function post(req,res) {
     
     var jsonuser = JSON.stringify(user,null,2);
     
-    fs.writeFile(__dirname + '/../model/user.js',jsonuser, function(err) {
+    fs.writeFile(__dirname + '/../userdata/user.js',jsonuser, function(err) {
         if(err) throw err;
         console.log('User ' + user.username + ' has been created.');
     });

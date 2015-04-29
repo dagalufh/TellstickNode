@@ -46,14 +46,14 @@ require('./router.js')(app);
 async.series([
     function (callback) {
         // Check if the optionsfile already exists or not. otherwise, create it.
-        fs.exists(__dirname + '/model/options.js', function (exists) {
+        fs.exists(__dirname + '/userdata/options.js', function (exists) {
             var optionsobject = {};
             
             if (!exists) {
                 // Define default options
                                 
                 var optionsjson = JSON.stringify(variables.options,null,2);
-                fs.writeFile(__dirname + '/model/options.js',optionsjson, function(err) {
+                fs.writeFile(__dirname + '/userdata/options.js',optionsjson, function(err) {
                     // Write the default options to the file.
                     if(err) return callback(err);
                     console.log('Saved the default options.');
@@ -69,7 +69,7 @@ async.series([
     function (callback) {
         
         // Read the options
-        fs.readFile(__dirname + '/model/options.js',{'encoding':'utf8'},function(err,data) {
+        fs.readFile(__dirname + '/userdata/options.js',{'encoding':'utf8'},function(err,data) {
             optionsobject = JSON.parse(data);
             for (var key in optionsobject) {
               variables.options[key] = optionsobject[key];  
@@ -248,7 +248,7 @@ async.series([
         var sourcefolder = __dirname.replace("\\","/");
     
         // Perhaps limit this to start of application. Then work with schedules stored in memory. Only work with files when removing or adding new schedules.
-        fs.readFile(sourcefolder + '/model/schedules.db.js',{'encoding':'utf8'},function(err,data) {
+        fs.readFile(sourcefolder + '/userdata/schedules.db.js',{'encoding':'utf8'},function(err,data) {
 		//console.log(err);
             //console.log('Reading the scheduledatabase');
             if (data.length>1) {
@@ -358,8 +358,8 @@ async.series([
         variables.devices.forEach(function(device) {
             
             if (device.activescheduleid.toString().length > 0) {
-                console.log('Resetting ' + device.name + ' to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
-                sharedfunctions.log('Startup - Resetting ' + device.name + ' to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
+                console.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
+                sharedfunctions.log('Startup - Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
                 devicefunctions.deviceaction(device.id, device.currentstatus);
                 // Perhaps add DoubleTap here..
             } else {
@@ -581,18 +581,23 @@ function minutecheck () {
 			schedule.dayofweek.forEach(function (day) {
 				if (day == dayofweek) {
 					if (schedule.time == hour + ':' + minutes) {
-						console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
-                        sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.id+'] triggered.');
-						devicefunctions.deviceaction(device.id,schedule.action);
-						if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
-							removeschedules.push(schedule.uniqueid);
-						}
-						sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
-						schedule.stage = 1;
-						// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
-						if (variables.options.doubletapcount > 0) {
-							doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
-						}
+                        if (variables.pauseschedules) {
+                            console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW. This has not been executed as schedules are paused.');
+                            sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.id+'] triggered. This has not been executed as schedules are paused.'); 
+                        } else {
+                            console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
+                            sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.id+'] triggered.');
+                            devicefunctions.deviceaction(device.id,schedule.action);
+                            if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
+                                removeschedules.push(schedule.uniqueid);
+                            }
+                            sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+                            schedule.stage = 1;
+                            // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+                            if (variables.options.doubletapcount > 0) {
+                                doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                            }
+                        }
 					}
 					
 					if (schedule.controller == 'Timer') {
@@ -615,17 +620,22 @@ function minutecheck () {
 						
 						//console.log('id ' + schedule.uniqueid + ' [' + schedule.time + " ] " + timertime  +' == '+ hour + ':' + minutes + ' and schedule.stage == ' + schedule.stage);
 						if ( (timertime  == hour + ':' + minutes) && (schedule.stage == 1) ) {
-							devicefunctions.deviceaction(device.id,'off');
-							schedule.stage = 2;
-							if (schedule.runonce == 'true') {
-								removeschedules.push(schedule.uniqueid);
-							}
-							sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+							if (variables.pauseschedules) {
+                                console.log('Timer off event for "' + device.name + '" has not been executed as schedules are paused.');
+                                sharedfunctions.log('Timer off event for "' + device.name + '" has not been executed as schedules are paused.');  
+                            } else {
+                                devicefunctions.deviceaction(device.id,'off');
+                                schedule.stage = 2;
+                                if (schedule.runonce == 'true') {
+                                    removeschedules.push(schedule.uniqueid);
+                                }
+                                sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
 
-							// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
-							if (variables.options.doubletapcount > 0) {
-								doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
-							}    
+                                // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+                                if (variables.options.doubletapcount > 0) {
+                                    doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                                }    
+                            }
 						}
 					}
 				}
@@ -654,10 +664,10 @@ function minutecheck () {
 		console.log('Saving all schedules to the file');
         sharedfunctions.log('Saving all schedules to file.');
 		var sourcefolder = __dirname.replace("\\","/");
-		fs.unlink(sourcefolder + '/model/schedules.db.js', function() {  
+		fs.unlink(sourcefolder + '/userdata/schedules.db.js', function() {  
 			variables.devices.forEach(function (device) {
 				device.schedule.forEach( function(schedule) {
-					fs.appendFile(sourcefolder + '/model/schedules.db.js',JSON.stringify(schedule)+'\n', function() {
+					fs.appendFile(sourcefolder + '/userdata/schedules.db.js',JSON.stringify(schedule)+'\n', function() {
 						console.log('Saved Schedule to file with id: ' + schedule.uniqueid);
 					});    
 				});

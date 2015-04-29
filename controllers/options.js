@@ -48,6 +48,10 @@ function get(req,res) {
                                 '<input type="text" class="form-control" id="autoremote_message" placeholder="Device {device-id} was set to {device-lastcommand}" value="{autoremote_message}">',
                                 '<p class="text-info">Available variables are: {device-id}, {device-lastcommand}, {device-name}</p>',
                             '</div>',
+                            '<div class="form-group">',
+                                '<label for="debug">Debug output to log:</label>',
+                                '<input type="checkbox" id="debug" {debug}>',
+                            '</div>',
                         '</div>',
                         '<div class="panel-footer">',
                             '<input type="button" onclick="javascript:save_options();" value="Save">',
@@ -64,6 +68,14 @@ function get(req,res) {
     body = body.replace(/{autoremote_password}/g,variables.options.autoremote_password);
     body = body.replace(/{autoremote_key}/g,variables.options.autoremote_key);
     body = body.replace(/{autoremote_message}/g,variables.options.autoremote_message);
+    
+    
+    var debugchecked = '';
+    if(variables.debug) {
+        debugchecked = 'checked';
+    };
+    
+    body = body.replace(/{debug}/g,debugchecked);
 
     res.send(template(headline,body,true));
 }
@@ -78,9 +90,10 @@ function post(req,res) {
     variables.options.autoremote_password = req.body.autoremote_password;
     variables.options.autoremote_key = req.body.autoremote_key;
     variables.options.autoremote_message = req.body.autoremote_message;
+    variables.debug = req.body.debug;
     
     var option = JSON.stringify(variables.options,null,2);
-    fs.writeFile(__dirname + '/../model/options.js',option, function(err) {
+    fs.writeFile(__dirname + '/../userdata/options.js',option, function(err) {
         if(err) throw err;
         console.log('Saved the options.');
         res.send(true);

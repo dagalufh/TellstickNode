@@ -34,6 +34,11 @@ module.exports = function (app) {
             req.session.destroy();
             res.redirect('/');
         })
+      
+    app.route('/logs')
+        .get(function (req, res) {
+            require('./controllers/logs').get(req,res);
+        })
     
     app.route('/newschedule')
         .get(function(req,res) {
@@ -44,6 +49,12 @@ module.exports = function (app) {
         .post(function(req,res) {
             if (checklogin(req,res)) {
                 require('./controllers/newschedule').post(req,res);
+            }
+        })
+    app.route('/pauseschedules')
+        .get(function(req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/schedulefunctions').getpauseschedules(req,res);
             }
         })
     app.route('/editschedule')
@@ -110,7 +121,7 @@ function checklogin(req, res) {
         if (saltedpasswords(currentSession.username + 'tellstick',8,currentSession.hash)) {
             return true;
         } else {
-            fs.exists(__dirname + '/model/user.js', function (exists) {
+            fs.exists(__dirname + '/userdata/user.js', function (exists) {
                 if (exists) {
                     require('./controllers/loginhandler').get(req,res);
                     return false;
@@ -126,7 +137,7 @@ function checklogin(req, res) {
             });
         }
     } else {
-        fs.exists(__dirname + '/model/user.js', function (exists) {
+        fs.exists(__dirname + '/userdata/user.js', function (exists) {
                 if (exists) {
                     require('./controllers/loginhandler').get(req,res);
                     return false;

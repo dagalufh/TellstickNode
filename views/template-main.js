@@ -71,6 +71,7 @@ function build (pagetitle, content,loggedin) {
     var activeschedule = '';
     var activehome = '';
     var activeoptions = '';
+    var activelogs = '';
     
     switch(pagetitle){
             case('New Schedule'):
@@ -82,6 +83,9 @@ function build (pagetitle, content,loggedin) {
             case('Options'):
                 activeoptions = 'class="active"';
                 break;
+             case('View Log'):
+                activelogs = 'class="active"';
+                break;
     }
             
     
@@ -89,6 +93,7 @@ function build (pagetitle, content,loggedin) {
         navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
                          '<li ' + activeschedule + '><a href="/newschedule">New Schedule</a></li>',
                          '<li ' + activeoptions + '><a href="/options">Options</a></li>',
+                         '<li ' + activelogs + '><a href="/logs">View Log</a></li>',
                          '<li><a href="/logout">Logout</a></li>'];
         navigationbar = navigationbar.join('\n');
     }
