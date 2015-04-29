@@ -96,6 +96,7 @@ function post(req,res) {
     fs.writeFile(__dirname + '/../userdata/options.js',option, function(err) {
         if(err) throw err;
         console.log('Saved the options.');
+        sharedfunctions.log('Saved the options.');
         res.send(true);
     });
 }

@@ -27,7 +27,7 @@ var lasttimestamp_recalculate = new Date();
 // Use the sessionhandler from express-session 60 * 60 * 1000
 app.use(session({
     secret:'thisisasecret',
-    cookie: { maxAge: (1000*60)*30 },
+    cookie: { maxAge: (1000*60)*120 },
     resave: false,
     saveUninitialized: false,
     store: new FileStore()
