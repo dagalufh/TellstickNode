@@ -1,0 +1,39 @@
+#Tab1 {position: absolute;}
+#Tab2 {position: absolute;}
+#TopMenu {border-bottom: 1px solid #000000;}
+
+.Short {width: 50px;}
+.MediumShort {width: 75px;}
+.Normal {width: 100px;}
+.MediumLong {width: 150px;}
+.Long {width: 200px;}
+.Long_2 {width: 400px;}
+.Long_3 {width: 500px;}
+body {background-color: #7B7E8D; font-family: verdana;}
+table {border: 1px solid #000000; margin-bottom: 0px;  font-size: 10pt; width: 100%}	
+
+.DeviceRow {background-color: #FFF000;}
+.ComputerList {Width: 260px;}
+.Content {background-color: #CECED2; margin-bottom: 5px;}
+.Headline {background-color: #9D9EA8; border-bottom: 1px solid #000000; font-size: 14px; font-weight: bold;}
+.Headline_Second {border-bottom: 1px solid #000000; font-size: 14px; font-weight: bold; padding-top: 5px;}
+.Module {border: 1px solid #000000; font-size: 10pt; width: 100%; margin-bottom: 10px;}
+.Top {vertical-align: top;}
+
+.ScheduleTable {border: 0px solid #000000;  font-size: 10pt; width: 100%}
+#ScheduledEvents_Body {width: 100%; overflow-x: auto; padding-bottom: 20px;}
+#ScheduledEvents_Body_Table {width: 1600px;} 
+td {vertical-align: top;}
+
+#NewSchedule_Body {width: 100%}
+
+#Presenting_TA { width: 100%; height: 650px}
+
+.Example {font-size: 10px; display: block;}
+
+
+.color-primary-0 { color: #7B7E8D }	/* Main Primary color */
+.color-primary-1 { color: #CECED2 }
+.color-primary-2 { color: #9D9EA8 }
+.color-primary-3 { color: #5F6276 }
+.color-primary-4 { color: #444860 }	
