@@ -7,13 +7,6 @@ Requirements
 - Windows: Telldus Center
 - Linux: TelldusCore
 
-Todo
-- Add 'Action' mode 'Dim'
-- - Add a percentage input field.
-- Add 'Edit' to schedules
-- Add 'Enable/Disable' on Schedules
-- Add 'Pause All Schedules'
-
 Current working features
 Single-user support ONLY!
 
@@ -37,6 +30,7 @@ Single-user support ONLY!
 
 Sensormodifications are not possible at this time since i don't have any sensors or a Tellstick Duo.
 
+Planned installation instructions. Not yet there...
 
 Windows Installation:
 
