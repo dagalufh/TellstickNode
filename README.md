@@ -13,15 +13,6 @@ Todo
 - Add 'Edit' to schedules
 - Add 'Enable/Disable' on Schedules
 - Add 'Pause All Schedules'
-- Add 'Log' page.
-- - - Store log events in an array. Maximum 100 log entries.
-- - - - - Log commands sent to devices and at what time this was.
-- - - - - Log execution of schedules.
-- - - Log is also written to console.log, and therefore to logfile via 'forever'
-- - - Page fetches contents from Log array and presents it.
-- Move everything user-related to userdata folder.
-- - - Excluding any contents from it in Github. (Making it easier when updating the application so that these files can't be overwritten)
-
 
 Current working features
 Single-user support ONLY!
