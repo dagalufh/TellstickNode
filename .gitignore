@@ -4,3 +4,4 @@ userdata/schedules.db.js
 node_modules/
 sessions/
 daemon/
+daemon/tellsticknode.out.log
