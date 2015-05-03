@@ -82,9 +82,9 @@ module.exports = function (app) {
         })
     app.route('/device')
         .get(function(req,res) {
-            if (checklogin(req, res)) {
+            //if (checklogin(req, res)) {
                 require('./controllers/device').send(req,res);
-            }
+            //}
         })
     
     app.route('/createuser')
@@ -103,7 +103,19 @@ module.exports = function (app) {
             if (checklogin(req, res)) {
                 require('./controllers/schedulefunctions').getremove(req,res);
             }
-        })    
+        }) 
+    app.route('/remote')
+        .get(function (req,res) {
+            var remoteIP = req.connection.remoteAddress;
+            if (req.connection.remoteAddress.indexOf('.') != -1) {
+                remoteIP = req.connection.remoteAddress.substr(req.connection.remoteAddress.lastIndexOf(':')+1);
+            }
+            if (ip.isPrivate(remoteIP)) {
+                require('./controllers/remote').get(req,res);
+            } else {
+                require('./controllers/forbidden').get(req,res);  
+            }
+        })
 }
 
 function checklogin(req, res) {

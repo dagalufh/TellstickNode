@@ -207,6 +207,7 @@ async.series([
                             variables.devices.push(currentdevice);
                         }
                     });
+                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
                     callback();
                 });
             } else {
@@ -245,6 +246,7 @@ async.series([
                             
                         }
                     });
+                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
                     callback();
                 });
             }
@@ -467,6 +469,7 @@ function timer_getdevicestatus() {
                         variables.devices.forEach(function(device) {
                             if (device.id == currentdevice.id) {
                                 device.lastcommand = currentdevice.lastcommand;
+                                device.name = currentdevice.name;
                                 alreadyinlist = true;
                             }
                         });
@@ -476,6 +479,7 @@ function timer_getdevicestatus() {
 
                     }
                 });
+                variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
                 schedulefunctions.highlightactiveschedule();
                 var devicejson = [];
                 for (var i=0; i<variables.devices.length; i++) {
@@ -523,6 +527,7 @@ function timer_getdevicestatus() {
                             variables.devices.forEach(function(device) {
                                 if (device.id == currentdevice.id) {
                                     device.lastcommand = currentdevice.lastcommand;
+                                    device.name = currentdevice.name;
                                     alreadyinlist = true;
                                 }
                             });
@@ -534,7 +539,7 @@ function timer_getdevicestatus() {
 
                     }
                 });
-                
+                variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
                 schedulefunctions.highlightactiveschedule();
                 var devicejson = [];
                 for (var i=0; i<variables.devices.length; i++) {
@@ -739,6 +744,10 @@ function minutecheck () {
 									console.log('openweather: error. Received wrong statuscode');
 									callback();
 								}
+                                
+                                res.on('error', function (chunk) {
+                                        // Error
+                                });
 								
 							}); 
                             
@@ -746,14 +755,14 @@ function minutecheck () {
 					});
 				} else {
 					console.log('No city defined. Unable to fetch info.');
-                    schedulefunctions.log('No city provided in Options. Unable to fetch weather info.');
+                    sharedfunctions.log('No city provided in Options. Unable to fetch weather info.');
 					callback();
 				}
 			}
 		],function(err) {
 			// For each device
 			console.log('Recalculating schedules trigger time.');
-            schedulefunctions.log('Recalculating schedules');
+            sharedfunctions.log('Recalculating schedules');
 			
 			if (typeof(variables.weather.weather) != 'undefined') {
 				var sunrise = new Date(variables.weather.sys.sunrise*1000); 

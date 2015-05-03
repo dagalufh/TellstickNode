@@ -19,7 +19,7 @@ function get(request, response) {
                     '</div>',
                     '<div class="panel-body">',
                     '<table class="table table-bordered">',
-                    '<tr><th>Last Command</th><th>DeviceID</th><th>Device Name</th></tr>',
+                    '<tr><th>Last Command</th><th>Device Name</th></tr>',
                     '{available-devices}',
                     '</table>',
                     '</div>',
@@ -29,10 +29,12 @@ function get(request, response) {
                         '<h3>Timers</h3>',
                     '</div>',
                     '<div class="panel-body">',
+                    '<div class="table-responsive">',
                     '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
                     '<tr><th>Name</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>',
                     '{Timers}',
                     '</table>',
+                    '</div>',
                     '</div>',
                 '</div>',
                 '<div class="panel panel-default">',
@@ -40,10 +42,12 @@ function get(request, response) {
                         '<h3>Schedules</h3>',
                     '</div>',
                     '<div class="panel-body">',
+                    '<div class="table-responsive">',
                     '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
                     '<tr><th>Name</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>',
                     '{scheduled-devices}',
                     '</table>',
+                    '</div>',
                     '</div>',
                 '</div>',
                 '<div class="panel panel-default">',
@@ -77,7 +81,7 @@ function get(request, response) {
             
             
             device_options += '<option value="' + device.id + '">'+device.name + '\n';
-            available_devices += '<tr><td><button class="btn btn-default" id="commandbutton_' + device.id + '" onClick="switchdevicestatus(\'' + device.id + '\');">'+device.lastcommand+'</button></td><td>'+device.id+'</td><td>'+device.name+'</td></tr>';
+            available_devices += '<tr><td><button class="btn btn-default" id="commandbutton_' + device.id + '" onClick="switchdevicestatus(\'' + device.id + '\');">'+device.lastcommand+'</button></td><td>'+device.name+'</td></tr>';
             
             if(device.schedule.length > 0) {
                 device.schedule.sort(sharedfunctions.dynamicSortMultiple('dayofweek','time'));

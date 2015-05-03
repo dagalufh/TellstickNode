@@ -67,11 +67,12 @@ function build (pagetitle, content,loggedin) {
     body = body.replace(/{pagetitle}/g,pagetitle);
     body = body.replace(/{content}/g,content);
     
-    navigationbar = '<li class="active"><a href="/">Home</a></li>';
+    
     var activeschedule = '';
     var activehome = '';
     var activeoptions = '';
     var activelogs = '';
+    var activeremote = '';
     
     switch(pagetitle){
             case('New Schedule'):
@@ -83,20 +84,26 @@ function build (pagetitle, content,loggedin) {
             case('Options'):
                 activeoptions = 'class="active"';
                 break;
-             case('View Log'):
+            case('View Log'):
                 activelogs = 'class="active"';
+                break;
+            case('Remote'):
+                activeremote = 'class="active"';
                 break;
     }
             
+    navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
+        '<li ' + activeremote + '><a href="/remote">Remote</a></li>'];
     
     if(loggedin) {
         navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
+                         '<li ' + activeremote + '><a href="/remote">Remote</a></li>',
                          '<li ' + activeschedule + '><a href="/newschedule">New Schedule</a></li>',
                          '<li ' + activeoptions + '><a href="/options">Options</a></li>',
                          '<li ' + activelogs + '><a href="/logs">View Log</a></li>',
                          '<li><a href="/logout">Logout</a></li>'];
-        navigationbar = navigationbar.join('\n');
     }
+    navigationbar = navigationbar.join('\n');
     body = body.replace(/{navbar}/g,navigationbar);
     
     // Return the finished html body.

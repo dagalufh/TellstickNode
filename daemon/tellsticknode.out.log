@@ -1,0 +1,121 @@
+{ city: 'skovde',
+  port: '8888',
+  doubletapcount: '3',
+  doubletapseconds: '5',
+  weathercodes: [ 300, 301, 600, 701, 800, 801, 802, 803, 804 ],
+  autoremote_key: 'A key',
+  autoremote_password: '',
+  autoremote_message: 'Device {device-id} was set to {device-lastcommand}' }
+200
+Fetched new weatherinfo.
+New Version of Telldus. >= 2.1.2
+Resetting "Example Device" to On as stated by schedule with id: 1430120581785
+TellstickNode.js started listening at http://:::8888
+Sent command [on] to device [1]
+19:17
+19:18
+19:19
+19:20
+19:21
+{ city: 'skovde',
+  port: '8888',
+  doubletapcount: '3',
+  doubletapseconds: '5',
+  weathercodes: [ 300, 301, 600, 701, 800, 801, 802, 803, 804 ],
+  autoremote_key: 'A key',
+  autoremote_password: '',
+  autoremote_message: 'Device {device-id} was set to {device-lastcommand}' }
+200
+Fetched new weatherinfo.
+New Version of Telldus. >= 2.1.2
+Resetting "Example Device" to On as stated by schedule with id: 1430120581785
+TellstickNode.js started listening at http://:::8888
+Sent command [on] to device [1]
+19:22
+{ city: 'skovde',
+  port: '8888',
+  doubletapcount: '3',
+  doubletapseconds: '5',
+  weathercodes: [ 300, 301, 600, 701, 800, 801, 802, 803, 804 ],
+  autoremote_key: 'A key',
+  autoremote_password: '',
+  autoremote_message: 'Device {device-id} was set to {device-lastcommand}' }
+200
+Fetched new weatherinfo.
+New Version of Telldus. >= 2.1.2
+Resetting "Example Device" to On as stated by schedule with id: 1430120581785
+TellstickNode.js started listening at http://:::8888
+Sent command [on] to device [1]
+19:23
+19:24
+Sent command [on] to device [2]
+{ city: 'skovde',
+  port: '8888',
+  doubletapcount: '3',
+  doubletapseconds: '5',
+  weathercodes: [ 300, 301, 600, 701, 800, 801, 802, 803, 804 ],
+  autoremote_key: 'A key',
+  autoremote_password: '',
+  autoremote_message: 'Device {device-id} was set to {device-lastcommand}' }
+511
+openweather: error. Received wrong statuscode
+New Version of Telldus. >= 2.1.2
+Resetting "Example Device" to On as stated by schedule with id: 1430120581785
+Found no schedules for 2:Testar
+TellstickNode.js started listening at http://:::8888
+Sent command [on] to device [1]
+19:26
+19:27
+19:28
+19:29
+19:30
+19:31
+19:32
+19:33
+19:34
+19:35
+{ city: 'skovde',
+  port: '8888',
+  doubletapcount: '3',
+  doubletapseconds: '5',
+  weathercodes: [ 300, 301, 600, 701, 800, 801, 802, 803, 804 ],
+  autoremote_key: 'A key',
+  autoremote_password: '',
+  autoremote_message: 'Device {device-id} was set to {device-lastcommand}' }
+200
+Fetched new weatherinfo.
+New Version of Telldus. >= 2.1.2
+Resetting "Example Device" to On as stated by schedule with id: 1430120581785
+Found no schedules for 2:Testar
+TellstickNode.js started listening at http://:::8888
+Sent command [on] to device [1]
+19:36
+19:37
+19:38
+19:39
+19:40
+19:41
+19:42
+19:43
+19:44
+19:45
+19:46
+19:47
+19:48
+19:49
+19:50
+19:51
+19:52
+19:53
+19:54
+19:55
+19:56
+19:57
+19:58
+19:59
+20:00
+20:01
+20:02
+20:03
+20:04
+20:05

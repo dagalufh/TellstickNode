@@ -94,6 +94,7 @@ function getdevicestatus () {
                         variables.devices.forEach(function(device) {
                             if (device.id == currentdevice.id) {
                                 device.lastcommand = currentdevice.lastcommand;
+                                device.name = currentdevice.name;
                                 alreadyinlist = true;
                             }
                         });
@@ -103,6 +104,7 @@ function getdevicestatus () {
 
                     }
                 });
+                variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
                 schedulefunctions.highlightactiveschedule();
                 var devicejson = [];
                 for (var i=0; i<variables.devices.length; i++) {
@@ -149,6 +151,7 @@ function getdevicestatus () {
                             variables.devices.forEach(function(device) {
                                 if (device.id == currentdevice.id) {
                                     device.lastcommand = currentdevice.lastcommand;
+                                    device.name = currentdevice.name;
                                     alreadyinlist = true;
                                 }
                             });
@@ -160,7 +163,7 @@ function getdevicestatus () {
 
                     }
                 });
-                
+                variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
                 schedulefunctions.highlightactiveschedule();
                 var devicejson = [];
                 for (var i=0; i<variables.devices.length; i++) {
