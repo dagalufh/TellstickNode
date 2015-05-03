@@ -5,3 +5,4 @@ node_modules/
 sessions/
 daemon/
 daemon/tellsticknode.out.log
+daemon/tellsticknode.out.log
