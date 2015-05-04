@@ -7,39 +7,40 @@ Requirements
 - Windows: Telldus Center
 - Linux: TelldusCore
 
-Current working features
+Current working features  
 Single-user support ONLY!
 
+Pause all schedules/timers
+
 - Create schedule
-- - Select days
-- - run-once option
-- - sunrise, sunset, specific time to trigger the schedule
-- - randomize the time with modifiers (weather or just random time +/-)
-- - actions available: On, Off
+ - Select days
+ - run-once option
+ - sunrise, sunset, specific time to trigger the schedule
+ - randomize the time with modifiers (weather or just random time +/-)
+ - actions available: On, Off
 - Remove schedules
 - Create timers
-- - Select days
-- - time to start the timers
-- - duration of the timer
-- - run-once option
-- - actions available: On
-- - No modifiers available
+ - Select days
+ - time to start the timers
+ - duration of the timer
+ - run-once option
+ - actions available: On
+ - No modifiers available
 - Remove timers
 - Force Action 'On' for Timers
 - Force randomization/weather to '0' for Timers
 
 Sensormodifications are not possible at this time since i don't have any sensors or a Tellstick Duo.
 
-Planned installation instructions. Not yet there...
-
 Windows Installation:
 
 1. Unpack Zipfile in a folder of your choice.
-2. Navigate to that folder and run Install.bat (right-click and select 'run as administrator')
-3. Now you can start it by running start.bat
-4. Start.bat has been added to services, set to autostart at startup.
+2. Navigate to the folder and run 'node WindowsInstaller.js'  
+3. This will install the required module for running the service and for the application itself.
+4. You can then start it by starting the service.
 
-Linux Installation:
+Linux Installation:  
+I will attempt to make a similar installation procedure like the one for Windows.  
 
 1. Unpack Zipfile in a folder of your choice.
 2. Navigate to that folder in a terminal
