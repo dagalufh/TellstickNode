@@ -13,6 +13,7 @@ function get(request, response) {
     // Define the different parts of the page.
     var headline = 'Home';
     var body = ['<p class="text-info"><button class="btn btn-default" onClick="pause_schedules()">Pause all schedules</button> Schedule status: <span id="schedulestatus">{schedulestatus}</span></p>',
+                '<p class="text-info">Filter by device: <select id="devicetoview">{devicetoview}</select></p>',
                 '<div class="panel panel-default">',
                      '<div class="panel-heading">',
                         '<h3>Available Devices</h3>',
@@ -66,7 +67,7 @@ function get(request, response) {
     body = body.join("\n");
     display_devices();
     
-
+    
     
     // Define the function that enters devices into the device select box.
     // This function will be supplied to be used as a callback for when tdtool listing is done and fetching from 'database' is done.
@@ -76,9 +77,19 @@ function get(request, response) {
         var schedules = '';
         var timers = '';
         var dayofweektranslate = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
+        var devicetoview = '';
+        var selected_deviceid = 0;
+    
+        if(request.deviceid != 'undefined') {
+            selected_deviceid = request.query.deviceid;
+        }
         
         variables.devices.forEach(function(device, index) {
-            
+            if (device.id == selected_deviceid) {
+                devicetoview = devicetoview + '<option selected value="'+device.id + '">'+device.name;
+            } else {
+                devicetoview = devicetoview + '<option value="'+device.id + '">'+device.name;
+            }
             
             device_options += '<option value="' + device.id + '">'+device.name + '\n';
             available_devices += '<tr><td><button class="btn btn-default" id="commandbutton_' + device.id + '" onClick="switchdevicestatus(\'' + device.id + '\');">'+device.lastcommand+'</button></td><td>'+device.name+'</td></tr>';
@@ -97,10 +108,12 @@ function get(request, response) {
                                 activeschedule = 'class="bg-success"';
                                 
                     }
-                    if (singleschedule.controller != 'Timer') {
-                        schedules += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
-                    } else {
-                        timers += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                    if ( (device.id == selected_deviceid) || (selected_deviceid == 0) ) {
+                        if (singleschedule.controller != 'Timer') {
+                            schedules += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                        } else {
+                            timers += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                        }
                     }
                 });
             };
@@ -132,20 +145,24 @@ function get(request, response) {
                                 
                             }
                         }); 
-                        if (singleschedule.controller != 'Timer') {
-                            schedulesbyday += '<tr><td ' + activeschedule +'>' + devicename + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>' + singleschedule.time + '</td></tr>';
+                        if ( (singleschedule.deviceid == selected_deviceid) || (selected_deviceid == 0) ) {
+                            if (singleschedule.controller != 'Timer') {
+                                schedulesbyday += '<tr><td ' + activeschedule +'>' + devicename + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>' + singleschedule.time + '</td></tr>';
+                            }
                         }
                     });
                 } 
             }
         }
         
+        devicetoview = '<option value="0">All' + devicetoview;
         // End of testing
         body = body.replace(/{scheduled-devices-by-day}/g,schedulesbyday);
         body = body.replace(/{scheduled-devices}/g,schedules);
         body = body.replace(/{select_device}/g,device_options);
         body = body.replace(/{available-devices}/g,available_devices);
         body = body.replace(/{Timers}/g,timers);
+        body = body.replace(/{devicetoview}/g,devicetoview);
         var schedulestatus = 'Running normal';
         if(variables.pauseschedules) {
             schedulestatus = 'Paused';

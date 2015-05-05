@@ -177,7 +177,13 @@ $(function(ready){
                 $('#Time').addClass('bg-danger');
             }
         });
+        
+        
     }
+    
+    $('#devicetoview').change(function() { 
+            window.location.href = '/?deviceid='+$(this).val();
+        });
 });
 
 function pause_schedules() {

@@ -8,16 +8,12 @@ function get(request, response) {
     
     // Define the different parts of the page.
     var headline = 'Remote';
-    var body = ['<div class="panel panel-default">',
-                    '<div class="panel-body">',
-                    '<table class="table table-bordered">',
+    var body = ['<table class="table table-bordered">',
                     '<tr><th>Last Command</th><th>Device Name</th></tr>',
                     '{available-devices}',
-                    '</table>',
-                    '</div>',
-                '</div>'
+                    '</table>'              
                 ];
-    
+    //'<div class="panel panel-default">','</div>'
     // Join each row of the body array to a continious string with proper row endings.
     body = body.join("\n");
     display_devices();
