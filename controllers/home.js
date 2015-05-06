@@ -80,7 +80,7 @@ function get(request, response) {
         var devicetoview = '';
         var selected_deviceid = 0;
     
-        if(request.deviceid != 'undefined') {
+        if(typeof(request.query.deviceid) != 'undefined') {
             selected_deviceid = request.query.deviceid;
         }
         

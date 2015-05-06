@@ -2,9 +2,26 @@
 var variables = require('../model/variables');
 var template = require('../views/template-main').build;
 var fs = require('fs');
+var classes = require('../model/classes');
+var sharedfunctions = require('../model/sharedfunctions');
 
 
 function get(req,res) {
+    
+    // Check if edit of schedule is requested. Try to use the same file?
+    
+    var selected_schedule = '';
+    
+    
+    variables.devices.forEach(function (device) {
+        device.schedule.forEach(function (schedule) {
+            if (schedule.uniqueid == req.query.uniqueid) {
+                selected_schedule = schedule;   
+            }
+        });
+    });
+    
+    console.log(selected_schedule);
     // Need to create some sort of unique ID for each sechedule.
     var headline = 'Edit Schedule';
     var body = ['<div class="panel panel-default">',
@@ -71,13 +88,7 @@ function get(req,res) {
                     '<div class="form-group">',
                                 '<label for="Select_Randomizer_Value">Randomizer max value (Minutes)</label>',
                                  '<select id="Select_Randomizer_Value" class="form-control">',
-                                        '<option value="0">0',
-                                        '<option value="5">5',
-                                        '<option value="10">10',
-                                        '<option value="15">15',
-                                        '<option value="20">20',
-                                        '<option value="25">25',
-                                        '<option value="30">30',
+                                       '{randomizertime}',
                                     '</select>',
                             '</div>',
                 '<div class="form-group">',
@@ -88,15 +99,9 @@ function get(req,res) {
                                     '</select>',
                             '</div>',
                 '<div class="form-group">',
-                                '<label for="Select_Weather_Good_Time">Weather Impact Hours - Good Weather </label>',
+                                '<label for="Select_Weather_Good_Time">Weather Impact Minutes - Good Weather </label>',
                                   '<select id="Select_Weather_Good_Time" class="form-control">',
-                                        '<option value="0">0',
-                                        '<option value="1">1',
-                                        '<option value="2">2',
-                                        '<option value="3">3',
-                                        '<option value="4">4',
-                                        '<option value="5">5',
-                                        '<option value="6">6',
+                                        '{weathergoodtime}',
                                     '</select>',
                             '</div>',
                '<div class="form-group">',
@@ -107,15 +112,9 @@ function get(req,res) {
                                     '</select>',
                             '</div>',
                 '<div class="form-group">',
-                                '<label for="Select_Weather_Bad_Time">Weather Impact Hours - Bad Weather </label>',
+                                '<label for="Select_Weather_Bad_Time">Weather Impact Minutes - Bad Weather </label>',
                                   '<select id="Select_Weather_Bad_Time" class="form-control">',
-                                        '<option value="0">0',
-                                        '<option value="1">1',
-                                        '<option value="2">2',
-                                        '<option value="3">3',
-                                        '<option value="4">4',
-                                        '<option value="5">5',
-                                        '<option value="6">6',
+                                        '{weatherbadtime}',
                                     '</select>',
                             '</div>',
                 '</div>',
@@ -125,23 +124,17 @@ function get(req,res) {
                                 '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="1">',
                     '</div>',
                 '</div>',
-                    '<div class="panel-footer"><button onClick="Javascript:saveschedule();">Create Schedule</button></div>',
+                    '<div class="panel-footer"><button onClick="Javascript:saveschedule();">Save Edits</button></div>',
                 '</div>'];
     body = body.join("\n");
     
-    var schedule = '';
+    var device_options = '';
     var controllermessage = '';
     variables.devices.forEach(function(device, index) {
-        //device_options += '<option value="' + device.id + '">'+device.name + '\n';
-        device.schedule.forEach(function (singleschedule) {
-            if (singleschedule.uniqueid == req.query.uniqueid) {
-                schedule = singleschedule;
-            }
-        });
+        device_options += '<option value="' + device.id + '">'+device.name + '\n';
     });
-    
-        
-    //body = body.replace(/{select_device}/g,device_options);
+
+    body = body.replace(/{select_device}/g,device_options);
     
    
         if (typeof(variables.weather.sys) != 'undefined') {
@@ -162,11 +155,22 @@ function get(req,res) {
      body = body.replace(/{ControllerMessage}/g,controllermessage);
     
     var currentdate = new Date();
-     var hour = '0' + currentdate.getHours();
-        var minutes = '0' + currentdate.getMinutes();
-        hour = hour.substr(hour.length-2);
-        minutes = minutes.substr(minutes.length-2);
-     body = body.replace(/{initaltime}/g, hour + ":" + minutes);
+    var hour = '0' + currentdate.getHours();
+    var minutes = '0' + currentdate.getMinutes();
+    hour = hour.substr(hour.length-2);
+    minutes = minutes.substr(minutes.length-2);
+   
+    
+    body = body.replace(/{initaltime}/g, hour + ":" + minutes); 
+    body = body.replace(/{weathergoodtime}/g,createdropdown(90,10, selected_schedule.weathergoodtime));
+    body = body.replace(/{weatherbadtime}/g,createdropdown(90,10, selected_schedule.weatherbadtime));
+    body = body.replace(/{randomizertime}/g,createdropdown(40,5,selected_schedule.randomiser));
+    
+    selected_schedule.dayofweek.forEach(function (day) {
+        var searchstring  = new RegExp('id="DayOfWeek" Value="'+day+'"',"g");
+        body = body.replace(searchstring,'id="DayOfWeek" Value="'+day+'" checked=checked');    
+    });
+   
     
     res.send(template(headline,body,true));
 }
@@ -175,17 +179,41 @@ function post(req,res) {
     req.body.uniqueid = new Date().getTime();
     req.body.originaltime = req.body.time;
     req.body.stage = 0;
-    console.log(req.body);
+    //console.log(req.body);
+    
+    var newschedule = new classes.schedule();
 
-    //variables.devices.forEach(function(device) {
+    for (var key in req.body) {
+      newschedule[key] = req.body[key];  
+    }
+    
+    //console.log(newschedule);
+    /*
+    sharedfunctions.log('Created schedule: ' + JSON.stringify(newschedule));
+    variables.devices.forEach(function(device) {
         //console.log('DeviceID : ' + device.id);
-    //    if (device.id == req.body.deviceid) {
-    //        device.schedule.push(req.body);
-    //    }
-    //});
-    //variables.savetofile = true;
-    //res.send('Schedule has been created.');
+        if (device.id == newschedule.deviceid) {
+            device.schedule.push(newschedule);
+        }
+    });
+    variables.savetofile = true;
+    */
+    res.send('Schedule has been created.');
 }
 
 exports.get = get;
 exports.post = post;
+
+
+function createdropdown(max, intervall, selecteitem) {
+    var dropdown = '<option value="0">0';
+    for (var i = 1; i<=Math.floor(max/intervall); i++) {
+        var selected = '';
+        if (selecteitem == (i*intervall)) {
+            selected = 'selected';
+        }
+        dropdown += '<option ' + selected + ' value="'+(i*intervall)+'">'+(i*intervall);
+
+    }
+    return dropdown;
+}

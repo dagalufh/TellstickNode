@@ -279,7 +279,13 @@ async.series([
                             device.schedule.length = 0;
                             schedulesarray.forEach (function (currentschedule) {
                                 if (device.id == currentschedule.deviceid) {
-                                    device.schedule.push(currentschedule);
+                                    var newschedule = new classes.schedule();
+
+                                    for (var key in currentschedule) {
+                                      newschedule[key] = currentschedule[key];  
+                                    }
+                                    
+                                    device.schedule.push(newschedule);
                                 }
                             });
                         });
@@ -813,12 +819,12 @@ function minutecheck () {
 						
 						if (variables.options.weathercodes.indexOf(variables.weather.weather[0].id) != -1) {
 							// Weather ID found in the approved codes
-							// Good weather
-							sharedfunctions.DateAdd('h',original,Number(schedule.weathergoodfunction + schedule.weathergoodtime));
+							// Good weather ( n = minutes )
+							sharedfunctions.DateAdd('n',original,Number(schedule.weathergoodfunction + schedule.weathergoodtime));
 							
 						} else {
-							// Bad weather
-							sharedfunctions.DateAdd('h',original,Number(schedule.weatherbadfunction + schedule.weatherbadtime));
+							// Bad weather ( n = minutes )
+							sharedfunctions.DateAdd('n',original,Number(schedule.weatherbadfunction + schedule.weatherbadtime));
 						}                            
 					}
 					
@@ -842,11 +848,11 @@ function minutecheck () {
 					// After all the manipulations has been done to the orignal time of the current schedule. Check if we should save it or not.
 					// The purpose is to make sure that a schedule that occures right before NOW(), dosn't get moved to past or vice versa. To ensure:
 					// No double execution and no missed schedules.
-					if (difference_minutes_recalculate_compare < 0) {                            
+					if (difference_minutes_recalculate_compare < 5) {                            
 						// If the schedule is meant to happen in the future
 						difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
 						difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
-						if (difference_minutes_recalculate_compare < 0) {
+						if (difference_minutes_recalculate_compare < 5) {
 							// If it happends in the future, then we can update the time.
 							var hour = '0' + original.getHours();
 							var minutes = '0' + original.getMinutes();
@@ -860,7 +866,7 @@ function minutecheck () {
 						// If it happends in the past, then we can update the time.
 						difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
 						difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
-						if (difference_minutes_recalculate_compare > 0) {
+						if (difference_minutes_recalculate_compare > 5) {
 							var hour = '0' + original.getHours();
 							var minutes = '0' + original.getMinutes();
 							hour = hour.substr(hour.length-2);
