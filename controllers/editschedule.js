@@ -49,8 +49,8 @@ function get(req,res) {
                         '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="0">Sunday</label>',
                     '</div>',
                     '<div class="form-group">',
-                        '<label for="Select_Action">Schedule enabled</label>',
-                        '<select id="Select_Action" class="form-control">',
+                        '<label for="Select_Enabled">Schedule enabled</label>',
+                        '<select id="Select_Enabled" class="form-control">',
                             '{selectenabled}',
                         '</select>',
                     '</div>',
@@ -189,7 +189,7 @@ function get(req,res) {
 }
 
 function post(req,res) {
-    req.body.uniqueid = new Date().getTime();
+    //req.body.uniqueid = new Date().getTime();
     req.body.originaltime = req.body.time;
     req.body.stage = 0;
     //console.log(req.body);
@@ -201,16 +201,24 @@ function post(req,res) {
     }
     
     //console.log(newschedule);
-    /*
-    sharedfunctions.log('Created schedule: ' + JSON.stringify(newschedule));
+    
+    sharedfunctions.log('Saved schedule: ' + JSON.stringify(newschedule));
     variables.devices.forEach(function(device) {
         //console.log('DeviceID : ' + device.id);
         if (device.id == newschedule.deviceid) {
-            device.schedule.push(newschedule);
+            device.schedule.forEach(function (schedule) {
+                sharedfunctions.log(schedule.uniqueid + "==" + newschedule.uniqueid);
+                if (schedule.uniqueid == newschedule.uniqueid) {
+                    for (var key in newschedule) {
+                        schedule[key] = newschedule[key];  
+                    }
+                }   
+            });
+            //device.schedule.push(newschedule);
         }
     });
     variables.savetofile = true;
-    */
+    
     res.send('Schedule has been saved.');
 }
 

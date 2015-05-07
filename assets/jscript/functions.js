@@ -73,7 +73,7 @@ function createschedule(uniqueid) {
             duration:validduration}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
-            window.location.href = '/newschedule';
+            //window.location.href = '/newschedule';
         }); 
     } else {
         $.post('/editschedule',{
@@ -93,7 +93,7 @@ function createschedule(uniqueid) {
             uniqueid:uniqueid}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
-            window.location.href = '/';
+            //window.location.href = '/';
         }); 
     }
 }
@@ -171,6 +171,7 @@ $(function(ready){
                 $('#Modificationsdiv').show();
                 $('#Timerdiv').hide();
                 $('#Select_Action').prop('disabled', false);
+                $('#Duration').val(1);
             }
             
             if ($(this).val() == 'Sundown') {
@@ -180,6 +181,7 @@ $(function(ready){
                 $('#Modificationsdiv').show();
                 $('#Timerdiv').hide();
                 $('#Select_Action').prop('disabled', false);
+                $('#Duration').val(1);
             }
             
             if ($(this).val() == 'Sunrise') {
@@ -189,6 +191,7 @@ $(function(ready){
                 $('#Modificationsdiv').show();
                 $('#Timerdiv').hide();
                 $('#Select_Action').prop('disabled', false);
+                $('#Duration').val(1);
             }
             if ($(this).val() == 'Timer') {
                 $('#Modificationsdiv').hide();
@@ -197,8 +200,7 @@ $(function(ready){
                 $('#Select_Action').prop('disabled', true);
                 $('#Select_Weather_Good_Time').val(0);
                 $('#Select_Weather_Bad_Time').val(0);
-                $('#Select_Randomizer_Value').val(0);
-                
+                $('#Select_Randomizer_Value').val(0);                
             }
         });
         
