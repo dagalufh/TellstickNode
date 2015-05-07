@@ -27,13 +27,27 @@ function deviceaction (deviceid, action, res) {
         //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
         var path = 'tdtool';
     } 
+    var actiontotrigger = '';
+    if (action.indexOf(':') != -1) {
+        var dimsettings = action.split(':');
+        actiontotrigger = '--dimlevel ' + dimsettings[1] + ' --'+dimsettings[0];
+    } else {
+        actiontotrigger = '--'+action;
+    }
     
-    exec('"'+path+'" --'+ action.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
+    exec('"'+path+'" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
             if (typeof(res) !== 'undefined') {
                 res.send(stdout);
             }
-            console.log('Sent command ['+action.toLowerCase() +'] to device ['+deviceid+']'); 
-            sharedfunctions.log('Sent command ['+action.toLowerCase() +'] to device ['+deviceid+']');
+        
+            var currentdevice = '';
+            variables.devices.forEach(function (device) {
+                if (device.id == deviceid) {
+                    currentdevice = device;
+                }
+            });
+            console.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']'); 
+            sharedfunctions.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']');
             if (variables.debug) {
                 sharedfunctions.log('Debug - tdtool set action stderr: ' + stderr);
                 sharedfunctions.log('Debug - tdtool set action stdout: ' + stdout);

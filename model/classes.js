@@ -24,6 +24,8 @@ function schedule() {
     this.stage = 0;
     this.enabled = 'true';
     this.lightpercentage = 100;
+    this.intervalnotbefore = '';
+    this.intervalnotafter = '';
 }
 
 exports.device = device;
