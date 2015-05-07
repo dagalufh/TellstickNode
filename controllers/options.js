@@ -53,7 +53,12 @@ function get(req,res) {
                                 '<label for="debug">Debug output to log:</label>',
                                 '<input type="checkbox" id="debug" {debug}>',
                             '</div>',
+                            '<div class="form-group">',
+                                '<label for="debug">Current fetched weather information</label>',
+                                '<p class="text-info">{weatherinfo}</p>',
+                            '</div>',
                         '</div>',
+                
                         '<div class="panel-footer">',
                             '<input type="button" onclick="javascript:save_options();" value="Save">',
                         '</div>',
@@ -69,6 +74,7 @@ function get(req,res) {
     body = body.replace(/{autoremote_password}/g,variables.options.autoremote_password);
     body = body.replace(/{autoremote_key}/g,variables.options.autoremote_key);
     body = body.replace(/{autoremote_message}/g,variables.options.autoremote_message);
+    body = body.replace(/{weatherinfo}/g,JSON.stringify(variables.weather,null, 2));
     
     
     var debugchecked = '';

@@ -12,7 +12,7 @@ function attemptlogin() {
     return false;
 }
 
-function createschedule() {
+function createschedule(uniqueid) {
     var validdeviceid = $('#Select_Device').val();
     var validdayofweek = []; // : checked?
     validdayofweek = $('#DayOfWeek:checked').map(function() {
@@ -56,24 +56,49 @@ function createschedule() {
         return false;
     }
     
-    $.post('/newschedule',{
-        deviceid:validdeviceid,
-        dayofweek:validdayofweek,
-        controller:validcontroller,
-        action:validaction,
-        time:validtime,
-        randomizerfunction:validrandomizerfunction,
-        randomiser:validrandomizer,
-        weathergoodfunction:validweathergoodfunction,
-        weathergoodtime:validweathergood,
-        weatherbadfunction:validweatherbadfunction,
-        weatherbadtime:validweatherbad,
-        runonce:validrunonce,
-        duration:validduration}, function (data) {
-        $('#respons-modal-body').html(data);
-        $('#myModal').modal('show');
-    });    
+    if (typeof(uniqueid) == 'undefined') {
+        $.post('/newschedule',{
+            deviceid:validdeviceid,
+            dayofweek:validdayofweek,
+            controller:validcontroller,
+            action:validaction,
+            time:validtime,
+            randomizerfunction:validrandomizerfunction,
+            randomiser:validrandomizer,
+            weathergoodfunction:validweathergoodfunction,
+            weathergoodtime:validweathergood,
+            weatherbadfunction:validweatherbadfunction,
+            weatherbadtime:validweatherbad,
+            runonce:validrunonce,
+            duration:validduration}, function (data) {
+            $('#respons-modal-body').html(data);
+            $('#myModal').modal('show');
+            window.location.href = '/newschedule';
+        }); 
+    } else {
+        $.post('/editschedule',{
+            deviceid:validdeviceid,
+            dayofweek:validdayofweek,
+            controller:validcontroller,
+            action:validaction,
+            time:validtime,
+            randomizerfunction:validrandomizerfunction,
+            randomiser:validrandomizer,
+            weathergoodfunction:validweathergoodfunction,
+            weathergoodtime:validweathergood,
+            weatherbadfunction:validweatherbadfunction,
+            weatherbadtime:validweatherbad,
+            runonce:validrunonce,
+            duration:validduration,
+            uniqueid:uniqueid}, function (data) {
+            $('#respons-modal-body').html(data);
+            $('#myModal').modal('show');
+            window.location.href = '/';
+        }); 
+    }
 }
+
+
 
 // This function is used for removing schedules 
 function removeschedule(scheduleid) {
@@ -123,6 +148,16 @@ socket.on('message', function(data){
 $(function(ready){   
     // Make sure we are on newschedule page by checking that a form element exists.
     if ($('#Select_Device').length > 0) {
+        if ($('#Select_Controller').val() == 'Timer') {
+                $('#Modificationsdiv').hide();
+                $('#Timerdiv').show();
+                $('#Select_Action').val('On');
+                $('#Select_Action').prop('disabled', true);
+                $('#Select_Weather_Good_Time').val(0);
+                $('#Select_Weather_Bad_Time').val(0);
+                $('#Select_Randomizer_Value').val(0);
+                
+            }
         
         // Fix so the time is correct to begin with
         //$('#Time').val(formatTime($('#Time').val()));
@@ -197,22 +232,20 @@ function save_options() {
     if($("#debug").prop('checked') == true){
             debugselector = true;
     }
-    
-    
- $.post('/options', {city:$('#city').val(),
-                     port:$('#port').val(),
-                    doubletapcount:$('#doubletapcount').val(),
-                    doubletapseconds:$('#doubletapseconds').val(),
-                    weathercodes:$('#weathercodes').val(),
-                    autoremote_password:$('#autoremote_password').val(),
-                    autoremote_key:$('#autoremote_key').val(),
-                    autoremote_message:$('#autoremote_message').val(),
-                    debug:debugselector
-                     
-                    }, function (data) {
-     //alert(data);
- });   
- return false;
+    $.post('/options', {city:$('#city').val(),
+                         port:$('#port').val(),
+                        doubletapcount:$('#doubletapcount').val(),
+                        doubletapseconds:$('#doubletapseconds').val(),
+                        weathercodes:$('#weathercodes').val(),
+                        autoremote_password:$('#autoremote_password').val(),
+                        autoremote_key:$('#autoremote_key').val(),
+                        autoremote_message:$('#autoremote_message').val(),
+                        debug:debugselector
+
+                        }, function (data) {
+         //alert(data);
+    });   
+    return false;
 }
 
 // This function was created by http://stackoverflow.com/users/248343/ocus

@@ -396,6 +396,7 @@ async.series([
     
 ],function (err) {
     // Start the server here
+    variables.savetofile = true;
     var server = app.listen(variables.options.port,function() {
       var host = server.address().address
       var port = server.address().port
@@ -611,19 +612,24 @@ function minutecheck () {
 					if (schedule.time == hour + ':' + minutes) {
                         if (variables.pauseschedules) {
                             console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW. This has not been executed as schedules are paused.');
-                            sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.id+'] triggered. This has not been executed as schedules are paused.'); 
+                            sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered. This has not been executed as schedules are paused.'); 
                         } else {
-                            console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
-                            sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.id+'] triggered.');
-                            devicefunctions.deviceaction(device.id,schedule.action);
-                            if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
-                                removeschedules.push(schedule.uniqueid);
-                            }
-                            sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
-                            schedule.stage = 1;
-                            // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
-                            if (variables.options.doubletapcount > 0) {
-                                doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                            if (schedule.enabled == 'true') {
+                                console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
+                                sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.id+'] triggered.');
+                                devicefunctions.deviceaction(device.id,schedule.action);
+                                if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
+                                    removeschedules.push(schedule.uniqueid);
+                                }
+                                sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+                                schedule.stage = 1;
+                                // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+                                if (variables.options.doubletapcount > 0) {
+                                    doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                                }
+                            } else {
+                                console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
+                                sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] did not trigger now because the schedule is disabled.');  
                             }
                         }
 					}

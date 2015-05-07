@@ -7,13 +7,7 @@ var sharedfunctions = require('../model/sharedfunctions');
 
 
 function get(req,res) {
-    
-    // Check if edit of schedule is requested. Try to use the same file?
-    if(request.deviceid != 'undefined') {
-            selected_deviceid = request.query.deviceid;
-        }
-    
-    
+
     // Need to create some sort of unique ID for each sechedule.
     var headline = 'New Schedule';
     var body = ['<div class="panel panel-default">',
@@ -40,6 +34,12 @@ function get(req,res) {
                                     '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="6">Saturday</label>',
                                     '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="0">Sunday</label>',
                             '</div>',
+                    '<div class="form-group">',
+                        '<label for="Select_Action">Schedule enabled</label>',
+                        '<select id="Select_Action" class="form-control">',
+                            '{selectenabled}',
+                        '</select>',
+                    '</div>',
                     '<div class="form-group">',
                                 '<label for="Select_Action">Action</label>',
                                 '<select id="Select_Action" class="form-control">',
@@ -156,7 +156,7 @@ function get(req,res) {
     body = body.replace(/{initaltime}/g, hour + ":" + minutes); 
     body = body.replace(/{weathertime}/g,createdropdown(90,10));
     body = body.replace(/{randomizertime}/g,createdropdown(40,5));
-    
+    body = body.replace(/{selectenabled}/g,createdropdown_alphanumeric([['true','Yes'],['false','No']],''));
     
     res.send(template(headline,body,true));
 }
@@ -195,5 +195,25 @@ function createdropdown(max, intervall) {
         dropdown += '<option value="'+(i*intervall)+'">'+(i*intervall);
 
     }
+    return dropdown;
+}
+
+function createdropdown_alphanumeric(options,selecteditem) {
+    // Generate dropdown options with the value and display from 'options[[value,displayname]]'
+    // Displayname is optional as a second paremeter to the array. If not present, value will be displayed.
+    var dropdown = '';
+    options.forEach(function(option) {
+        var selected = '';
+        if (selecteditem.toLowerCase() == option[0].toLowerCase()) {
+            selected = 'selected';
+        }
+        
+        var displayname = option[0];
+        if (typeof(option[1]) != 'undefined') {
+            displayname = option[1];
+        }
+        
+        dropdown += '<option ' + selected + ' value="'+option[0]+'">'+displayname;
+    });
     return dropdown;
 }

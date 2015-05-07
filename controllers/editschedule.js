@@ -30,47 +30,49 @@ function get(req,res) {
                 '</div>',
                 '<div class="panel-body">',
                      '<div class="form-group">',
-                                '<select id="Select_Device" class="form-control">',
-                                        '{select_device}',
-                                    '</select>',
-                            '</div>',
+                        '<select id="Select_Device" class="form-control">',
+                            '{select_device}',
+                        '</select>',
+                    '</div>',
                 '</div>',
                 '<div class="panel-heading">',
                     'Schedule',
                 '</div>',
-                '<div class="panel-body">',
-                     '<div class="checkbox">',
-                                    '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="1">Monday</label>',
-                                    '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="2">Tuesday</label>',
-                                    '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="3">Wednesday</label>',
-                                    '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="4">Thursday</label>',
-                                    '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="5">Friday</label>',
-                                    '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="6">Saturday</label>',
-                                    '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="0">Sunday</label>',
-                            '</div>',
+                '<div class="panel-body">',   
+                    '<div class="checkbox">',
+                        '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="1">Monday</label>',
+                        '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="2">Tuesday</label>',
+                        '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="3">Wednesday</label>',
+                        '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="4">Thursday</label>',
+                        '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="5">Friday</label>',
+                        '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="6">Saturday</label>',
+                        '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="0">Sunday</label>',
+                    '</div>',
+                    '<div class="form-group">',
+                        '<label for="Select_Action">Schedule enabled</label>',
+                        '<select id="Select_Action" class="form-control">',
+                            '{selectenabled}',
+                        '</select>',
+                    '</div>',
                     '<div class="form-group">',
                                 '<label for="Select_Action">Action</label>',
                                 '<select id="Select_Action" class="form-control">',
-                                        '<option value="On">On',
-                                        '<option value="Off">Off',
-                                    '</select>',
+                                    '{selectaction}',
+                                '</select>',
                             '</div>',
                     '<div class="form-group">',
                                 '<label for="Select_Controller">Controller</label>',
                                 '<select id="Select_Controller" class="form-control">',
-                                        '<option value="Time">Specific Time',
-                                        '<option value="Sundown" title="Adjust to sundown time" {sundown}>Sundown',
-                                        '<option value="Sunrise" title="Adjust to the time of sunrise" {sunrise}>Sunrise',
-                                        '<option value="Timer">Timer',
-                                    '</select>',
-                                    '<p class="text-info">{ControllerMessage}</p>',
+                                    '{selectcontroller}',
+                                '</select>',
+                                '<p class="text-info">{ControllerMessage}</p>',
                             '</div>',
                     '<div class="form-group">',
                                 '<label for="Time">Time</label>',
                                 '<input type="text" class="form-control" id="Time" placeholder="(HH:MM)24H" value="{initaltime}">',
                     '</div>',
                     '<div class="checkbox">',
-                         '<label><input type="checkbox" id="runonce" Value="runonce">Run Once - Remove after execution</label>',
+                         '<label><input type="checkbox" id="runonce" Value="runonce" {runonce_selected}>Run Once - Remove after execution</label>',
                     '</div>',
                 '</div>',
                 '<div class="panel-heading">',
@@ -80,10 +82,8 @@ function get(req,res) {
                      '<div class="form-group">',
                                 '<label for="Select_Randomizer">Randomizer function</label>',
                                 '<select id="Select_Randomizer" class="form-control">',
-                                        '<option value="+">+',
-                                        '<option value="-">-',
-                                        '<option value="both">+/-',
-                                    '</select>',
+                                    '{selectrandomizer}',
+                                '</select>',
                             '</div>',
                     '<div class="form-group">',
                                 '<label for="Select_Randomizer_Value">Randomizer max value (Minutes)</label>',
@@ -93,23 +93,21 @@ function get(req,res) {
                             '</div>',
                 '<div class="form-group">',
                                 '<label for="Select_Weather_Good">Weather Impact Function - Good Weather</label>',
-                                 '<select id="Select_Weather_Good" class="form-control">',
-                                        '<option value="+">+',
-                                        '<option value="-">-',
+                                '<select id="Select_Weather_Good" class="form-control">',
+                                    '{selectweathergood}',
                                     '</select>',
                             '</div>',
                 '<div class="form-group">',
                                 '<label for="Select_Weather_Good_Time">Weather Impact Minutes - Good Weather </label>',
-                                  '<select id="Select_Weather_Good_Time" class="form-control">',
-                                        '{weathergoodtime}',
-                                    '</select>',
+                                '<select id="Select_Weather_Good_Time" class="form-control">',
+                                    '{weathergoodtime}',
+                                '</select>',
                             '</div>',
                '<div class="form-group">',
                                 '<label for="Select_Weather_Bad">Weather Impact Function - Bad Weather</label>',
-                                 '<select id="Select_Weather_Bad" class="form-control">',
-                                        '<option value="+">+',
-                                        '<option value="-">-',
-                                    '</select>',
+                                '<select id="Select_Weather_Bad" class="form-control">',
+                                   '{selectweatherbad}',
+                                '</select>',
                             '</div>',
                 '<div class="form-group">',
                                 '<label for="Select_Weather_Bad_Time">Weather Impact Minutes - Bad Weather </label>',
@@ -121,56 +119,71 @@ function get(req,res) {
                 '<div class="panel-body" id="Timerdiv" style="display: none">',
                     '<div class="form-group">',
                                 '<label for="Duration">Duration (Minutes)</label>',
-                                '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="1">',
+                                '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="{duration}">',
                     '</div>',
                 '</div>',
-                    '<div class="panel-footer"><button onClick="Javascript:saveschedule();">Save Edits</button></div>',
+                    '<div class="panel-footer"><button onClick="Javascript:createschedule('+selected_schedule.uniqueid+');">Save Edits</button></div>',
                 '</div>'];
     body = body.join("\n");
     
     var device_options = '';
     var controllermessage = '';
     variables.devices.forEach(function(device, index) {
-        device_options += '<option value="' + device.id + '">'+device.name + '\n';
+        var selected_device = '';
+        if (device.id == selected_schedule.deviceid) {
+            selected_device = 'selected';
+        }
+        device_options += '<option '+selected_device+' value="' + device.id + '">'+device.name + '\n';
     });
 
     body = body.replace(/{select_device}/g,device_options);
     
-   
-        if (typeof(variables.weather.sys) != 'undefined') {
-            body = body.replace(/{sunrise}/g,variables.weather.sys.sunrise);
-            body = body.replace(/{ControllerMessage}/g,'');
-        } else  {
-            body = body.replace(/{sunrise}/g,'disabled');
-            controllermessage = controllermessage + 'Sunrise controller unavailable due to no weather information found.';
-        }
 
-        if (typeof(variables.weather.sys) != 'undefined') {
-            body = body.replace(/{sundown}/g,variables.weather.sys.sunset);
-            body = body.replace(/{ControllerMessage}/g,'');
-        } else  {
-            body = body.replace(/{sundown}/g,'disabled');
-           controllermessage = controllermessage + '<br>Sundown controller unavailable due to no weather information found.';
-        }
-     body = body.replace(/{ControllerMessage}/g,controllermessage);
+    if (typeof(variables.weather.sys) != 'undefined') {
+       // body = body.replace(/{sunrise}/g,variables.weather.sys.sunrise);
+        body = body.replace(/{ControllerMessage}/g,'');
+    } else  {
+        body = body.replace(/{sunrise}/g,'disabled');
+        controllermessage = controllermessage + 'Sunrise controller unavailable due to no weather information found.';
+    }
+
+    if (typeof(variables.weather.sys) != 'undefined') {
+        //body = body.replace(/{sundown}/g,variables.weather.sys.sunset);
+        body = body.replace(/{ControllerMessage}/g,'');
+    } else  {
+        body = body.replace(/{sundown}/g,'disabled');
+       controllermessage = controllermessage + '<br>Sundown controller unavailable due to no weather information found.';
+    }
     
-    var currentdate = new Date();
-    var hour = '0' + currentdate.getHours();
-    var minutes = '0' + currentdate.getMinutes();
-    hour = hour.substr(hour.length-2);
-    minutes = minutes.substr(minutes.length-2);
-   
+    body = body.replace(/{ControllerMessage}/g,controllermessage);
     
-    body = body.replace(/{initaltime}/g, hour + ":" + minutes); 
+    body = body.replace(/{initaltime}/g, selected_schedule.originaltime); 
     body = body.replace(/{weathergoodtime}/g,createdropdown(90,10, selected_schedule.weathergoodtime));
     body = body.replace(/{weatherbadtime}/g,createdropdown(90,10, selected_schedule.weatherbadtime));
     body = body.replace(/{randomizertime}/g,createdropdown(40,5,selected_schedule.randomiser));
+    
+    body = body.replace(/{selectaction}/g,createdropdown_alphanumeric([['On'],['Off']],selected_schedule.action));
+    body = body.replace(/{selectcontroller}/g,createdropdown_alphanumeric([['Time','Specific Time'],['Sundown'],['Sunrise'],['Timer']],selected_schedule.controller));
+    body = body.replace(/{selectrandomizer}/g,createdropdown_alphanumeric([['+'],['-'],['both','+/-']],selected_schedule.randomizerfunction));
+    body = body.replace(/{selectweathergood}/g,createdropdown_alphanumeric([['+'],['-']],selected_schedule.weathergoodfunction));
+    body = body.replace(/{selectweatherbad}/g,createdropdown_alphanumeric([['+'],['-']],selected_schedule.weatherbadfunction));
+    
+    body = body.replace(/{selectenabled}/g,createdropdown_alphanumeric([['true','Yes'],['false','No']],selected_schedule.enabled));
+
+    
     
     selected_schedule.dayofweek.forEach(function (day) {
         var searchstring  = new RegExp('id="DayOfWeek" Value="'+day+'"',"g");
         body = body.replace(searchstring,'id="DayOfWeek" Value="'+day+'" checked=checked');    
     });
-   
+    
+    if (selected_schedule.runonce == 'true') {
+        body = body.replace(/{runonce_selected}/g, 'checked=checked'); 
+    } else {
+        body = body.replace(/{runonce_selected}/g, ''); 
+    }
+    
+    body = body.replace(/{duration}/g, selected_schedule.duration); 
     
     res.send(template(headline,body,true));
 }
@@ -198,22 +211,42 @@ function post(req,res) {
     });
     variables.savetofile = true;
     */
-    res.send('Schedule has been created.');
+    res.send('Schedule has been saved.');
 }
 
 exports.get = get;
 exports.post = post;
 
 
-function createdropdown(max, intervall, selecteitem) {
+function createdropdown(max, intervall, selecteditem) {
     var dropdown = '<option value="0">0';
     for (var i = 1; i<=Math.floor(max/intervall); i++) {
         var selected = '';
-        if (selecteitem == (i*intervall)) {
+        if (selecteditem == (i*intervall)) {
             selected = 'selected';
         }
         dropdown += '<option ' + selected + ' value="'+(i*intervall)+'">'+(i*intervall);
 
     }
+    return dropdown;
+}
+
+function createdropdown_alphanumeric(options,selecteditem) {
+    // Generate dropdown options with the value and display from 'options[[value,displayname]]'
+    // Displayname is optional as a second paremeter to the array. If not present, value will be displayed.
+    var dropdown = '';
+    options.forEach(function(option) {
+        var selected = '';
+        if (selecteditem.toLowerCase() == option[0].toLowerCase()) {
+            selected = 'selected';
+        }
+        
+        var displayname = option[0];
+        if (typeof(option[1]) != 'undefined') {
+            displayname = option[1];
+        }
+        
+        dropdown += '<option ' + selected + ' value="'+option[0]+'">'+displayname;
+    });
     return dropdown;
 }
