@@ -184,7 +184,7 @@ function post(req,res) {
     var newschedule = new classes.schedule();
 
     for (var key in req.body) {
-      newschedule[key] = req.body[key];  
+        newschedule[key] = req.body[key];  
     }
     
     //console.log(newschedule);
