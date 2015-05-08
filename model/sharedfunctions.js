@@ -76,7 +76,49 @@ function log (message) {
     variables.log.push({time: hour + ':' + minutes + ':' + seconds,message: message});
 }
 
+function autoremote (devicename, action) {
+    //http://autoremotejoaomgcd.appspot.com/sendmessage?key=YOUR_KEY&message=hi
+    
+    var message = variables.options.autoremote_message;
+    message = message.replace(/{device-name}/g,devicename);
+    message = message.replace(/{device-lastcommand}/g,action);
+    
+    dns.lookup('autoremotejoaomgcd.appspot.com',function onLookup (err) {
+						if (err) { 
+							console.log('Unable to reach autoremotejoaomgcd.appspot.com');
+						} else {
+							//var http = require('http');						  
+							var options = {
+								host : 'autoremotejoaomgcd.appspot.com',
+								path: 'http://autoremotejoaomgcd.appspot.com/sendmessage?message=' + encodeURIComponent(message) + '&password=' + variables.options.autoremote_password + '&key=' + variables.options.autoremote_key;
+							};
+							
+							var weatherreq = http.get(options, function(res){
+								//console.log(res);
+								res.setEncoding('utf-8');
+								//console.log(res.statusCode);
+								  
+								if (res.statusCode == 200) {
+									console.log('Sent message to AutoRemote.');
+								  });
+                                    res.on('error', function (chunk) {
+                                        // Error
+                                    });
+								} else {
+									console.log('autoremote: error. Received wrong statuscode');
+								}
+                                
+                                res.on('error', function (chunk) {
+                                        // Error
+                                });
+								
+							}); 
+                            
+						}
+					});
+}
 
+exports.autoremote = autoremote;
 exports.DateAdd = DateAdd;
 exports.dynamicSortMultiple = dynamicSortMultiple;
 exports.dynamicSort = dynamicSort;

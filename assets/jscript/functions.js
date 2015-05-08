@@ -30,6 +30,24 @@ function createschedule(uniqueid) {
         return false;
     }
     
+    var validnotbefore = formatTime($('#IntervalNotBeforeTime').val());
+    if (validnotbefore === false) {
+        // Invalid time provided
+        $('#IntervalNotBeforeTime').addClass('bg-danger');
+        $('#respons-modal-body').html('Incorrect time provided.');
+        $('#myModal').modal('show');
+        return false;
+    }
+    
+    var validnotafter = formatTime($('#IntervalNotAfterTime').val());
+    if (validnotafter === false) {
+        // Invalid time provided
+        $('#IntervalNotAfterTime').addClass('bg-danger');
+        $('#respons-modal-body').html('Incorrect time provided.');
+        $('#myModal').modal('show');
+        return false;
+    }
+    
     
     if (validdayofweek.length < 1) {
         $('#respons-modal-body').html('Select atleast one day of the week.');
@@ -44,10 +62,17 @@ function createschedule(uniqueid) {
     var validweatherbadfunction = $('#Select_Weather_Bad').val();
     var validweatherbad = $('#Select_Weather_Bad_Time').val();
     var validrunonce = false;
+    var validautoremote = false;
     var validduration = $('#Duration').val();
     if($("#runonce").prop('checked') == true){
         validrunonce = true;
     }
+    
+    if($("#autoremote").prop('checked') == true){
+        validautoremote = true;
+    }
+    
+    
     
     // Check for a nuemrical value in duration for Timers
     if ( ($.isNumeric(validduration) === false) && (validcontroller == 'Timer') ) {
@@ -71,7 +96,10 @@ function createschedule(uniqueid) {
             weatherbadtime:validweatherbad,
             runonce:validrunonce,
             duration:validduration,
-            enabled:$('#Select_Enabled').val()}, function (data) {
+            enabled:$('#Select_Enabled').val(),
+            intervalnotbefore:validnotbefore,
+            intervalnotafter:validnotafter,
+            sendautoremote:validautoremote}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/newschedule';
@@ -92,7 +120,10 @@ function createschedule(uniqueid) {
             runonce:validrunonce,
             duration:validduration,
             uniqueid:uniqueid,
-            enabled:$('#Select_Enabled').val()}, function (data) {
+            enabled:$('#Select_Enabled').val(),
+            intervalnotbefore:validnotbefore,
+            intervalnotafter:validnotafter,
+            sendautoremote:validautoremote}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/';
@@ -202,7 +233,10 @@ $(function(ready){
                 $('#Select_Action').prop('disabled', true);
                 $('#Select_Weather_Good_Time').val(0);
                 $('#Select_Weather_Bad_Time').val(0);
-                $('#Select_Randomizer_Value').val(0);                
+                $('#Select_Randomizer_Value').val(0);  
+                $('#IntervalNotAfterTime').val('');
+                $('#IntervalNotBeforeTime').val('');
+                
             }
         });
         
@@ -214,6 +248,24 @@ $(function(ready){
                 $(this).removeClass('bg-danger');
             } else {
                 $('#Time').addClass('bg-danger');
+            }
+        });
+        $('#IntervalNotBeforeTime').focusout(function() {
+            var correctTime = formatTime($(this).val());
+            if (correctTime !== false) {
+                $(this).val(correctTime);
+                $(this).removeClass('bg-danger');
+            } else {
+                $('#IntervalNotBeforeTime').addClass('bg-danger');
+            }
+        });
+        $('#IntervalNotAfterTime').focusout(function() {
+            var correctTime = formatTime($(this).val());
+            if (correctTime !== false) {
+                $(this).val(correctTime);
+                $(this).removeClass('bg-danger');
+            } else {
+                $('#IntervalNotAfterTime').addClass('bg-danger');
             }
         });
         

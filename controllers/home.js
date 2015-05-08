@@ -32,7 +32,7 @@ function get(request, response) {
                     '<div class="panel-body">',
                     '<div class="table-responsive">',
                     '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
-                    '<tr><th>Name</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>',
+                    '<tr><th>Name</th><th>Duration</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>',
                     '{Timers}',
                     '</table>',
                     '</div>',
@@ -118,7 +118,7 @@ function get(request, response) {
                             if (singleschedule.controller != 'Timer') {
                                 schedules += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
                             } else {
-                                timers += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                                timers += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.duration +  ' minutes</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
                             }
                         }
                     }

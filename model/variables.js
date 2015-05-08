@@ -7,7 +7,7 @@ module.exports = {
                weathercodes:[300,301,600,701,800,801,802,803,804],
                autoremote_key: '',
                autoremote_password: '',
-               autoremote_message: 'Device {device-id} was set to {device-lastcommand}'
+               autoremote_message: 'Device {device-name} was set to {device-lastcommand}'
               },
     weather : {},
     savetofile : false,

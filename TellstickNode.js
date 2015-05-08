@@ -615,20 +615,59 @@ function minutecheck () {
                             sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered. This has not been executed as schedules are paused.'); 
                         } else {
                             if (schedule.enabled == 'true') {
-                                console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
-                                sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.id+'] triggered.');
-                                devicefunctions.deviceaction(device.id,schedule.action);
-                                if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
-                                    removeschedules.push(schedule.uniqueid);
+                                var runschedule = true;
+                                
+                                if (schedule.intervalnotbefore.indexOf(':') != -1) {
+                                    var notbefore = new Date();
+                                    notbeforearray = schedule.intervalnotbefore.split(':');
+                                    notbefore.setHours(notbeforearray[0]);
+                                    notbefore.setMinutes(notbeforearray[1]); 
+                                    var minutedifference_notbefore = Math.floor(((timestamp_start - notbefore)/1000)/60);
+                                    if (minutedifference_notbefore < 0) {
+                                        // if less than 0, don't run the schedule! // This means that the before time has not yet been reached.
+                                        runschedule = false;
+                                    }
                                 }
-                                sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
-                                schedule.stage = 1;
-                                // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
-                                if (variables.options.doubletapcount > 0) {
-                                    doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                                
+                                if (schedule.intervalnotafter.indexOf(':') != -1) {
+                                    var notafter = new Date();
+                                    notafterearray = schedule.intervalnotafter.split(':');
+                                    notafter.setHours(notafterearray[0]);
+                                    notafter.setMinutes(notafterearray[1]); 
+                                    var minutedifference_notafter = Math.floor(((timestamp_start - notafter)/1000)/60);
+                                    if (minutedifference_notafter > 0) {
+                                        // if more than 0, don't run the schedule! | This means that the after time has already passes.
+                                        runschedule = false;
+                                    }
+                                }
+                                
+                                
+                                
+                                //sharedfunctions.log('notbefore difference: ' + minutedifference_notbefore); // Run schedule if notbefore is above 0
+                                //sharedfunctions.log('notafter difference: ' + minutedifference_notafter); // Run schedule if notafter is below 0
+                                
+                                
+                                if (runschedule) {
+                                    console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
+                                    sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered.');
+                                    devicefunctions.deviceaction(device.id,schedule.action);
+                                    if (schedule.sendautoremote == 'true') {
+                                        sharedfunctions.autoremote(device.name,schedule.action);
+                                    }
+                                    if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
+                                        removeschedules.push(schedule.uniqueid);
+                                    }
+                                    sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+                                    schedule.stage = 1;
+                                    // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+                                    if (variables.options.doubletapcount > 0) {
+                                        doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                                    }
+                                } else {
+                                    sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] not triggered. Out of allowed intervall.'); 
                                 }
                             } else {
-                                console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
+                                console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW (Schedule disabled)');
                                 sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] did not trigger now because the schedule is disabled.');  
                             }
                         }
@@ -659,6 +698,11 @@ function minutecheck () {
                                 sharedfunctions.log('Timer off event for "' + device.name + '" has not been executed as schedules are paused.');  
                             } else {
                                 devicefunctions.deviceaction(device.id,'off');
+                                
+                                if (schedule.sendautoremote == 'true') {
+                                    sharedfunctions.autoremote(device.name,'off');
+                                }
+                                
                                 schedule.stage = 2;
                                 if (schedule.runonce == 'true') {
                                     removeschedules.push(schedule.uniqueid);

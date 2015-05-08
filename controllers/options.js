@@ -47,7 +47,7 @@ function get(req,res) {
                             '<div class="form-group">',
                                 '<label for="autoremote_message">AutoRemote Message:</label>',
                                 '<input type="text" class="form-control" id="autoremote_message" placeholder="Device {device-id} was set to {device-lastcommand}" value="{autoremote_message}">',
-                                '<p class="text-info">Available variables are: {device-id}, {device-lastcommand}, {device-name}</p>',
+                                '<p class="text-info">Available variables are: {device-lastcommand}, {device-name}</p>',
                             '</div>',
                             '<div class="form-group">',
                                 '<label for="debug">Debug output to log:</label>',

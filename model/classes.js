@@ -26,6 +26,7 @@ function schedule() {
     this.lightpercentage = 100;
     this.intervalnotbefore = '';
     this.intervalnotafter = '';
+    this.sendautoremote = 'false';
 }
 
 exports.device = device;

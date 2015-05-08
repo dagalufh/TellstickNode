@@ -74,6 +74,9 @@ function get(req,res) {
                     '<div class="checkbox">',
                          '<label><input type="checkbox" id="runonce" Value="runonce" {runonce_selected}>Run Once - Remove after execution</label>',
                     '</div>',
+                    '<div class="checkbox">',
+                         '<label><input type="checkbox" id="autoremote" Value="autoremote" {autoremote_selected}>AutoRemote - Send message when triggered</label>',
+                    '</div>',
                 '</div>',
                 '<div class="panel-heading">',
                     'Modifications',
@@ -115,12 +118,21 @@ function get(req,res) {
                                         '{weatherbadtime}',
                                     '</select>',
                             '</div>',
+                '<div class="form-group">',
+                        '<label for="IntervalNotBeforeTime">Do not trigger if schedule trigger time is before:</label>',
+                        '<input type="text" class="form-control" id="IntervalNotBeforeTime" placeholder="(HH:MM)24H" value="{notbefore}">',
+                    '</div>',
+                    '<div class="form-group">',
+                            '<label for="IntervalNotAfterTime">Do not trigger if schedule trigger time is after:</label>',
+                            '<input type="text" class="form-control" id="IntervalNotAfterTime" placeholder="(HH:MM)24H" value="{notafter}">',
+                    '</div>',
                 '</div>',
                 '<div class="panel-body" id="Timerdiv" style="display: none">',
                     '<div class="form-group">',
-                                '<label for="Duration">Duration (Minutes)</label>',
-                                '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="{duration}">',
+                        '<label for="Duration">Duration (Minutes)</label>',
+                        '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="{duration}">',
                     '</div>',
+                    
                 '</div>',
                     '<div class="panel-footer"><button onClick="Javascript:createschedule('+selected_schedule.uniqueid+');">Save Edits</button></div>',
                 '</div>'];
@@ -170,6 +182,8 @@ function get(req,res) {
     
     body = body.replace(/{selectenabled}/g,createdropdown_alphanumeric([['true','Yes'],['false','No']],selected_schedule.enabled));
 
+    body = body.replace(/{notafter}/g,selected_schedule.intervalnotafter);
+    body = body.replace(/{notbefore}/g,selected_schedule.intervalnotbefore);
     
     
     selected_schedule.dayofweek.forEach(function (day) {
@@ -181,6 +195,12 @@ function get(req,res) {
         body = body.replace(/{runonce_selected}/g, 'checked=checked'); 
     } else {
         body = body.replace(/{runonce_selected}/g, ''); 
+    }
+    
+    if (selected_schedule.sendautoremote == 'true') {
+        body = body.replace(/{autoremote_selected}/g, 'checked=checked'); 
+    } else {
+        body = body.replace(/{autoremote_selected}/g, ''); 
     }
     
     body = body.replace(/{duration}/g, selected_schedule.duration); 
