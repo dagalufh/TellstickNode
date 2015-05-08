@@ -70,7 +70,8 @@ function createschedule(uniqueid) {
             weatherbadfunction:validweatherbadfunction,
             weatherbadtime:validweatherbad,
             runonce:validrunonce,
-            duration:validduration}, function (data) {
+            duration:validduration,
+            enabled:$('#Select_Enabled').val()}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/newschedule';
@@ -90,7 +91,8 @@ function createschedule(uniqueid) {
             weatherbadtime:validweatherbad,
             runonce:validrunonce,
             duration:validduration,
-            uniqueid:uniqueid}, function (data) {
+            uniqueid:uniqueid,
+            enabled:$('#Select_Enabled').val()}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/';
@@ -217,11 +219,11 @@ $(function(ready){
         
         
     }
-    
-    $('#devicetoview').change(function() { 
-            window.location.href = '/?deviceid='+$(this).val();
-        });
 });
+
+function filter_home() {
+    window.location.href = '/?deviceid='+$('#devicetoview').val() + '&scheduletype='+$('#schedulestoview').val();
+}
 
 function pause_schedules() {
    $.get('/pauseschedules',function (data) {

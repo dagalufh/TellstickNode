@@ -13,7 +13,7 @@ function get(request, response) {
     // Define the different parts of the page.
     var headline = 'Home';
     var body = ['<p class="text-info"><button class="btn btn-default" onClick="pause_schedules()">Pause all schedules</button> Schedule status: <span id="schedulestatus">{schedulestatus}</span></p>',
-                '<p class="text-info">Filter by device: <select id="devicetoview">{devicetoview}</select></p>',
+                '<p class="text-info">Filter by device: <select id="devicetoview">{devicetoview}</select> Show schedules that is: <select id="schedulestoview">{schedulestoview}</select> <button class="btn btn-default" onclick="filter_home();">Filter</button> </p>',
                 '<div class="panel panel-default">',
                      '<div class="panel-heading">',
                         '<h3>Available Devices</h3>',
@@ -79,9 +79,14 @@ function get(request, response) {
         var dayofweektranslate = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
         var devicetoview = '';
         var selected_deviceid = 0;
+        var selected_scheduletype = '';
     
         if(typeof(request.query.deviceid) != 'undefined') {
             selected_deviceid = request.query.deviceid;
+        }
+        
+        if(typeof(request.query.scheduletype) != 'undefined') {
+            selected_scheduletype = request.query.scheduletype;
         }
         
         variables.devices.forEach(function(device, index) {
@@ -109,10 +114,12 @@ function get(request, response) {
                                 
                     }
                     if ( (device.id == selected_deviceid) || (selected_deviceid == 0) ) {
-                        if (singleschedule.controller != 'Timer') {
-                            schedules += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
-                        } else {
-                            timers += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                        if ( (selected_scheduletype == '') || (selected_scheduletype == singleschedule.enabled) ) {
+                            if (singleschedule.controller != 'Timer') {
+                                schedules += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                            } else {
+                                timers += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                            }
                         }
                     }
                 });
@@ -163,6 +170,7 @@ function get(request, response) {
         body = body.replace(/{available-devices}/g,available_devices);
         body = body.replace(/{Timers}/g,timers);
         body = body.replace(/{devicetoview}/g,devicetoview);
+        body = body.replace(/{schedulestoview}/g,createdropdown_alphanumeric([['','Any'],['true','Enabled'],['false','Disabled']],selected_scheduletype));
         var schedulestatus = 'Running normal';
         if(variables.pauseschedules) {
             schedulestatus = 'Paused';
@@ -176,3 +184,24 @@ function get(request, response) {
 }
 
 exports.get = get;
+
+
+function createdropdown_alphanumeric(options,selecteditem) {
+    // Generate dropdown options with the value and display from 'options[[value,displayname]]'
+    // Displayname is optional as a second paremeter to the array. If not present, value will be displayed.
+    var dropdown = '';
+    options.forEach(function(option) {
+        var selected = '';
+        if (selecteditem.toLowerCase() == option[0].toLowerCase()) {
+            selected = 'selected';
+        }
+        
+        var displayname = option[0];
+        if (typeof(option[1]) != 'undefined') {
+            displayname = option[1];
+        }
+        
+        dropdown += '<option ' + selected + ' value="'+option[0]+'">'+displayname;
+    });
+    return dropdown;
+}
