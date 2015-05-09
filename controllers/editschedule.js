@@ -227,7 +227,7 @@ function post(req,res) {
         //console.log('DeviceID : ' + device.id);
         if (device.id == newschedule.deviceid) {
             device.schedule.forEach(function (schedule) {
-                sharedfunctions.log(schedule.uniqueid + "==" + newschedule.uniqueid);
+                
                 if (schedule.uniqueid == newschedule.uniqueid) {
                     for (var key in newschedule) {
                         schedule[key] = newschedule[key];  
