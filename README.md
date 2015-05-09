@@ -8,27 +8,14 @@ Node.js application to control powersockets via the use of Tellstick.
 - Linux: TelldusCore
 
 ### Current working features:
-Single-user support ONLY!
-
-Pause all schedules/timers
-
-- Create schedule
- - Select days
- - run-once option
- - sunrise, sunset, specific time to trigger the schedule
- - randomize the time with modifiers (weather or just random time +/-)
- - actions available: On, Off
-- Remove schedules
-- Create timers
- - Select days
- - time to start the timers
- - duration of the timer
- - run-once option
- - actions available: On
- - No modifiers available
-- Remove timers
-- Force Action 'On' for Timers
-- Force randomization/weather to '0' for Timers
+- Pause all schedules/timers
+- Creating schedules/timers
+- Modification to those based on random minutes and weather status
+- Trigger time can be either sunrise, sundown or specific time
+- Interval limitation to schedule to ensure that it can only be triggered at specific time interval (useful for sunrise/sunset)
+- AutoRemote on a per schedule setting to send notifications to a phone when a schedule or timer is triggered.
+- Run-Once option on a per schedule, allowing the creation of a schedule that runs only once and then deletes itself.
+- Remote - A page that can be accessed without login, only from the local network to only send on/off to a device.
 
 Sensormodifications are not possible at this time since i don't have any sensors or a Tellstick Duo.
 
@@ -48,3 +35,14 @@ Sensormodifications are not possible at this time since i don't have any sensors
 5. Now you can start it via 'sudo service tellsticknode start' Note: The program is not set in autostart on your machine yet. Only manual start.  
 6. If you want to see output live in the terminal, run the program via 'node TellstickNode.js' from within the folder instead. As this will output everything into the terminal.  
 7. To make a service autostart is different depending on the system.  
+
+### Updating the application:
+
+1. Stop the service in either operating system
+2. Replace the current files with those from the downloaded zip.  This will not affect your personal settings and schedules as the directory that stores them are no in the repository.
+3. Start the service
+
+
+### Stability of application:
+Currently running on a Windows 32-bit. No errors has occured, everything is working fine.
+Older version running on a Raspbian. No errors there either. Will be updated to latest soon.
