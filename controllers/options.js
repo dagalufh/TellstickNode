@@ -78,8 +78,8 @@ function get(req,res) {
     
     
     var debugchecked = '';
-    if(variables.debug) {
-        debugchecked = 'checked';
+    if(variables.debug == 'true') {
+        debugchecked = 'checked=checked';
     };
     
     body = body.replace(/{debug}/g,debugchecked);
@@ -93,7 +93,7 @@ function post(req,res) {
     variables.options.port = req.body.port;
     variables.options.doubletapcount = req.body.doubletapcount;
     variables.options.doubletapseconds = req.body.doubletapseconds;
-    variables.options.weathercodes = req.body.weeathercodes;
+    variables.options.weathercodes = req.body.weathercodes;
     variables.options.autoremote_password = req.body.autoremote_password;
     variables.options.autoremote_key = req.body.autoremote_key;
     variables.options.autoremote_message = req.body.autoremote_message;

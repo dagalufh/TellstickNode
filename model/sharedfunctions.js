@@ -1,4 +1,6 @@
 var variables = require('./variables');
+var http = require('http');	
+var dns = require('dns');
 function DateAdd (ItemType, DateToWorkOn, ValueToBeAdded) {
 			switch (ItemType)
 			{
@@ -90,7 +92,7 @@ function autoremote (devicename, action) {
 							//var http = require('http');						  
 							var options = {
 								host : 'autoremotejoaomgcd.appspot.com',
-								path: 'http://autoremotejoaomgcd.appspot.com/sendmessage?message=' + encodeURIComponent(message) + '&password=' + variables.options.autoremote_password + '&key=' + variables.options.autoremote_key;
+								path: 'http://autoremotejoaomgcd.appspot.com/sendmessage?message=' + encodeURIComponent(message) + '&password=' + variables.options.autoremote_password + '&key=' + variables.options.autoremote_key
 							};
 							
 							var weatherreq = http.get(options, function(res){
@@ -100,7 +102,6 @@ function autoremote (devicename, action) {
 								  
 								if (res.statusCode == 200) {
 									console.log('Sent message to AutoRemote.');
-								  });
                                     res.on('error', function (chunk) {
                                         // Error
                                     });

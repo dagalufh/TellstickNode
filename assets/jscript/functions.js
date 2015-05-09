@@ -24,28 +24,36 @@ function createschedule(uniqueid) {
     var validtime = formatTime($('#Time').val());
     if (validtime === false) {
         // Invalid time provided
-        $('#Time').addClass('bg-danger');
+        $('#Time').parent().addClass('has-error');
         $('#respons-modal-body').html('Incorrect time provided.');
         $('#myModal').modal('show');
         return false;
     }
     
-    var validnotbefore = formatTime($('#IntervalNotBeforeTime').val());
-    if (validnotbefore === false) {
-        // Invalid time provided
-        $('#IntervalNotBeforeTime').addClass('bg-danger');
-        $('#respons-modal-body').html('Incorrect time provided.');
-        $('#myModal').modal('show');
-        return false;
-    }
-    
-    var validnotafter = formatTime($('#IntervalNotAfterTime').val());
-    if (validnotafter === false) {
-        // Invalid time provided
-        $('#IntervalNotAfterTime').addClass('bg-danger');
-        $('#respons-modal-body').html('Incorrect time provided.');
-        $('#myModal').modal('show');
-        return false;
+    var validnotbefore = '';
+    var validnotafter = '';
+    if (validcontroller != 'Timer') {
+        if ($('#IntervalNotBeforeTime').val().length > 0) {
+            validnotbefore = formatTime($('#IntervalNotBeforeTime').val());
+            if (validnotbefore === false) {
+                // Invalid time provided
+                $('#IntervalNotBeforeTime').parent().addClass('has-error');
+                $('#respons-modal-body').html('Incorrect time provided for trigger time before.');
+                $('#myModal').modal('show');
+                return false;
+            }
+        }
+        
+        if ($('#IntervalNotAfterTime').val().length > 0) {
+            validnotafter = formatTime($('#IntervalNotAfterTime').val());
+            if (validnotafter === false) {
+                // Invalid time provided
+                $('#IntervalNotAfterTime').parent().addClass('has-error');
+                $('#respons-modal-body').html('Incorrect time provided for trigger time after.');
+                $('#myModal').modal('show');
+                return false;
+            }
+        }
     }
     
     
@@ -76,6 +84,7 @@ function createschedule(uniqueid) {
     
     // Check for a nuemrical value in duration for Timers
     if ( ($.isNumeric(validduration) === false) && (validcontroller == 'Timer') ) {
+        $('#Duration').parent().addClass('has-error');
         $('#respons-modal-body').html('Incorrect value in duration. Needs to be numbers only.');
         $('#myModal').modal('show');
         return false;
@@ -245,27 +254,35 @@ $(function(ready){
             var correctTime = formatTime($(this).val());
             if (correctTime !== false) {
                 $(this).val(correctTime);
-                $(this).removeClass('bg-danger');
+                $(this).parent().removeClass('has-error');
             } else {
-                $('#Time').addClass('bg-danger');
+                $('#Time').parent().addClass('has-error');
             }
         });
         $('#IntervalNotBeforeTime').focusout(function() {
-            var correctTime = formatTime($(this).val());
-            if (correctTime !== false) {
-                $(this).val(correctTime);
-                $(this).removeClass('bg-danger');
+            if ($(this).val().length > 0) {
+                var correctTime = formatTime($(this).val());
+                if (correctTime !== false) {
+                    $(this).val(correctTime);
+                    $(this).parent().removeClass('has-error');
+                } else {
+                    $('#IntervalNotBeforeTime').parent().addClass('has-error');
+                }
             } else {
-                $('#IntervalNotBeforeTime').addClass('bg-danger');
+                $(this).parent().removeClass('has-error');
             }
         });
         $('#IntervalNotAfterTime').focusout(function() {
-            var correctTime = formatTime($(this).val());
-            if (correctTime !== false) {
-                $(this).val(correctTime);
-                $(this).removeClass('bg-danger');
+            if ($(this).val().length > 0) {
+                var correctTime = formatTime($(this).val());
+                if (correctTime !== false) {
+                    $(this).val(correctTime);
+                    $(this).parent().removeClass('has-error');
+                } else {
+                    $('#IntervalNotAfterTime').parent().addClass('has-error');
+                }
             } else {
-                $('#IntervalNotAfterTime').addClass('bg-danger');
+                $(this).parent().removeClass('has-error');
             }
         });
         
@@ -299,6 +316,8 @@ function save_options() {
                         debug:debugselector
 
                         }, function (data) {
+        $('#respons-modal-body').html('Options has been saved.');
+        $('#myModal').modal('show');
          //alert(data);
     });   
     return false;
