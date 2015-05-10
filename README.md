@@ -44,5 +44,5 @@ Sensormodifications are not possible at this time since i don't have any sensors
 
 
 ### Stability of application:
-Currently running on a Windows 32-bit. No errors has occured, everything is working fine.
-Older version running on a Raspbian. No errors there either. Will be updated to latest soon.
+Currently running on a Windows 32-bit. No errors has occured, everything is working fine.  
+Also running on a RaspberryPi with Raspbian. No errors there either.
