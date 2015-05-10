@@ -1,0 +1,12 @@
+Current Version: 1.0.0
+
+Version : 1.0.0
+This is the starting point. The application is fully functional.
+So from hereon there will be a changelog update for each push.
+
+Working now:
+Creating/Removing/Editing schedules
+Controllers can be either specific time, sun dependent or as a timer.
+Modifiers can be random or based on weather or interval.
+Run-once can be enforced.
+Auto-Remote messages can be triggered on schedule event.
