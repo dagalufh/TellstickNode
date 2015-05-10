@@ -112,6 +112,9 @@ function createschedule(uniqueid) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/newschedule';
+            $('#myModal').on('hidden.bs.modal',function (e) {
+                window.location.href='/newschedule';
+            });
         }); 
     } else {
         $.post('/editschedule',{
@@ -136,6 +139,9 @@ function createschedule(uniqueid) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/';
+            $('#myModal').on('hidden.bs.modal',function (e) {
+                window.location.href='/';
+            });
         }); 
     }
 }
@@ -313,12 +319,9 @@ function save_options() {
                         autoremote_password:$('#autoremote_password').val(),
                         autoremote_key:$('#autoremote_key').val(),
                         autoremote_message:$('#autoremote_message').val(),
-                        debug:debugselector
-
-                        }, function (data) {
+                        debug:debugselector}, function (data) {
         $('#respons-modal-body').html('Options has been saved.');
         $('#myModal').modal('show');
-         //alert(data);
     });   
     return false;
 }

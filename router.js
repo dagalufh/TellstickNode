@@ -37,7 +37,9 @@ module.exports = function (app) {
       
     app.route('/logs')
         .get(function (req, res) {
-            require('./controllers/logs').get(req,res);
+            if (checklogin(req, res)) {
+                require('./controllers/logs').get(req,res);
+            }
         })
     
     app.route('/newschedule')

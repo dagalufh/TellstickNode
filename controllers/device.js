@@ -48,7 +48,7 @@ function deviceaction (deviceid, action, res) {
             });
             console.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']'); 
             sharedfunctions.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']');
-            if (variables.debug) {
+            if (variables.debug == 'true') {
                 sharedfunctions.log('Debug - tdtool set action stderr: ' + stderr);
                 sharedfunctions.log('Debug - tdtool set action stdout: ' + stdout);
             }
