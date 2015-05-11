@@ -19,6 +19,11 @@ Node.js application to control powersockets via the use of Tellstick.
 
 Sensormodifications are not possible at this time since i don't have any sensors or a Tellstick Duo.
 
+### Usage
+After start of application, you can access it by going to  
+http://127.0.0.1:8888
+At first startup you will be promted to create a new user. After that, just login and create schedules.
+
 ### Windows Installation:
 
 1. Unpack Zipfile in a folder of your choice.
