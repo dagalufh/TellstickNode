@@ -1,4 +1,6 @@
-Current Version: 1.0.0
+Current Version: 1.0.1
+Version : 1.0.1
+Implemented a possible fix for the missed trigger. The clock was drifting, might solve it now that it dosn't.
 
 Version : 1.0.0
 This is the starting point. The application is fully functional.

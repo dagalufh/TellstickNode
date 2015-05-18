@@ -418,10 +418,10 @@ async.series([
     });
  
     //heapdump.writeSnapshot(__dirname.replace("\\","/") + '/' + Date.now() + '.heapsnapshot');
-	
+	var timerstart = new Date();
 	setTimeout(timer_getdevicestatus,15000);
     setTimeout(doubletapcheck,1000*variables.options.doubletapseconds);
-	setTimeout(minutecheck,60000);
+	setTimeout(minutecheck,60000,timerstart);
 	//setTimeout(timer_getweather,60000);
 });
 
@@ -589,17 +589,22 @@ function doubletapcheck() {
    setTimeout(doubletapcheck,((1000*variables.options.doubletapseconds)+(timestamp_start-new Date().getTime())));
 }
 
-function minutecheck () {
-	var timestamp_start = new Date();
-	timestamp_start.setSeconds(0);
+//// implement timestamp argument!!!!! Solves it??
+function minutecheck (timestamp_start) {
+    sharedfunctions.DateAdd('n',timestamp_start,1);
+    console.log('_________________________________________________________________');
+	//var timestamp_start = new Date();
+	//timestamp_start.setSeconds(0);
+    //timestamp_start.setMilliseconds(0);
 	
 
 	var hour = '0' + timestamp_start.getHours();
 	var minutes = '0' + timestamp_start.getMinutes();
+    var seconds = '0' + timestamp_start.getSeconds();
 	hour = hour.substr(hour.length-2);
 	minutes = minutes.substr(minutes.length-2);
-
-	console.log(hour +':'+ minutes);
+    seconds = seconds.substr(seconds.length-2);
+	console.log('Start of Minutescheck: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_start.getMilliseconds());
 	
 	var dayofweek = timestamp_start.getUTCDay();
 	var removeschedules = [];
@@ -756,9 +761,12 @@ function minutecheck () {
 	
 	var difference_milliseconds_recalculate = timestamp_start - lasttimestamp_recalculate;
     var difference_minutes_recalculate = Math.floor((difference_milliseconds_recalculate/1000)/60);
-	
+	console.log('Difference minues recaluclate: ' + difference_minutes_recalculate);
+    var weatherfetched = false;
 	if (difference_minutes_recalculate == 30) {
         lasttimestamp_recalculate = timestamp_start;
+        console.log('latstimestamp hour and minutes:' + lasttimestamp_recalculate.getHours() + ":" + lasttimestamp_recalculate.getMinutes()+ ":" + lasttimestamp_recalculate.getSeconds());
+        //lasttimestamp_recalculate.setMinutes(lasttimestamp_recalculate.getMinutes()-difference_minutes_recalculate);
 		async.series([
 			function (callback) {
 				if (variables.options.city.toString().length > 0) {
@@ -768,7 +776,6 @@ function minutecheck () {
 							console.log('Unable to reach api.openweathermap.org');
 							callback();
 						} else {
-							console.log('Here: ' + timestamp_start.getTime());
 							
 							//var http = require('http');						  
 							var options = {
@@ -791,14 +798,25 @@ function minutecheck () {
 									} catch (e) {
 										console.log('Error with fetching the weather. Openweathermap.org might be busy or something.');
 									}
-									callback();
+                                        
+                                    if (weatherfetched == false) {
+                                        weatherfetched = true;
+									   callback(null, 'original'); 
+                                    } else {
+                                        callback(null, 'dublicate'); 
+                                    }
 								  });
                                     res.on('error', function (chunk) {
                                         // Error
                                     });
 								} else {
 									console.log('openweather: error. Received wrong statuscode');
-									callback();
+									if (weatherfetched == false) {
+                                        weatherfetched = true;
+									   callback(null, 'original'); 
+                                    } else {
+                                        callback(null, 'dublicate'); 
+                                    }
 								}
                                 
                                 res.on('error', function (chunk) {
@@ -815,7 +833,8 @@ function minutecheck () {
 					callback();
 				}
 			}
-		],function(err) {
+		],function(err, result) {
+            //console.log('Result: ' + weatherfetched);
 			// For each device
 			console.log('Recalculating schedules trigger time.');
             sharedfunctions.log('Recalculating schedules');
@@ -829,6 +848,9 @@ function minutecheck () {
 				
 				// For each schedule
 				device.schedule.forEach( function (schedule) {
+                    if (variables.debug == 'true') {
+                        sharedfunctions.log('['+schedule.uniqueid+']Before recalculate: ' + schedule.time);
+                    }
 					
 					// First we check if the controller is sun-based and define a new ORIGINAL TIME based on that.
 					
@@ -840,9 +862,9 @@ function minutecheck () {
 								minutes = minutes.substr(minutes.length-2);
 								schedule.originaltime = hour + ":" + minutes;   
 								variables.savetofile = true;
-								console.log('Set a new original time on schedule based on sunset time: ' + schedule.originaltime);
+								console.log('['+schedule.uniqueid+']Set a new original time on schedule based on sunset time: ' + schedule.originaltime);
 							} else {
-								console.log('Failed to update schedules time based on sun-movement due to no weather information available.');
+								console.log('['+schedule.uniqueid+']Failed to update schedules time based on sun-movement due to no weather information available.');
 							}
 						}
 
@@ -854,9 +876,9 @@ function minutecheck () {
 								minutes = minutes.substr(minutes.length-2);
 								schedule.originaltime = hour + ":" + minutes;  
 								variables.savetofile = true;
-								console.log('Set a new original time on schedule based on sunrise time: ' + schedule.originaltime);
+								console.log('['+schedule.uniqueid+']Set a new original time on schedule based on sunrise time: ' + schedule.originaltime);
 							} else {
-								console.log('Failed to update schedules time based on sun-movement due to no weather information available.');
+								console.log('['+schedule.uniqueid+']Failed to update schedules time based on sun-movement due to no weather information available.');
 							}
 						}
 					
@@ -890,7 +912,7 @@ function minutecheck () {
 					}
 					
 					randomfunction += Math.round(Math.random() * schedule.randomiser);
-				   
+				    
 					var difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
 					var difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
 					sharedfunctions.DateAdd('n',original,Number(randomfunction));
@@ -898,10 +920,28 @@ function minutecheck () {
 					// After all the manipulations has been done to the orignal time of the current schedule. Check if we should save it or not.
 					// The purpose is to make sure that a schedule that occures right before NOW(), dosn't get moved to past or vice versa. To ensure:
 					// No double execution and no missed schedules.
-					if (difference_minutes_recalculate_compare < 5) {                            
-						// If the schedule is meant to happen in the future
+                    if (variables.debug == 'true') {
+                        var hour = '0' + original.getHours();
+                        var minutes = '0' + original.getMinutes();
+                        hour = hour.substr(hour.length-2);
+                        minutes = minutes.substr(minutes.length-2);
+                        
+                        sharedfunctions.log('['+schedule.uniqueid+']After recalculate: ' + hour + ":" + minutes);
+                        sharedfunctions.log('['+schedule.uniqueid+']Original Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
+                        
+                    }
+                    
+					if (difference_minutes_recalculate_compare < 5) {    
+                       
+                            // If the schedule is meant to happen in the future
 						difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
 						difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
+                        
+                        if (variables.debug == 'true') {
+                            sharedfunctions.log('['+schedule.uniqueid+']Recalculated Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
+                        }
+                        
+                        
 						if (difference_minutes_recalculate_compare < 5) {
 							// If it happends in the future, then we can update the time.
 							var hour = '0' + original.getHours();
@@ -916,6 +956,10 @@ function minutecheck () {
 						// If it happends in the past, then we can update the time.
 						difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
 						difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
+                        
+                        if (variables.debug == 'true') {
+                            sharedfunctions.log('['+schedule.uniqueid+']Original Time was in the past, recalculated time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
+                        }
 						if (difference_minutes_recalculate_compare > 5) {
 							var hour = '0' + original.getHours();
 							var minutes = '0' + original.getMinutes();
@@ -929,10 +973,39 @@ function minutecheck () {
 					// Difference + means that the schedule happened in the past, if difference is -, it happens in the future.
 				});
 		   });
-		   setTimeout(minutecheck,(60000+(timestamp_start-new Date().getTime())));
+            
+            var timestamp_end = new Date();
+            var hour = '0' + timestamp_end.getHours();
+            var minutes = '0' + timestamp_end.getMinutes();
+            var seconds = '0' + timestamp_end.getSeconds();
+            hour = hour.substr(hour.length-2);
+            minutes = minutes.substr(minutes.length-2);
+            seconds = seconds.substr(seconds.length-2);
+            
+            //console.log('[recalculate] End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+            var enddifference = timestamp_end-timestamp_start;
+            //console.log('enddifference: ' + enddifference);
+            //console.log('[recalculate] Milliseconds untill next launch: ' + (60000-enddifference));
+            timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
+            //console.log('[recalculate] End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+		   setTimeout(minutecheck,(60000-enddifference),timestamp_end);
 		});
 	} else {
-		setTimeout(minutecheck,(60000+(timestamp_start-new Date().getTime())));
+        var timestamp_end = new Date();
+        var hour = '0' + timestamp_end.getHours();
+        var minutes = '0' + timestamp_end.getMinutes();
+        var seconds = '0' + timestamp_end.getSeconds();
+        hour = hour.substr(hour.length-2);
+        minutes = minutes.substr(minutes.length-2);
+        seconds = seconds.substr(seconds.length-2);        
+        
+        //console.log('End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+        var enddifference = timestamp_end-timestamp_start;
+        //console.log('enddifference: ' + enddifference);
+        //console.log('Milliseconds untill next launch: ' + (60000-enddifference));
+        timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
+        //console.log('End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+		setTimeout(minutecheck,(60000-enddifference),timestamp_end);
 	}
 };
 
