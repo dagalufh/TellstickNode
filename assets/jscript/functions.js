@@ -161,11 +161,11 @@ function removeschedule(scheduleid) {
     });    
 }
 
-function switchdevicestatus(deviceid) {
-    var switchto = "on";
-    if ($('#commandbutton_'+deviceid).html() == 'ON') {
-        switchto = 'off';
-    }
+function switchdevicestatus(deviceid, switchto) {
+    //var switchto = "on";
+    //if ($('#commandbutton_'+deviceid).html() == 'ON') {
+    //    switchto = 'off';
+    //}
     
     $.ajax({
         url: '/device',
@@ -186,7 +186,21 @@ socket.on('message', function(data){
         } else if(device[0] == 'pausedschedules') {
             $('#schedulestatus').html(device[1]);
         } else {
-            $('#commandbutton_'+device[0]).html(device[1]);
+            $('#commandbutton_'+device[0]+'_on').removeClass('btn-success');
+            $('#commandbutton_'+device[0]+'_off').removeClass('btn-success');
+            $('#commandbutton_'+device[0]+'_dim').removeClass('btn-success');
+            
+            if (device[1].toLowerCase() == 'on') {
+                $('#commandbutton_'+device[0]+'_on').addClass('btn-success');
+            }
+            if (device[1].toLowerCase() == 'off') {
+                $('#commandbutton_'+device[0]+'_off').addClass('btn-success');
+            }
+            if (device[1].toLowerCase() == 'dim') {
+                $('#commandbutton_'+device[0]+'_dim').addClass('btn-success');
+            }
+            
+            
         }
         console.log('Recevied: '  + device[0] + ":" + device[1]);
         

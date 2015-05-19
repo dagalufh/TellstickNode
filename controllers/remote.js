@@ -9,7 +9,7 @@ function get(request, response) {
     // Define the different parts of the page.
     var headline = 'Remote';
     var body = ['<table class="table table-bordered">',
-                    '<tr><th>Last Command</th><th>Device Name</th></tr>',
+                    '<tr><th>Status</th><th>Device</th></tr>',
                     '{available-devices}',
                     '</table>'              
                 ];
@@ -27,7 +27,19 @@ function get(request, response) {
         var dayofweektranslate = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
         
         variables.devices.forEach(function(device, index) {
-            available_devices += '<tr><td><button class="btn btn-default" id="commandbutton_' + device.id + '" onClick="switchdevicestatus(\'' + device.id + '\');">'+device.lastcommand+'</button></td><td>'+device.name+'</td></tr>';
+            var status_on = '';
+            var status_off = '';
+            var status_dim = '';
+            if (device.lastcommand.toLowerCase() == 'on') {
+                status_on = 'btn-success';
+            }
+            if (device.lastcommand.toLowerCase() == 'off') {
+                status_off = 'btn-success';
+            }
+            if (device.lastcommand.toLowerCase() == 'dim') {
+                status_dim = 'btn-success';
+            }
+            available_devices += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">OFF</button><button disabled class="btn btn-default '+status_dim+'" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button></td><td>'+device.name+'</td></tr>';
         });
         
         // End of testing

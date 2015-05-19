@@ -1,4 +1,8 @@
-Current Version: 1.0.1
+Current Version: 1.0.2
+Version : 1.0.2
+Implemented another try to fix the missed trigger. Think it was related to recalculates moving schedule to the past.
+Also implemented some color feedback for active status on the device. And started implementing for DIM. However, need feedback from users having DIM..
+
 Version : 1.0.1
 Implemented a possible fix for the missed trigger. The clock was drifting, might solve it now that it dosn't.
 

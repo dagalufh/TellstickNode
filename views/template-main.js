@@ -10,7 +10,7 @@ function build (pagetitle, content,loggedin) {
                         '<title>{title}</title>',
                         '<meta name="viewport" content="width=device-width, initial-scale=1">',
                         '<link rel="stylesheet" href="css/bootstrap.min.css" />',
-                        '<link rel="stylesheet" href="css/style_.css" />\n',
+                        '<link rel="stylesheet" href="css/style.css" />\n',
                         '<script src="/socket.io/socket.io.js"></script>',
                         '<script src="jscript/jquery-2.1.1.min.js"></script>',
                         '<script src="jscript/bootstrap.min.js"></script>',

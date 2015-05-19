@@ -913,6 +913,48 @@ function minutecheck (timestamp_start) {
 					
 					randomfunction += Math.round(Math.random() * schedule.randomiser);
 				    
+                    var difference_minutes_recalculate_compare = Math.floor(((original - timestamp_start)/1000)/60);
+                    
+                    if (variables.debug == 'true') {
+                        var hour = '0' + original.getHours();
+                        var minutes = '0' + original.getMinutes();
+                        hour = hour.substr(hour.length-2);
+                        minutes = minutes.substr(minutes.length-2);
+
+                        sharedfunctions.log('['+schedule.uniqueid+']After recalculate: ' + hour + ":" + minutes);
+                        sharedfunctions.log('['+schedule.uniqueid+']Original Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
+
+                    }
+                    
+                    
+                    if  ( (difference_minutes_recalculate_compare > -5) && (difference_minutes_recalculate_compare < 5)  ) {
+                        // If the schedule is set to orignally occur within +/- 5 minutes from NOW, we won't update it.
+                        //console.log('The Schedule is to be triggered either 5 minuters in the past or 5 minutes in the future. I won\'t update the time');
+                    } else {
+                        // If the schedule is set to occur earier or later than +/- 5 minutes from NOW, we can add the randomizer.
+                        sharedfunctions.DateAdd('n',original,Number(randomfunction));
+                        
+                        var difference_minutes_recalculate_compare = Math.floor(((original - timestamp_start)/1000)/60);
+                        if  ( (difference_minutes_recalculate_compare > -5) && (difference_minutes_recalculate_compare < 5)  ) {
+                            // If the recalculated time is set to occur within +/- 5 minutes from NOW, we won't update it.
+                            //console.log('The Schedules new time is to be triggered either 5 minuters in the past or 5 minutes in the future. I won\'t update the time');
+                        } else {
+                            // If the recalculated time is set to occur earlier or later than +/- 5 minutes from now, we can update the schedule with the new time.
+                            //console.log('The schedule is going to be updated.');
+                            if (variables.debug == 'true') {
+                                sharedfunctions.log('['+schedule.uniqueid+']Recalculated Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
+                            }
+                            
+                            var hour = '0' + original.getHours();
+							var minutes = '0' + original.getMinutes();
+							hour = hour.substr(hour.length-2);
+							minutes = minutes.substr(minutes.length-2);
+							schedule.time = hour + ":" + minutes;
+							variables.savetofile = true;
+                        }
+                    }
+                    
+                    /* OLD METHOD
 					var difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
 					var difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
 					sharedfunctions.DateAdd('n',original,Number(randomfunction));
@@ -970,6 +1012,8 @@ function minutecheck (timestamp_start) {
 							
 						}
 					}
+                    --------------------- END OF OLD METHOD ---------------------
+                    */ 
 					// Difference + means that the schedule happened in the past, if difference is -, it happens in the future.
 				});
 		   });
