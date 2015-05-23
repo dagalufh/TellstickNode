@@ -349,3 +349,20 @@ function formatTime(time) {
     }
     return result;
 }
+
+function showscheduleinfo(scheduleid) {
+    $('#respons-modal-body').html('Fetching schedule data.');
+    $('#myModal').modal('show');
+    $.ajax({
+        url: '/showscheduleinfo',
+        data: {'scheduleid':scheduleid},
+        success: function (data) {
+            $('#respons-modal-body').html(data);
+            $('#myModal').modal('show');
+        },
+        error: function (data) {
+            $('#respons-modal-body').html('Error occured: ' + data.statusText);
+            $('#myModal').modal('show');
+        }
+    }); 
+}

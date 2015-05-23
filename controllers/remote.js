@@ -30,6 +30,7 @@ function get(request, response) {
             var status_on = '';
             var status_off = '';
             var status_dim = '';
+            var dimbutton = '';
             if (device.lastcommand.toLowerCase() == 'on') {
                 status_on = 'btn-success';
             }
@@ -39,7 +40,11 @@ function get(request, response) {
             if (device.lastcommand.toLowerCase() == 'dim') {
                 status_dim = 'btn-success';
             }
-            available_devices += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">OFF</button><button disabled class="btn btn-default '+status_dim+'" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button></td><td>'+device.name+'</td></tr>';
+            
+            if (variables.options.showdimoption == 'true') {
+                dimbutton = '<button disabled class="btn btn-default '+status_dim+'" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button>';
+            }
+            available_devices += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">OFF</button>'+dimbutton+'</td><td>'+device.name+'</td></tr>';
         });
         
         // End of testing

@@ -133,6 +133,8 @@ function checklogin(req, res) {
     if ( (currentSession.hash) && (currentSession.username) ) {
         
         if (saltedpasswords(currentSession.username + 'tellstick',8,currentSession.hash)) {
+            //var hour = 3600000;
+            //req.session.cookie.maxAge = 14 * 24 * hour;
             return true;
         } else {
             fs.exists(__dirname + '/userdata/user.js', function (exists) {

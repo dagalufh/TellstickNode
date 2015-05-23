@@ -915,13 +915,7 @@ function minutecheck (timestamp_start) {
 				    
                     var difference_minutes_recalculate_compare = Math.floor(((original - timestamp_start)/1000)/60);
                     
-                    if (variables.debug == 'true') {
-                        var hour = '0' + original.getHours();
-                        var minutes = '0' + original.getMinutes();
-                        hour = hour.substr(hour.length-2);
-                        minutes = minutes.substr(minutes.length-2);
-
-                        sharedfunctions.log('['+schedule.uniqueid+']After recalculate: ' + hour + ":" + minutes);
+                    if (variables.debug == 'true') {                   
                         sharedfunctions.log('['+schedule.uniqueid+']Original Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
 
                     }
@@ -941,14 +935,16 @@ function minutecheck (timestamp_start) {
                         } else {
                             // If the recalculated time is set to occur earlier or later than +/- 5 minutes from now, we can update the schedule with the new time.
                             //console.log('The schedule is going to be updated.');
-                            if (variables.debug == 'true') {
-                                sharedfunctions.log('['+schedule.uniqueid+']Recalculated Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
-                            }
-                            
                             var hour = '0' + original.getHours();
 							var minutes = '0' + original.getMinutes();
 							hour = hour.substr(hour.length-2);
 							minutes = minutes.substr(minutes.length-2);
+                            
+                            if (variables.debug == 'true') {
+                                sharedfunctions.log('['+schedule.uniqueid+']After recalculate the new time is: ' + hour + ":" + minutes);
+                                sharedfunctions.log('['+schedule.uniqueid+']Recalculated Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
+                            }
+                            
 							schedule.time = hour + ":" + minutes;
 							variables.savetofile = true;
                         }

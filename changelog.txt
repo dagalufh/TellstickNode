@@ -1,4 +1,8 @@
-Current Version: 1.0.2
+Current Version: 1.0.3
+Version : 1.0.3
+Corrected debug output
+Added option to control if dim button should be shown or not. (option not implemented, forced to false at this time)
+
 Version : 1.0.2
 Implemented another try to fix the missed trigger. Think it was related to recalculates moving schedule to the past.
 Also implemented some color feedback for active status on the device. And started implementing for DIM. However, need feedback from users having DIM..

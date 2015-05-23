@@ -102,6 +102,7 @@ function get(request, response) {
             var status_on = '';
             var status_off = '';
             var status_dim = '';
+            var dimbutton = '';
             
             if (device.lastcommand.toLowerCase() == 'on') {
                 status_on = 'btn-success';
@@ -112,7 +113,11 @@ function get(request, response) {
             if (device.lastcommand.toLowerCase() == 'dim') {
                 status_dim = 'btn-success';
             }
-            available_devices += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">OFF</button><button disabled class="btn btn-default '+status_dim+'" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button></td><td>'+device.name+'</td></tr>';
+            
+            if (variables.options.showdimoption == 'true') {
+                dimbutton = '<button disabled class="btn btn-default '+status_dim+'" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button>';
+            }
+            available_devices += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">OFF</button>'+dimbutton+'</td><td>'+device.name+'</td></tr>';
             
             
             if(device.schedule.length > 0) {
@@ -133,9 +138,9 @@ function get(request, response) {
                     if ( (device.id == selected_deviceid) || (selected_deviceid == 0) ) {
                         if ( (selected_scheduletype == '') || (selected_scheduletype == singleschedule.enabled) ) {
                             if (singleschedule.controller != 'Timer') {
-                                schedules += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                                schedules += '<tr onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')"><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
                             } else {
-                                timers += '<tr><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.duration +  ' minutes</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
+                                timers += '<tr onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')"><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.duration +  ' minutes</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
                             }
                         }
                     }
