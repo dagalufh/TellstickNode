@@ -74,13 +74,40 @@ function get(req,res) {
     body = body.replace(/{autoremote_password}/g,variables.options.autoremote_password);
     body = body.replace(/{autoremote_key}/g,variables.options.autoremote_key);
     body = body.replace(/{autoremote_message}/g,variables.options.autoremote_message);
-    body = body.replace(/{weatherinfo}/g,JSON.stringify(variables.weather,null, 2));
     
     
+    var sunrise = new Date(variables.weather.sys.sunrise*1000); 
+    var sunset = new Date(variables.weather.sys.sunset*1000);
+    var hour = '0' + sunset.getHours();
+    var minutes = '0' + sunset.getMinutes();
+    hour = hour.substr(hour.length-2);
+    minutes = minutes.substr(minutes.length-2);
+    var sunsettime = hour + ":" + minutes;
+    
+    var hour = '0' + sunrise.getHours();
+    var minutes = '0' + sunrise.getMinutes();
+    hour = hour.substr(hour.length-2);
+    minutes = minutes.substr(minutes.length-2);
+    var sunrisetime = hour + ":" + minutes;
+    
+    
+   
+    
+    var weatherinfo = ['City: ' + variables.weather.name,
+                       'Country: ' + variables.weather.sys.country,
+                      'Weathercode: ' + variables.weather.weather[0].id,
+                      'Weather: ' + variables.weather.weather[0].main,
+                      'Sunrise: ' + sunrisetime,
+                      'Sunset: ' + sunsettime];
+    weatherinfo = weatherinfo.join('<br>');
     var debugchecked = '';
     if(variables.debug == 'true') {
         debugchecked = 'checked=checked';
     };
+    
+    
+    body = body.replace(/{weatherinfo}/g,weatherinfo);
+    
     
     body = body.replace(/{debug}/g,debugchecked);
 
