@@ -380,6 +380,7 @@ async.series([
     },
     function (callback) {
         // Reset devices to correct status
+        /*
         variables.devices.forEach(function(device) {
             
             if (device.activescheduleid.toString().length > 0) {
@@ -392,6 +393,8 @@ async.series([
             }
         });
         callback();
+        */
+        devicefunctions.resetdevices(callback);
     }
     
 ],function (err) {
@@ -950,67 +953,6 @@ function minutecheck (timestamp_start) {
                         }
                     }
                     
-                    /* OLD METHOD
-					var difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
-					var difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
-					sharedfunctions.DateAdd('n',original,Number(randomfunction));
-											
-					// After all the manipulations has been done to the orignal time of the current schedule. Check if we should save it or not.
-					// The purpose is to make sure that a schedule that occures right before NOW(), dosn't get moved to past or vice versa. To ensure:
-					// No double execution and no missed schedules.
-                    if (variables.debug == 'true') {
-                        var hour = '0' + original.getHours();
-                        var minutes = '0' + original.getMinutes();
-                        hour = hour.substr(hour.length-2);
-                        minutes = minutes.substr(minutes.length-2);
-                        
-                        sharedfunctions.log('['+schedule.uniqueid+']After recalculate: ' + hour + ":" + minutes);
-                        sharedfunctions.log('['+schedule.uniqueid+']Original Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
-                        
-                    }
-                    
-					if (difference_minutes_recalculate_compare < 5) {    
-                       
-                            // If the schedule is meant to happen in the future
-						difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
-						difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
-                        
-                        if (variables.debug == 'true') {
-                            sharedfunctions.log('['+schedule.uniqueid+']Recalculated Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
-                        }
-                        
-                        
-						if (difference_minutes_recalculate_compare < 5) {
-							// If it happends in the future, then we can update the time.
-							var hour = '0' + original.getHours();
-							var minutes = '0' + original.getMinutes();
-							hour = hour.substr(hour.length-2);
-							minutes = minutes.substr(minutes.length-2);
-							schedule.time = hour + ":" + minutes;
-							variables.savetofile = true;
-							
-						}
-					} else {
-						// If it happends in the past, then we can update the time.
-						difference_milliseconds_recalculate_compare = timestamp_start - original.getTime();
-						difference_minutes_recalculate_compare = Math.floor((difference_milliseconds_recalculate_compare/1000)/60);
-                        
-                        if (variables.debug == 'true') {
-                            sharedfunctions.log('['+schedule.uniqueid+']Original Time was in the past, recalculated time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
-                        }
-						if (difference_minutes_recalculate_compare > 5) {
-							var hour = '0' + original.getHours();
-							var minutes = '0' + original.getMinutes();
-							hour = hour.substr(hour.length-2);
-							minutes = minutes.substr(minutes.length-2);
-							schedule.time = hour + ":" + minutes;    
-							variables.savetofile = true;
-							
-						}
-					}
-                    --------------------- END OF OLD METHOD ---------------------
-                    */ 
-					// Difference + means that the schedule happened in the past, if difference is -, it happens in the future.
 				});
 		   });
             

@@ -12,11 +12,31 @@ function get(request, response) {
         
     // Define the different parts of the page.
     var headline = 'Home';
-    var body = ['<p class="text-info"><button class="btn btn-default" onClick="pause_schedules()">Pause all schedules</button> Schedule status: <span id="schedulestatus">{schedulestatus}</span></p>',
-                '<p class="text-info">Filter by device: <select id="devicetoview">{devicetoview}</select> Show schedules that is: <select id="schedulestoview">{schedulestoview}</select> <button class="btn btn-default" onclick="filter_home();">Filter</button> </p>',
+    var body = ['<div class="panel panel-default">',
+                     '<div class="panel-heading">',
+                        '<h5 class="panel-title">Schedule Control</h5>',
+                    '</div>',
+                    '<div class="panel-body">',
+                        '<p class="text-info {schedulepauseclass}" id="pauseparagraph">Schedule status: <span id="schedulestatus">{schedulestatus}</span></p>',
+                        '<button class="btn btn-default" onClick="pause_schedules()" id="pausebutton">{pausebutton} schedules</button> ',
+                        '<button class="btn btn-default" onClick="reset_schedules()">Reset devices state</button',
+                    '</div>',
+                '</div>',
                 '<div class="panel panel-default">',
                      '<div class="panel-heading">',
-                        '<h3>Available Devices</h3>',
+                        '<h5 class="panel-title">Filter view</h5>',
+                    '</div>',
+                    '<div class="panel-body">',
+                        '<table class="table table-bordered">',
+                            '<tr><td class="td-middle">By device:</td><td><select id="devicetoview">{devicetoview}</select></td></tr>',
+                            '<tr><td class="td-middle">Schedules with status:</td><td><select id="schedulestoview">{schedulestoview}</select></td></tr>',
+                            '<tr><td><button class="btn btn-default" onclick="filter_home();">Filter</button></td></tr>',   
+                        '</table>',
+                    '</div>',
+                '</div>',
+                '<div class="panel panel-default">',
+                     '<div class="panel-heading">',
+                        '<h5 class="panel-title">Available Devices</h5>',
                     '</div>',
                     '<div class="panel-body">',
                     '<table class="table table-bordered">',
@@ -27,7 +47,7 @@ function get(request, response) {
                 '</div>',
                 '<div class="panel panel-default">',
                     '<div class="panel-heading">',
-                        '<h3>Timers</h3>',
+                        '<h5 class="panel-title">Timers</h5>',
                     '</div>',
                     '<div class="panel-body">',
                     '<div class="table-responsive">',
@@ -40,7 +60,7 @@ function get(request, response) {
                 '</div>',
                 '<div class="panel panel-default">',
                     '<div class="panel-heading">',
-                        '<h3>Schedules</h3>',
+                        '<h5 class="panel-title">Schedules</h5>',
                     '</div>',
                     '<div class="panel-body">',
                     '<div class="table-responsive">',
@@ -53,7 +73,7 @@ function get(request, response) {
                 '</div>',
                 '<div class="panel panel-default">',
                     '<div class="panel-heading">',
-                        '<h3>Schedules by day</h3>',
+                        '<h5 class="panel-title">Schedules by day</h5>',
                     '</div>',
                     '<div class="panel-body">',
                     '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
@@ -194,10 +214,16 @@ function get(request, response) {
         body = body.replace(/{devicetoview}/g,devicetoview);
         body = body.replace(/{schedulestoview}/g,createdropdown_alphanumeric([['','Any'],['true','Enabled'],['false','Disabled']],selected_scheduletype));
         var schedulestatus = 'Running normal';
+        var schedulepauseclass = '';
+        var pausebutton = 'Pause';
         if(variables.pauseschedules) {
             schedulestatus = 'Paused';
+            schedulepauseclass = 'bg-danger';
+            pausebutton = 'Resume';
         }
         body = body.replace(/{schedulestatus}/g,schedulestatus);
+        body = body.replace(/{schedulepauseclass}/g,schedulepauseclass);
+        body = body.replace(/{pausebutton}/g,pausebutton);
     
         response.send(template.build(headline,body,true));
     }

@@ -1,4 +1,9 @@
-Current Version: 1.0.3
+Current Version: 1.0.4
+Version : 1.0.3
+Added function to reset devices on command from browser.
+    This is to enable users to reset them after paused schedules.
+Some minor GUI tweaks on the Home screen.
+
 Version : 1.0.3
 Corrected debug output
 Added option to control if dim button should be shown or not. (option not implemented, forced to false at this time)

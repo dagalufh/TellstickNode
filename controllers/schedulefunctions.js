@@ -147,9 +147,10 @@ function  getpauseschedules(req,res) {
     console.log('Pause Schedules set to: ' + variables.pauseschedules);
     sharedfunctions.log('Pause Schedules set to: ' + variables.pauseschedules);
     
-    TellstickNode.sendtoclient([{device: 'pausedschedules:'+ message}]);
+    TellstickNode.sendtoclient([{device: 'pausedschedules:'+ message+':'+variables.pauseschedules}]);
     res.send(true);
 }
+
 
 exports.getpauseschedules = getpauseschedules;
 exports.highlightactiveschedule = highlightactiveschedule;

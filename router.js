@@ -59,6 +59,12 @@ module.exports = function (app) {
                 require('./controllers/schedulefunctions').getpauseschedules(req,res);
             }
         })
+    app.route('/resetschedules')
+        .get(function(req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/device').getresetdevices(req,res);
+            }
+        })
     app.route('/editschedule')
         .get(function(req,res) {
             if (checklogin(req, res)) {
@@ -135,6 +141,7 @@ function checklogin(req, res) {
         if (saltedpasswords(currentSession.username + 'tellstick',8,currentSession.hash)) {
             //var hour = 3600000;
             //req.session.cookie.maxAge = 14 * 24 * hour;
+            req.session.cookie.maxAge = (1000*60)*120;
             return true;
         } else {
             fs.exists(__dirname + '/userdata/user.js', function (exists) {

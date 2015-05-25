@@ -16,8 +16,8 @@ function send(req,res) {
 exports.send = send;
 exports.deviceaction = deviceaction;
 exports.getdevicestatus = getdevicestatus;
-
-
+exports.resetdevices = resetdevices;
+exports.getresetdevices = getresetdevices;
 function deviceaction (deviceid, action, res) {
    if (os.platform() === 'win32') {
         //console.log('Server is a Windows machine. Run tdtool.exe to switch status on device.');
@@ -191,4 +191,28 @@ function getdevicestatus () {
             });
         }
     });
+}
+
+function resetdevices (callback) {
+    variables.devices.forEach(function(device) {
+
+        if (device.activescheduleid.toString().length > 0) {
+            console.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
+            sharedfunctions.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
+            deviceaction(device.id, device.currentstatus);
+            // Perhaps add DoubleTap here..
+        } else {
+            console.log('Found no schedules for ' + device.id + ":" +  device.name);
+        }
+        
+    });
+    
+    if (typeof(callback) != 'undefined') {
+        callback();
+    }
+}
+
+function getresetdevices(req,res) {
+    resetdevices();
+    res.send(true);
 }

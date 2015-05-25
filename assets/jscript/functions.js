@@ -170,7 +170,10 @@ function switchdevicestatus(deviceid, switchto) {
     $.ajax({
         url: '/device',
         data: {'deviceid':deviceid,'switchto':switchto},
-        success: function (data) {console.log(data);},
+        success: function (data) {
+            //$('#respons-modal-body').html(data);
+            //$('#myModal').modal('show');
+        },
         error: function (data) {alert('error occured when setting new status: ' + data);}
     });
 }
@@ -185,6 +188,15 @@ socket.on('message', function(data){
             $('#Time').val(device[1] + ":" + device[2]);
         } else if(device[0] == 'pausedschedules') {
             $('#schedulestatus').html(device[1]);
+            
+            if (device[2] == 'true') {
+                $('#pauseparagraph').addClass('bg-danger');
+                $('#pausebutton').html('Resume schedules');
+                
+            } else {
+                $('#pauseparagraph').removeClass('bg-danger');
+                $('#pausebutton').html('Pause schedules');
+            }
         } else {
             $('#commandbutton_'+device[0]+'_on').removeClass('btn-success');
             $('#commandbutton_'+device[0]+'_off').removeClass('btn-success');
@@ -317,6 +329,13 @@ function filter_home() {
 function pause_schedules() {
    $.get('/pauseschedules',function (data) {
        return true;
+    }); 
+}
+
+function reset_schedules() {
+   $.get('/resetschedules',function (data) {
+        $('#respons-modal-body').html('All devices are not being returned to their currently scheduled state.');
+        $('#myModal').modal('show');
     }); 
 }
 
