@@ -19,7 +19,7 @@ function get(request, response) {
                     '<div class="panel-body">',
                         '<p class="text-info {schedulepauseclass}" id="pauseparagraph">Schedule status: <span id="schedulestatus">{schedulestatus}</span></p>',
                         '<button class="btn btn-default" onClick="pause_schedules()" id="pausebutton">{pausebutton} schedules</button> ',
-                        '<button class="btn btn-default" onClick="reset_schedules()">Reset devices state</button',
+                        '<button class="btn btn-default" onClick="reset_schedules()">Reset devices state</button>',
                     '</div>',
                 '</div>',
                 '<div class="panel panel-default">',
@@ -52,7 +52,6 @@ function get(request, response) {
                     '<div class="panel-body">',
                     '<div class="table-responsive">',
                     '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
-                    '<tr><th>Name</th><th>Duration</th><th>Day of Week</th><th>Time</th><th></th></tr>',
                     '{Timers}',
                     '</table>',
                     '</div>',
@@ -65,7 +64,6 @@ function get(request, response) {
                     '<div class="panel-body">',
                     '<div class="table-responsive">',
                     '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
-                    '<tr><th>Name</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>',
                     '{scheduled-devices}',
                     '</table>',
                     '</div>',
@@ -94,13 +92,16 @@ function get(request, response) {
     function display_devices () {
         var device_options = '';
         var available_devices = '';
-        var schedules = '';
-        var timers = '';
+        var schedules = '<tr><th>Name</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>';
+        var timers = '<tr><th>Name</th><th>Duration</th><th>Day of Week</th><th>Time</th><th></th></tr>';
         var dayofweektranslate = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
         var devicetoview = '';
         var selected_deviceid = 0;
         var selected_scheduletype = '';
-    
+        var schedulesfound = false;
+        var timersfound = false;
+        
+        
         if(typeof(request.query.deviceid) != 'undefined') {
             selected_deviceid = request.query.deviceid;
         }
@@ -108,6 +109,7 @@ function get(request, response) {
         if(typeof(request.query.scheduletype) != 'undefined') {
             selected_scheduletype = request.query.scheduletype;
         }
+        
         
         variables.devices.forEach(function(device, index) {
             if (device.id == selected_deviceid) {
@@ -158,8 +160,10 @@ function get(request, response) {
                     if ( (device.id == selected_deviceid) || (selected_deviceid == 0) ) {
                         if ( (selected_scheduletype == '') || (selected_scheduletype == singleschedule.enabled) ) {
                             if (singleschedule.controller != 'Timer') {
+                                schedulesfound = true;
                                 schedules += '<tr onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')"><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
                             } else {
+                                timersfound = true;
                                 timers += '<tr onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')"><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.duration +  ' minutes</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></tr>';
                             }
                         }
@@ -170,6 +174,7 @@ function get(request, response) {
         // Testing new shcedulethingy
         var sortedbyday = schedulefunctions.getschedulesbyday();
         var schedulesbyday = '';
+        var schedulesbydayfound = false;
         for (var key in sortedbyday) {
             if (sortedbyday.hasOwnProperty(key)) {
                 
@@ -196,12 +201,23 @@ function get(request, response) {
                         }); 
                         if ( (singleschedule.deviceid == selected_deviceid) || (selected_deviceid == 0) ) {
                             if (singleschedule.controller != 'Timer') {
+                                schedulesbydayfound = true;
                                 schedulesbyday += '<tr><td ' + activeschedule +'>' + devicename + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>' + singleschedule.time + '</td></tr>';
                             }
                         }
                     });
                 } 
             }
+        }
+        
+        if(schedulesfound == false) {
+            schedules = '<tr><td><p class="text-info">No schedules found.</p></td></tr>';
+        }
+        if(timersfound == false) {
+            timers = '<tr><td><p class="text-info">No timers found.</p></td></tr>';
+        }
+        if(schedulesbydayfound == false) {
+            schedulesbyday = '<tr><td><p class="text-info">No schedules found.</p></td></tr>';
         }
         
         devicetoview = '<option value="0">All' + devicetoview;

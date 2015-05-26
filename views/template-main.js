@@ -1,8 +1,9 @@
+var variables = require('../model/variables');
+var fs = require('fs');
 function build (pagetitle, content,loggedin) {
     
     // Defaults
-    var title = "TellstickNode";
-    
+    var title = 'TellstickNode ' + variables.currentversion;
     // Build the body layout
     var body = ['<!doctype html>',
                     '<html lang="en">\n\n<meta charset="utf-8">\n',
@@ -10,7 +11,7 @@ function build (pagetitle, content,loggedin) {
                         '<title>{title}</title>',
                         '<meta name="viewport" content="width=device-width, initial-scale=1">',
                         '<link rel="stylesheet" href="css/bootstrap.min.css" />',
-                        '<link rel="stylesheet" href="css/style.css" />\n',
+                        '<link rel="stylesheet" href="css/{activestylesheet}" />\n',
                         '<script src="/socket.io/socket.io.js"></script>',
                         '<script src="jscript/jquery-2.1.1.min.js"></script>',
                         '<script src="jscript/bootstrap.min.js"></script>',
@@ -19,7 +20,7 @@ function build (pagetitle, content,loggedin) {
                     '</head>',
                     '<body>',
                         '<div class="panel panel-default">',
-                            '<nav class="navbar navbar-default">',
+                            '<nav class="navbar navbar-default navbar-fixed-top">',
                             '<div class="container-fluid">',
                                 '<div class="navbar-header">',
                                    '<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">',
@@ -38,7 +39,7 @@ function build (pagetitle, content,loggedin) {
                             '</div>',
                             '</nav>',
                             '<div class="panel-heading">',
-                                '<h3>{pagetitle}</h3>',
+                                '<h4>{pagetitle}</h4>',
                             '</div>',                
                             '<div id="content" class="panel-body">{content}</div>',
                         '</div>',
@@ -60,12 +61,21 @@ function build (pagetitle, content,loggedin) {
 '</div>',
                     '</body>'];
     // Combine the above array into one string
+    
     body = body.join('\n');
     
     // Replace keywords
     body = body.replace(/{title}/g,title);
     body = body.replace(/{pagetitle}/g,pagetitle);
     body = body.replace(/{content}/g,content);
+    
+    var activesheet = '';
+    if(variables.options.theme == 'white') {
+        activesheet = 'style.css';
+    } else if(variables.options.theme == 'blue') {
+        activesheet = 'style_blue.css';
+    }
+    body = body.replace(/{activestylesheet}/g,activesheet);
     
     
     var activeschedule = '';
@@ -104,6 +114,10 @@ function build (pagetitle, content,loggedin) {
                          '<li><a href="/logout">Logout</a></li>'];
     }
     navigationbar = navigationbar.join('\n');
+    
+    
+    
+    
     body = body.replace(/{navbar}/g,navigationbar);
     
     // Return the finished html body.

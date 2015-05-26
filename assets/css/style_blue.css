@@ -1,0 +1,28 @@
+.devicestatus {width: 180px;}
+.td-middle {width: 180px;}
+.td-small {width: 70px;}
+
+.color-primary-0 { color: #336799 }	/* Main Primary color */
+.color-primary-1 { color: #D3D7DA }
+.color-primary-2 { color: #7A9CBC }
+.color-primary-3 { color: #0A457F }
+.color-primary-4 { color: #022B53 }
+
+.panel-default>.panel-heading {background-color: #7A9CBC; color: #022B53;}
+.navbar {margin-bottom: 0px;}
+.navbar-default {background-color: #336799; color: #D3D7DA; border: 0px solid #7A9CBC;}
+.navbar-default .navbar-nav>li>a {color: #D3D7DA;}
+.navbar-default .navbar-nav>li>a:hover {color: #7A9CBC;}
+.navbar-default .navbar-brand {color: #D3D7DA;}
+.navbar-default .navbar-brand:hover {color: #7A9CBC;}
+.navbar-default .navbar-nav>.active>a {background-color: #7A9CBC; color: #022B53;}
+.navbar-default .navbar-nav>.active>a:hover {background-color: #0A457F; color: #FFFFFF;}
+.panel-body {background-color: #FFFFFF; padding: 8px;}
+
+.panel-default {background-color: #336799;}
+th {background-color: #7A9CBC; color: #022B53;}
+
+.btn-default:hover {background-color: #0A457F; color: #FFFFFF;}
+
+.modal-header {background-color: #7A9CBC; color: #022B53;}
+body {background-color: #336799; padding-top:49px;}

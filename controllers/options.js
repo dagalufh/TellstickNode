@@ -12,6 +12,12 @@ function get(req,res) {
     var body = ['<div class="panel panel-default">',
                         '<div class="panel-body">',
                             '<div class="form-group">',
+                                '<label for="Select_Theme">Theme:</label>',
+                                '<select id="Select_Theme" class="form-control">',
+                                    '{selecttheme}',
+                                '</select>',
+                            '</div>',
+                            '<div class="form-group">',
                                 '<label for="city">City:</label>',
                                 '<input type="text" class="form-control" id="city" placeholder="City" value="{city}">',
                                 '<p class="text-info">Enter it without any special characters, english characters only.</p>',
@@ -60,7 +66,7 @@ function get(req,res) {
                         '</div>',
                 
                         '<div class="panel-footer">',
-                            '<input type="button" onclick="javascript:save_options();" value="Save">',
+                            '<input class="btn btn-default" type="button" onclick="javascript:save_options();" value="Save">',
                         '</div>',
                     '</div>',
                 '</form>'];
@@ -74,7 +80,7 @@ function get(req,res) {
     body = body.replace(/{autoremote_password}/g,variables.options.autoremote_password);
     body = body.replace(/{autoremote_key}/g,variables.options.autoremote_key);
     body = body.replace(/{autoremote_message}/g,variables.options.autoremote_message);
-    
+    body = body.replace(/{selecttheme}/g,createdropdown_alphanumeric([['blue','Blue'],['white','White']],variables.options.theme));
     
     var sunrise = new Date(variables.weather.sys.sunrise*1000); 
     var sunset = new Date(variables.weather.sys.sunset*1000);
@@ -91,26 +97,24 @@ function get(req,res) {
     var sunrisetime = hour + ":" + minutes;
     
     
-   
-    
-    var weatherinfo = ['City: ' + variables.weather.name,
-                       'Country: ' + variables.weather.sys.country,
-                      'Weathercode: ' + variables.weather.weather[0].id,
-                      'Weather: ' + variables.weather.weather[0].main,
-                      'Sunrise: ' + sunrisetime,
-                      'Sunset: ' + sunsettime];
-    weatherinfo = weatherinfo.join('<br>');
+    var weatherinfo = '';
+    if (typeof(variables.weather) != 'undefined') {
+        var weatherinfo = ['City: ' + variables.weather.name,
+                           'Country: ' + variables.weather.sys.country,
+                          'Weathercode: ' + variables.weather.weather[0].id,
+                          'Weather: ' + variables.weather.weather[0].main,
+                          'Sunrise: ' + sunrisetime,
+                          'Sunset: ' + sunsettime];
+        weatherinfo = weatherinfo.join('<br>');
+    }
     var debugchecked = '';
     if(variables.debug == 'true') {
         debugchecked = 'checked=checked';
     };
-    
-    
-    body = body.replace(/{weatherinfo}/g,weatherinfo);
-    
-    
+    body = body.replace(/{weatherinfo}/g,weatherinfo);    
     body = body.replace(/{debug}/g,debugchecked);
 
+    
     res.send(template(headline,body,true));
 }
 
@@ -124,6 +128,7 @@ function post(req,res) {
     variables.options.autoremote_password = req.body.autoremote_password;
     variables.options.autoremote_key = req.body.autoremote_key;
     variables.options.autoremote_message = req.body.autoremote_message;
+    variables.options.theme = req.body.theme;
     variables.debug = req.body.debug;
     
     var option = JSON.stringify(variables.options,null,2);
@@ -137,3 +142,24 @@ function post(req,res) {
 
 exports.get = get;
 exports.post = post;
+
+
+function createdropdown_alphanumeric(options,selecteditem) {
+    // Generate dropdown options with the value and display from 'options[[value,displayname]]'
+    // Displayname is optional as a second paremeter to the array. If not present, value will be displayed.
+    var dropdown = '';
+    options.forEach(function(option) {
+        var selected = '';
+        if (selecteditem.toLowerCase() == option[0].toLowerCase()) {
+            selected = 'selected';
+        }
+        
+        var displayname = option[0];
+        if (typeof(option[1]) != 'undefined') {
+            displayname = option[1];
+        }
+        
+        dropdown += '<option ' + selected + ' value="'+option[0]+'">'+displayname;
+    });
+    return dropdown;
+}

@@ -63,7 +63,7 @@ function dynamicSort (property) {
 }	
 
 function log (message) {
-    var maxlog = 100;
+    var maxlog = 300;
     if (variables.debug == 'true') {
      maxlog = 1000;   
     }

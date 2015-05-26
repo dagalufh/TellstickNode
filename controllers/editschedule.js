@@ -134,7 +134,7 @@ function get(req,res) {
                     '</div>',
                     
                 '</div>',
-                    '<div class="panel-footer"><button onClick="Javascript:createschedule('+selected_schedule.uniqueid+');">Save Edits</button></div>',
+                    '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:createschedule('+selected_schedule.uniqueid+');">Save Edits</button></div>',
                 '</div>'];
     body = body.join("\n");
     

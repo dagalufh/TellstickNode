@@ -10,14 +10,16 @@ function get(req,res) {
     var headline = 'View Log';
     var body = ['<div class="panel panel-default">',
                         '<div class="panel-body">',
-                           '<p class="text-info">{log}</p>',
+                            '<table class="table table-bordered table-condensed">',
+                                '{log}',
+                            '</table>',
                         '</div>',
                     '</div>'];
     
     body = body.join('\n');
     var logs = '';
     variables.log.forEach(function (logentry) {
-        logs += '[' + logentry.time + '] ' + logentry.message + "<br>";     
+        logs += '<tr><td class="td-small text-info">' + logentry.time + '</td><td class="text-info">' + logentry.message + "</td></tr>";     
     });
     
     body = body.replace(/{log}/g,logs);

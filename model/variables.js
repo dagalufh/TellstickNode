@@ -8,12 +8,14 @@ module.exports = {
                autoremote_key: '',
                autoremote_password: '',
                autoremote_message: 'Device {device-name} was set to {device-lastcommand}',
-               showdimoption: false
+               showdimoption: false,
+               theme: 'blue'
               },
     weather : {},
     savetofile : false,
     log : [],
     tdtoolversionlimit : '2.1.2',
     debug : false,
-    pauseschedules : false
+    pauseschedules : false,
+    currentversion: '1.0.5'
 }

@@ -16,7 +16,7 @@ function get(req,res) {
                             '<label for="password">Password</label>',
                             '<input type="password" class="form-control" id="password" placeholder="Password">',
                         '</div>',
-                        '<input type="submit" value="Login">',
+                        '<input class="btn btn-default" type="submit" value="Login">',
                     '</form>',
                '</div>'];
     body = body.join('\n');

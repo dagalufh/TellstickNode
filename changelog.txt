@@ -1,5 +1,11 @@
-Current Version: 1.0.4
-Version : 1.0.3
+Version : 1.0.5
+Made another theme for the application, a blue more friendly theme.
+Made the output of the log page a bit nicer to read.
+Sorted out some other graphical glitches.
+Added display of changelog in the log view.
+Also added versionnumber to title of application.
+
+Version : 1.0.4
 Added function to reset devices on command from browser.
     This is to enable users to reset them after paused schedules.
 Some minor GUI tweaks on the Home screen.

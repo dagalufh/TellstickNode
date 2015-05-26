@@ -92,10 +92,40 @@ async.series([
             console.log(variables.options);
             sharedfunctions.log('Startup - Read options from file.');
 			
-            callback();    
+            var optionsjson = JSON.stringify(variables.options,null,2);
+            fs.writeFile(__dirname + '/userdata/options.js',optionsjson, function(err) {
+                // Write the options to the file. Saving any additions that has been made.
+                if(err) return callback(err);
+                console.log('Saved the default options.');
+                callback();
+            });    
         });
     },
-    
+    function (callback) {
+        // Check if the optionsfile already exists or not. otherwise, create it.
+         fs.exists(__dirname + '/changelog.txt', function (exists) {
+            if(exists) {
+                fs.readFile(__dirname + '/changelog.txt',{'encoding':'utf8'},function(err,data) {
+                    if (data.length>1) {
+                       var rows = data.split('\n');
+                        var changelog = 'Changelog for ';
+                        for (var i=0; i<rows.length; i++) {
+                            if (rows[i].length > 1) {
+                                changelog = changelog + rows[i] + '<br>';
+                            } else {
+                                break;
+                            }
+                        }
+                        sharedfunctions.log(changelog);
+                    }
+                    callback();
+                });
+            } else {
+                callback();
+            }
+         });
+        
+    },
     function (callback) {
         // Fetch weather information
         if (variables.options.city.toString().length > 0) {

@@ -334,7 +334,7 @@ function pause_schedules() {
 
 function reset_schedules() {
    $.get('/resetschedules',function (data) {
-        $('#respons-modal-body').html('All devices are not being returned to their currently scheduled state.');
+        $('#respons-modal-body').html('All devices are now being returned to their currently scheduled state.');
         $('#myModal').modal('show');
     }); 
 }
@@ -352,7 +352,8 @@ function save_options() {
                         autoremote_password:$('#autoremote_password').val(),
                         autoremote_key:$('#autoremote_key').val(),
                         autoremote_message:$('#autoremote_message').val(),
-                        debug:debugselector}, function (data) {
+                        debug:debugselector,
+                        theme:$('#Select_Theme').val()}, function (data) {
         $('#respons-modal-body').html('Options has been saved.');
         $('#myModal').modal('show');
     });   

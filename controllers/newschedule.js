@@ -127,7 +127,7 @@ function get(req,res) {
                                 '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="1">',
                     '</div>',
                 '</div>',
-                    '<div class="panel-footer"><button onClick="Javascript:createschedule();">Create Schedule</button></div>',
+                    '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:createschedule();">Create Schedule</button></div>',
                 '</div>'];
     body = body.join("\n");
     
