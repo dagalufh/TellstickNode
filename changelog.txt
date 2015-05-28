@@ -1,3 +1,7 @@
+Version : 1.0.6
+Added the ability to use sunrise/sundown as a controller even for the interval modifier.
+When clicking on a schedule on "Home" page in the Schedules/Timers list (Not schedules by day), a infobox shows about the schedule.
+
 Version : 1.0.5
 Made another theme for the application, a blue more friendly theme.
 Made the output of the log page a bit nicer to read.

@@ -81,24 +81,26 @@ function get(req,res) {
     body = body.replace(/{autoremote_key}/g,variables.options.autoremote_key);
     body = body.replace(/{autoremote_message}/g,variables.options.autoremote_message);
     body = body.replace(/{selecttheme}/g,createdropdown_alphanumeric([['blue','Blue'],['white','White']],variables.options.theme));
+    var weatherinfo = 'No weather info available.';
     
-    var sunrise = new Date(variables.weather.sys.sunrise*1000); 
-    var sunset = new Date(variables.weather.sys.sunset*1000);
-    var hour = '0' + sunset.getHours();
-    var minutes = '0' + sunset.getMinutes();
-    hour = hour.substr(hour.length-2);
-    minutes = minutes.substr(minutes.length-2);
-    var sunsettime = hour + ":" + minutes;
+    if (typeof(variables.weather.sys) != 'undefined') {
+        var sunrise = new Date(variables.weather.sys.sunrise*1000); 
+        var sunset = new Date(variables.weather.sys.sunset*1000);
+        var hour = '0' + sunset.getHours();
+        var minutes = '0' + sunset.getMinutes();
+        hour = hour.substr(hour.length-2);
+        minutes = minutes.substr(minutes.length-2);
+        var sunsettime = hour + ":" + minutes;
+
+        var hour = '0' + sunrise.getHours();
+        var minutes = '0' + sunrise.getMinutes();
+        hour = hour.substr(hour.length-2);
+        minutes = minutes.substr(minutes.length-2);
+        var sunrisetime = hour + ":" + minutes;
+
+
+        
     
-    var hour = '0' + sunrise.getHours();
-    var minutes = '0' + sunrise.getMinutes();
-    hour = hour.substr(hour.length-2);
-    minutes = minutes.substr(minutes.length-2);
-    var sunrisetime = hour + ":" + minutes;
-    
-    
-    var weatherinfo = '';
-    if (typeof(variables.weather) != 'undefined') {
         var weatherinfo = ['City: ' + variables.weather.name,
                            'Country: ' + variables.weather.sys.country,
                           'Weathercode: ' + variables.weather.weather[0].id,

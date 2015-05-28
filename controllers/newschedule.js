@@ -51,8 +51,8 @@ function get(req,res) {
                                 '<label for="Select_Controller">Controller</label>',
                                 '<select id="Select_Controller" class="form-control">',
                                         '<option value="Time">Specific Time',
-                                        '<option value="Sundown" title="Adjust to sundown time" {sundown}>Sundown',
-                                        '<option value="Sunrise" title="Adjust to the time of sunrise" {sunrise}>Sunrise',
+                                        '<option value="Sundown" title="Adjust to sundown time" {Sundown}>Sundown',
+                                        '<option value="Sunrise" title="Adjust to the time of sunrise" {Sunrise}>Sunrise',
                                         '<option value="Timer">Timer',
                                     '</select>',
                                     '<p class="text-info">{ControllerMessage}</p>',
@@ -112,19 +112,45 @@ function get(req,res) {
                             '{weathertime}',
                         '</select>',
                     '</div>',
-                    '<div class="form-group">',
-                        '<label for="IntervalNotBeforeTime">Do not trigger if schedule trigger time is before:</label>',
-                        '<input type="text" class="form-control" id="IntervalNotBeforeTime" placeholder="(HH:MM)24H" value="">',
-                    '</div>',
-                    '<div class="form-group">',
-                            '<label for="IntervalNotAfterTime">Do not trigger if schedule trigger time is after:</label>',
-                            '<input type="text" class="form-control" id="IntervalNotAfterTime" placeholder="(HH:MM)24H" value="">',
-                    '</div>',
                 '</div>',
                 '<div class="panel-body" id="Timerdiv" style="display: none">',
                     '<div class="form-group">',
                                 '<label for="Duration">Duration (Minutes)</label>',
                                 '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="1">',
+                    '</div>',
+        
+                '</div>',
+                '<div class="panel-heading" id="ModifcationBeforeHeadline">',
+                    'Do not trigger if schedule trigger time is before',
+                '</div>',
+                '<div class="panel-body" id="ModifcationBeforeBody">',
+                    '<div class="form-group">',
+                        '<label for="Select_Controller_ModifierBefore">Controller</label>',
+                        '<select id="Select_Controller_ModifierBefore" class="form-control">',
+                            '{selectmodifiercontroller}',
+                        '</select>',
+                        '<p class="text-info">{ControllerMessage}</p>',
+                    '</div>',
+                    '<div class="form-group">',
+                        '<label for="IntervalNotBeforeTime">Time</label>',
+                        '<input type="text" class="form-control" id="IntervalNotBeforeTime" placeholder="(HH:MM)24H" value="">',
+                    '</div>',
+
+                '</div>',
+                '<div class="panel-heading" id="ModifcationAfterHeadline">',
+                    'Do not trigger if schedule trigger time is after',
+                '</div>',
+                '<div class="panel-body" id="ModifcationAfterBody">',
+                    '<div class="form-group">',
+                        '<label for="Select_Controller_ModifierAfter">Controller</label>',
+                        '<select id="Select_Controller_ModifierAfter" class="form-control">',
+                            '{selectmodifiercontroller}',
+                        '</select>',
+                        '<p class="text-info">{ControllerMessage}</p>',
+                    '</div>',
+                    '<div class="form-group">',
+                        '<label for="IntervalNotAfterTime">Time</label>',
+                        '<input type="text" class="form-control" id="IntervalNotAfterTime" placeholder="(HH:MM)24H" value="">',
                     '</div>',
                 '</div>',
                     '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:createschedule();">Create Schedule</button></div>',
@@ -139,20 +165,20 @@ function get(req,res) {
 
     body = body.replace(/{select_device}/g,device_options);
     
-   
+    body = body.replace(/{selectmodifiercontroller}/g,createdropdown_alphanumeric([['None'],['Time','Specific Time'],['Sundown'],['Sunrise']],''));
         if (typeof(variables.weather.sys) != 'undefined') {
-            body = body.replace(/{sunrise}/g,variables.weather.sys.sunrise);
+            body = body.replace(/{Sunrise}/g,variables.weather.sys.sunrise);
             body = body.replace(/{ControllerMessage}/g,'');
         } else  {
-            body = body.replace(/{sunrise}/g,'disabled');
+            body = body.replace(/{Sunrise}/g,'disabled');
             controllermessage = controllermessage + 'Sunrise controller unavailable due to no weather information found.';
         }
 
         if (typeof(variables.weather.sys) != 'undefined') {
-            body = body.replace(/{sundown}/g,variables.weather.sys.sunset);
+            body = body.replace(/{Sundown}/g,variables.weather.sys.sunset);
             body = body.replace(/{ControllerMessage}/g,'');
         } else  {
-            body = body.replace(/{sundown}/g,'disabled');
+            body = body.replace(/{Sundown}/g,'disabled');
            controllermessage = controllermessage + '<br>Sundown controller unavailable due to no weather information found.';
         }
      body = body.replace(/{ControllerMessage}/g,controllermessage);
@@ -168,6 +194,7 @@ function get(req,res) {
     body = body.replace(/{weathertime}/g,createdropdown(90,10));
     body = body.replace(/{randomizertime}/g,createdropdown(40,5));
     body = body.replace(/{selectenabled}/g,createdropdown_alphanumeric([['true','Yes'],['false','No']],''));
+    
     
     res.send(template(headline,body,true));
 }
@@ -224,7 +251,7 @@ function createdropdown_alphanumeric(options,selecteditem) {
             displayname = option[1];
         }
         
-        dropdown += '<option ' + selected + ' value="'+option[0]+'">'+displayname;
+        dropdown += '<option {'+option[0]+'}' + selected + ' value="'+option[0]+'">'+displayname;
     });
     return dropdown;
 }

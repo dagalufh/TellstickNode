@@ -108,6 +108,8 @@ function createschedule(uniqueid) {
             enabled:$('#Select_Enabled').val(),
             intervalnotbefore:validnotbefore,
             intervalnotafter:validnotafter,
+            intervalnotbeforecontroller:$('#Select_Controller_ModifierBefore').val(),
+            intervalnotaftercontroller:$('#Select_Controller_ModifierAfter').val(),
             sendautoremote:validautoremote}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
@@ -135,6 +137,8 @@ function createschedule(uniqueid) {
             enabled:$('#Select_Enabled').val(),
             intervalnotbefore:validnotbefore,
             intervalnotafter:validnotafter,
+            intervalnotbeforecontroller:$('#Select_Controller_ModifierBefore').val(),
+            intervalnotaftercontroller:$('#Select_Controller_ModifierAfter').val(),
             sendautoremote:validautoremote}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
@@ -185,7 +189,15 @@ socket.on('message', function(data){
         var device = data.message[i].device.split(':');
         
         if(device[0] == 'Time') {
-            $('#Time').val(device[1] + ":" + device[2]);
+            if( ($('#Select_Controller').val() == 'Sundown') || ($('#Select_Controller').val() == 'Sunrise') ) {
+                $('#Time').val(device[1] + ":" + device[2]);
+            }
+            if( ($('#Select_Controller_ModifierBefore').val() == 'Sundown') || ($('#Select_Controller_ModifierBefore').val() == 'Sunrise') ) {
+                $('#IntervalNotBeforeTime').val(device[1] + ":" + device[2]);
+            }
+            if( ($('#Select_Controller_ModifierAfter').val() == 'Sundown') || ($('#Select_Controller_ModifierAfter').val() == 'Sunrise') ) {
+                $('#IntervalNotAfterTime').val(device[1] + ":" + device[2]);
+            }
         } else if(device[0] == 'pausedschedules') {
             $('#schedulestatus').html(device[1]);
             
@@ -243,6 +255,11 @@ $(function(ready){
                 var currentdate = new Date();
                 $('#Time').val(currentdate.getHours() + ":" + currentdate.getMinutes());
                 $('#Modificationsdiv').show();
+                $('#ModifcationBeforeHeadline').show();
+                $('#ModifcationAfterHeadline').show();
+                $('#ModifcationBeforeBody').show();
+                $('#ModifcationAfterBody').show();
+                
                 $('#Timerdiv').hide();
                 $('#Select_Action').prop('disabled', false);
                 $('#Duration').val(1);
@@ -253,6 +270,10 @@ $(function(ready){
                 // Request from server via socket.io
                 socket.emit('request_sun_time', {'controller': 'sunset'});
                 $('#Modificationsdiv').show();
+                $('#ModifcationBeforeHeadline').show();
+                $('#ModifcationAfterHeadline').show();
+                $('#ModifcationBeforeBody').show();
+                $('#ModifcationAfterBody').show();
                 $('#Timerdiv').hide();
                 $('#Select_Action').prop('disabled', false);
                 $('#Duration').val(1);
@@ -263,12 +284,20 @@ $(function(ready){
                 // Request from server via socket.io
                 socket.emit('request_sun_time', {'controller': 'sunrise'});
                 $('#Modificationsdiv').show();
+                $('#ModifcationBeforeHeadline').show();
+                $('#ModifcationAfterHeadline').show();
+                $('#ModifcationBeforeBody').show();
+                $('#ModifcationAfterBody').show();
                 $('#Timerdiv').hide();
                 $('#Select_Action').prop('disabled', false);
                 $('#Duration').val(1);
             }
             if ($(this).val() == 'Timer') {
                 $('#Modificationsdiv').hide();
+                $('#ModifcationBeforeHeadline').hide();
+                $('#ModifcationAfterHeadline').hide();
+                $('#ModifcationBeforeBody').hide();
+                $('#ModifcationAfterBody').hide();
                 $('#Timerdiv').show();
                 $('#Select_Action').val('On');
                 $('#Select_Action').prop('disabled', true);
@@ -278,6 +307,50 @@ $(function(ready){
                 $('#IntervalNotAfterTime').val('');
                 $('#IntervalNotBeforeTime').val('');
                 
+            }
+        });
+        
+        $('#Select_Controller_ModifierBefore').change(function() {  
+            if ($(this).val() == 'None') {
+                $('#IntervalNotBeforeTime').val('');
+            }
+            
+            if ($(this).val() == 'Time') {
+                var currentdate = new Date();
+                var hour = '0'+currentdate.getHours();
+                var minutes = '0' + currentdate.getMinutes();
+                
+                $('#IntervalNotBeforeTime').val(hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2));
+            }
+            
+            if ($(this).val() == 'Sundown') {
+                socket.emit('request_sun_time', {'controller': 'sunset'});
+            }
+            
+            if ($(this).val() == 'Sunrise') {
+                socket.emit('request_sun_time', {'controller': 'sunrise'});
+            }
+        });
+        
+        $('#Select_Controller_ModifierAfter').change(function() {  
+            if ($(this).val() == 'None') {
+                $('#IntervalNotAfterTime').val('');
+            }
+            
+            if ($(this).val() == 'Time') {
+                var currentdate = new Date();
+                var hour = '0'+currentdate.getHours();
+                var minutes = '0' + currentdate.getMinutes();
+                
+                $('#IntervalNotAfterTime').val(hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2));
+            }
+            
+            if ($(this).val() == 'Sundown') {
+                socket.emit('request_sun_time', {'controller': 'sunset'});
+            }
+            
+            if ($(this).val() == 'Sunrise') {
+                socket.emit('request_sun_time', {'controller': 'sunrise'});
             }
         });
         
@@ -381,8 +454,9 @@ function showscheduleinfo(scheduleid) {
             $('#myModal').modal('show');
         },
         error: function (data) {
-            $('#respons-modal-body').html('Error occured: ' + data.statusText);
-            $('#myModal').modal('show');
+            //$('#respons-modal-body').html('Error occured: ' + data.statusText);
+            //$('#myModal').modal('show');
+            console.log('Error when showing schedule infor: ' + data.statusText);
         }
     }); 
 }

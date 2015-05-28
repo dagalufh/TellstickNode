@@ -44,6 +44,50 @@ function getschedulesbyday() {
     return daysoftheweek;
 }
 
+function getschedule(req,res) {
+    var requestedschedule = '';
+    var requesteddevice = '';
+    var dayofweektranslate = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
+    var dayname = '';
+    
+    variables.devices.forEach(function(device) {
+        device.schedule.forEach(function (schedule) {
+            if (schedule.uniqueid == req.query.scheduleid) {
+                requestedschedule = schedule
+                requesteddevice = device;
+            }
+        });
+    });
+    
+    requestedschedule.dayofweek.forEach(function(day) {
+        dayname += dayofweektranslate[day] + ', ';
+    });
+    dayname = dayname.substring(0,(dayname.length-2));
+
+
+    var display = ['Scheduleid: ' + requestedschedule.uniqueid,
+                    'Device: ' + requesteddevice.name,
+                    'Days of the week: ' + dayname,
+                    'Controller: ' + requestedschedule.controller,
+                    'Action: ' + requestedschedule.action,
+                    'Original Time: ' + requestedschedule.originaltime,
+                    'Next trigger time: ' + requestedschedule.time,
+                    'Randomizer function: ' + requestedschedule.randomizerfunction,
+                    'Randomizer minutes:' + requestedschedule.randomiser,
+                    'Weather function (good): ' + requestedschedule.weathergoodfunction,
+                    'Weather minutes (good): ' + requestedschedule.weathergoodtime,
+                    'Weather function (bad): ' + requestedschedule.weatherbadfunction,
+                    'Weather minutes (bad): ' + requestedschedule.weatherbadtime,
+                    'RunOnce: ' + requestedschedule.runonce,
+                    'Duration: ' + requestedschedule.duration,
+                    'Status of Schedule: ' + requestedschedule.enabled,
+                    'Interval, not before (time): ' + requestedschedule.intervalnotbefore,
+                    'Interval, not before (controller): ' + requestedschedule.intervalnotbeforecontroller,
+                    'Interval, not after (time): ' + requestedschedule.intervalnotafter,
+                    'Interval, not after (controller): ' + requestedschedule.intervalnotaftercontroller,
+                    'Send AutoRemote messages on trigger: ' + requestedschedule.sendautoremote];
+    res.send(display.join('<br>'));
+}
 
 function highlightactiveschedule() {
     var currenttimestamp = new Date();
@@ -157,4 +201,5 @@ exports.highlightactiveschedule = highlightactiveschedule;
 exports.removeschedule = removeschedule;
 exports.getschedulesbyday = getschedulesbyday;
 exports.getremove = getremove;
+exports.getschedule = getschedule;
 // Perhaps see if we can limit reading of schedules from file to only be when saving new schedule or removing old one. Not during runtime.

@@ -13,14 +13,7 @@ module.exports = function (app) {
             if (checklogin(req, res)) {
                 require('./controllers/home').get(req,res);
             }
-        })
-    
-    // Display the loginpage
-    app.route('/loginbox')
-        .get(function (req, res) {
-            
-        })
-    
+        })    
     app.route('/login')
         .get(function (req, res) {
             require('./controllers/loginhandler').get(req,res);
@@ -76,7 +69,12 @@ module.exports = function (app) {
                 require('./controllers/editschedule').post(req,res);
             }
         })
-    
+    app.route('/showscheduleinfo')
+        .get(function(req,res) {
+            if (checklogin(req, res)) {
+            require('./controllers/schedulefunctions').getschedule(req,res);
+            }
+        })
     app.route('/options')
         .get(function(req,res) {
             if (checklogin(req, res)) {
@@ -139,9 +137,6 @@ function checklogin(req, res) {
     if ( (currentSession.hash) && (currentSession.username) ) {
         
         if (saltedpasswords(currentSession.username + 'tellstick',8,currentSession.hash)) {
-            //var hour = 3600000;
-            //req.session.cookie.maxAge = 14 * 24 * hour;
-            req.session.cookie.maxAge = (1000*60)*120;
             return true;
         } else {
             fs.exists(__dirname + '/userdata/user.js', function (exists) {

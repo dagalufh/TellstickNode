@@ -27,6 +27,8 @@ function schedule() {
     this.intervalnotbefore = '';
     this.intervalnotafter = '';
     this.sendautoremote = 'false';
+    this.intervalnotbeforecontroller = 'None';
+    this.intervalnotaftercontroller = 'None';
 }
 
 exports.device = device;

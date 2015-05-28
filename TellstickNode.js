@@ -28,7 +28,7 @@ var lasttimestamp_recalculate = new Date();
 app.use(session({
     secret:'thisisasecret',
     cookie: { maxAge: (1000*60)*120 },
-    resave: false,
+    resave: true,
     saveUninitialized: false,
     store: new FileStore()
     }));
@@ -875,6 +875,15 @@ function minutecheck (timestamp_start) {
 			if (typeof(variables.weather.weather) != 'undefined') {
 				var sunrise = new Date(variables.weather.sys.sunrise*1000); 
 				var sunset = new Date(variables.weather.sys.sunset*1000);
+                
+                var hour = '0' + sunset.getHours();
+                var minutes = '0' + sunset.getMinutes();
+                sunset = hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2);
+                
+                var hour = '0' + sunrise.getHours();
+                var minutes = '0' + sunrise.getMinutes();
+                sunrise = hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2);
+                
 			}
 			
 			variables.devices.forEach(function (device) {
@@ -886,34 +895,70 @@ function minutecheck (timestamp_start) {
                     }
 					
 					// First we check if the controller is sun-based and define a new ORIGINAL TIME based on that.
-					
-						if (schedule.controller == 'Sundown') {
-							if (typeof(variables.weather.weather) != 'undefined') {
-								var hour = '0' + sunset.getHours();
-								var minutes = '0' + sunset.getMinutes();
-								hour = hour.substr(hour.length-2);
-								minutes = minutes.substr(minutes.length-2);
-								schedule.originaltime = hour + ":" + minutes;   
-								variables.savetofile = true;
-								console.log('['+schedule.uniqueid+']Set a new original time on schedule based on sunset time: ' + schedule.originaltime);
-							} else {
-								console.log('['+schedule.uniqueid+']Failed to update schedules time based on sun-movement due to no weather information available.');
-							}
-						}
 
-						if (schedule.controller == 'Sunrise') {
-							if (typeof(variables.weather.weather) != 'undefined') {
-								var hour = '0' + sunrise.getHours();
-								var minutes = '0' + sunrise.getMinutes();
-								hour = hour.substr(hour.length-2);
-								minutes = minutes.substr(minutes.length-2);
-								schedule.originaltime = hour + ":" + minutes;  
-								variables.savetofile = true;
-								console.log('['+schedule.uniqueid+']Set a new original time on schedule based on sunrise time: ' + schedule.originaltime);
-							} else {
-								console.log('['+schedule.uniqueid+']Failed to update schedules time based on sun-movement due to no weather information available.');
-							}
-						}
+                    if (schedule.controller == 'Sundown') {
+                        if (typeof(variables.weather.weather) != 'undefined') {
+                            //var hour = '0' + sunset.getHours();
+                            //var minutes = '0' + sunset.getMinutes();
+                            //hour = hour.substr(hour.length-2);
+                            //minutes = minutes.substr(minutes.length-2);
+                            schedule.originaltime = sunset;   
+                            variables.savetofile = true;
+                            console.log('['+schedule.uniqueid+']Set a new original time on schedule based on sunset time: ' + schedule.originaltime);
+                        } else {
+                            console.log('['+schedule.uniqueid+']Failed to update schedules time based on sun-movement due to no weather information available.');
+                        }
+                    }
+
+                    if (schedule.controller == 'Sunrise') {
+                        if (typeof(variables.weather.weather) != 'undefined') {
+                            //var hour = '0' + sunrise.getHours();
+                            //var minutes = '0' + sunrise.getMinutes();
+                            //hour = hour.substr(hour.length-2);
+                            //minutes = minutes.substr(minutes.length-2);
+                            schedule.originaltime = sunrise;  
+                            variables.savetofile = true;
+                            console.log('['+schedule.uniqueid+']Set a new original time on schedule based on sunrise time: ' + schedule.originaltime);
+                        } else {
+                            console.log('['+schedule.uniqueid+']Failed to update schedules time based on sun-movement due to no weather information available.');
+                        }
+                    }
+                    
+                    if (schedule.intervalnotbeforecontroller == 'Sundown') {
+                         if (typeof(variables.weather.weather) != 'undefined') {
+                            //var hour = '0' + sunrise.getHours();
+                            //var minutes = '0' + sunrise.getMinutes();
+                            schedule.intervalnotbefore = sunset;
+                            variables.savetofile = true;
+                        }
+                    }
+                    
+                    if (schedule.intervalnotbeforecontroller == 'Sunrise') {
+                         if (typeof(variables.weather.weather) != 'undefined') {
+                            //var hour = '0' + sunrise.getHours();
+                            //var minutes = '0' + sunrise.getMinutes();
+                            schedule.intervalnotbefore = sunrise;
+                            variables.savetofile = true;
+                        }
+                    }
+                    
+                    if (schedule.intervalnotaftercontroller == 'Sundown') {
+                        if (typeof(variables.weather.weather) != 'undefined') {
+                            //var hour = '0' + sunrise.getHours();
+                            //var minutes = '0' + sunrise.getMinutes();
+                            schedule.intervalnotafter = sunset;
+                            variables.savetofile = true;                            
+                        }
+                    }
+                    
+                    if (schedule.intervalnotaftercontroller == 'Sunrise') {
+                        if (typeof(variables.weather.weather) != 'undefined') {
+                            //var hour = '0' + sunrise.getHours();
+                            //var minutes = '0' + sunrise.getMinutes();
+                            schedule.intervalnotafter = sunrise;
+                            variables.savetofile = true;
+                        }
+                    }
 					
 					var original = new Date();
 					timearray = schedule.originaltime.split(':');
