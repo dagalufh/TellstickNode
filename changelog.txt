@@ -1,3 +1,9 @@
+Version : 1.0.7
+Modified the view of schedule info, now showing correct info in a good way.
+Modified the 'View Log' page. You can now click on the refered scheduleid to see that scheduleinfo.
+The above is valid for example on: "Resetting "Example Device" to On as stated by schedule with id: 1432834253638"
+Added 'Green' theme, available to switch to in Options.
+
 Version : 1.0.6
 Added the ability to use sunrise/sundown as a controller even for the interval modifier.
 When clicking on a schedule on "Home" page in the Schedules/Timers list (Not schedules by day), a infobox shows about the schedule.

@@ -1,0 +1,39 @@
+.devicestatus {width: 180px;}
+.td-middle {width: 180px;}
+.td-small {width: 70px;}
+
+.color-primary-0 { color: #336799 }	/* Main Primary color */
+.color-primary-1 { color: #D3D7DA }
+.color-primary-2 { color: #7A9CBC }
+.color-primary-3 { color: #0A457F }
+.color-primary-4 { color: #022B53 }
+
+.panel-default>.panel-heading {background-color: #7BBC9A; color: #02552B;}
+.navbar {margin-bottom: 0px;}
+.navbar-default {background-color: #339964; color: #D3DAD6; border: 0px solid #7BBC9A;}
+.navbar-default .navbar-nav>li>a {color: #D3DAD6;}
+.navbar-default .navbar-nav>li>a:hover {color: #7BBC9A;}
+.navbar-default .navbar-brand {color: #D3DAD6;}
+.navbar-default .navbar-brand:hover {color: #7BBC9A;}
+.navbar-default .navbar-nav>.active>a {background-color: #7BBC9A; color: #02552B;}
+.navbar-default .navbar-nav>.active>a:hover {background-color: #0A7F45; color: #FFFFFF;}
+.panel-body {background-color: #FFFFFF; padding: 8px;}
+
+.panel-default {background-color: #339964;}
+th {background-color: #7BBC9A; color: #02552B;}
+
+.btn-default:hover {background-color: #0A7F45; color: #FFFFFF;}
+
+.modal-header {background-color: #7BBC9A; color: #02552B;}
+body {background-color: #339964; padding-top:49px;}
+
+
+/*
+Blue - Green
+7A9CBC - 7BBC9A
+022B53 - 02552B
+336799 - 339964
+D3D7DA - D3DAD6
+0A457F - 0A7F45
+
+*/

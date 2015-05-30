@@ -80,7 +80,7 @@ function get(req,res) {
     body = body.replace(/{autoremote_password}/g,variables.options.autoremote_password);
     body = body.replace(/{autoremote_key}/g,variables.options.autoremote_key);
     body = body.replace(/{autoremote_message}/g,variables.options.autoremote_message);
-    body = body.replace(/{selecttheme}/g,createdropdown_alphanumeric([['blue','Blue'],['white','White']],variables.options.theme));
+    body = body.replace(/{selecttheme}/g,createdropdown_alphanumeric([['blue','Blue'],['white','White'], ['green','Green']],variables.options.theme));
     var weatherinfo = 'No weather info available.';
     
     if (typeof(variables.weather.sys) != 'undefined') {

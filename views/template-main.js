@@ -74,6 +74,8 @@ function build (pagetitle, content,loggedin) {
         activesheet = 'style.css';
     } else if(variables.options.theme == 'blue') {
         activesheet = 'style_blue.css';
+    } else if(variables.options.theme == 'green') {
+        activesheet = 'style_green.css';
     }
     body = body.replace(/{activestylesheet}/g,activesheet);
     

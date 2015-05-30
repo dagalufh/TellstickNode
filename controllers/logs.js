@@ -19,7 +19,8 @@ function get(req,res) {
     body = body.join('\n');
     var logs = '';
     variables.log.forEach(function (logentry) {
-        logs += '<tr><td class="td-small text-info">' + logentry.time + '</td><td class="text-info">' + logentry.message + "</td></tr>";     
+        var message = logentry.message.replace(/\s(id:)\s\d*(\s|$)/g,function (id) {return ' id: <a onclick="showscheduleinfo(\''+id.match(/\d+/g)+'\')">'+id.match(/\d+/g)+'</a>';});
+        logs += '<tr><td class="td-small text-info">' + logentry.time + '</td><td class="text-info">' + message + "</td></tr>";     
     });
     
     body = body.replace(/{log}/g,logs);
