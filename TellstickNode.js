@@ -605,7 +605,7 @@ function doubletapcheck() {
 			var debugtimestamp = new Date();
 			console.log(debugtimestamp.getHours() + ":" + debugtimestamp.getMinutes() + ":" + debugtimestamp.getSeconds());
 			// END OF DEBUG
-			devicefunctions.deviceaction(repeatschedule.schedule.deviceid,repeatschedule.schedule.action);
+			devicefunctions.deviceaction(repeatschedule.schedule.deviceid,repeatschedule.action);
 			repeatschedule.count = repeatschedule.count-1;
 		}
 	});
@@ -699,7 +699,7 @@ function minutecheck (timestamp_start) {
                                     schedule.stage = 1;
                                     // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
                                     if (variables.options.doubletapcount > 0) {
-                                        doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                                        doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: schedule.action});
                                     }
                                 } else {
                                     sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] not triggered. Out of allowed intervall.'); 
@@ -749,7 +749,7 @@ function minutecheck (timestamp_start) {
 
                                 // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
                                 if (variables.options.doubletapcount > 0) {
-                                    doubletap.push({schedule : schedule,count : variables.options.doubletapcount});
+                                    doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: 'off'});
                                 }    
                             }
 						}

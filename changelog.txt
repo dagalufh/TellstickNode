@@ -1,3 +1,6 @@
+Version : 1.0.8
+Corrected an issue that caused Timers to turn on again after the off command if doubletap was configured.
+
 Version : 1.0.7
 Modified the view of schedule info, now showing correct info in a good way.
 Modified the 'View Log' page. You can now click on the refered scheduleid to see that scheduleinfo.
