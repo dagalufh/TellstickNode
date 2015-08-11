@@ -1,7 +1,6 @@
 // Include the template view (Do all the presentation(?))
 var variables = require('../model/variables');
 var template = require('../views/template-main').build;
-var fs = require('fs');
 var classes = require('../model/classes');
 var sharedfunctions = require('../model/sharedfunctions');
 
@@ -30,7 +29,7 @@ function get(req,res) {
                 '</div>',
                 '<div class="panel-body">',
                      '<div class="form-group">',
-                        '<select id="Select_Device" class="form-control">',
+                        '<select id="Select_Device" class="form-control" disabled>',
                             '{select_device}',
                         '</select>',
                     '</div>',

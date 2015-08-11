@@ -16,6 +16,7 @@ function build (pagetitle, content,loggedin) {
                         '<script src="jscript/jquery-2.1.1.min.js"></script>',
                         '<script src="jscript/bootstrap.min.js"></script>',
                         '<script src="jscript/functions.js"></script>',
+                '{PageSpecificJS}',
 
                     '</head>',
                     '<body>',
@@ -85,10 +86,12 @@ function build (pagetitle, content,loggedin) {
     var activeoptions = '';
     var activelogs = '';
     var activeremote = '';
-    
+    var activewatcher = '';
+    var PageSpecificJS = '';
     switch(pagetitle){
             case('New Schedule'):
                 activeschedule = 'class="active"';
+                PageSpecificJS = '<script src="jscript/schedule.js"></script>';
                 break;
             case('Home'):
                 activehome = 'class="active"';
@@ -102,6 +105,16 @@ function build (pagetitle, content,loggedin) {
             case('Remote'):
                 activeremote = 'class="active"';
                 break;
+            case('New Watcher'):
+                activewatcher = 'class="active"';
+                PageSpecificJS = '<script src="jscript/watchers.js"></script>';
+                break;
+            case('Edit Watcher'):
+                PageSpecificJS = '<script src="jscript/watchers.js"></script>';
+                break;
+            case('Edit Schedule'):
+                PageSpecificJS = '<script src="jscript/schedule.js"></script>';
+                break;
     }
             
     navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
@@ -111,6 +124,7 @@ function build (pagetitle, content,loggedin) {
         navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
                          '<li ' + activeremote + '><a href="/remote">Remote</a></li>',
                          '<li ' + activeschedule + '><a href="/newschedule">New Schedule</a></li>',
+                         '<li ' + activewatcher + '><a href="/newwatcher">New Watcher</a></li>',
                          '<li ' + activeoptions + '><a href="/options">Options</a></li>',
                          '<li ' + activelogs + '><a href="/logs">View Log</a></li>',
                          '<li><a href="/logout">Logout</a></li>'];
@@ -121,6 +135,7 @@ function build (pagetitle, content,loggedin) {
     
     
     body = body.replace(/{navbar}/g,navigationbar);
+    body = body.replace(/{PageSpecificJS}/g,PageSpecificJS);
     
     // Return the finished html body.
     return body;

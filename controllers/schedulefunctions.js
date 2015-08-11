@@ -139,6 +139,7 @@ function highlightactiveschedule() {
         var daysoftheweek = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
         // Store each schedule in the right day of the week
         device.schedule.forEach(function (schedule) {
+            //console.log(schedule);
             schedule.dayofweek.forEach( function (day) {
                 //console.log('Found a schedule');
                 //console.log('Pushing it to daysoftheweek['+day+'] with id:' + schedule.uniqueid);

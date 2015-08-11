@@ -124,8 +124,44 @@ function autoremote (devicename, action) {
 					});
 }
 
+function createdropdown(max, intervall, selecteditem) {
+    var dropdown = '<option value="0">0';
+    for (var i = 1; i<=Math.floor(max/intervall); i++) {
+        var selected = '';
+        if (selecteditem == (i*intervall)) {
+            selected = 'selected';
+        }
+        dropdown += '<option ' + selected + ' value="'+(i*intervall)+'">'+(i*intervall);
+
+    }
+    return dropdown;
+}
+
+function createdropdown_alphanumeric(options,selecteditem) {
+    // Generate dropdown options with the value and display from 'options[[value,displayname]]'
+    // Displayname is optional as a second paremeter to the array. If not present, value will be displayed.
+    var dropdown = '';
+    options.forEach(function(option) {
+        var selected = '';
+        if (selecteditem.toLowerCase() == option[0].toLowerCase()) {
+            selected = 'selected';
+        }
+        
+        var displayname = option[0];
+        if (typeof(option[1]) != 'undefined') {
+            displayname = option[1];
+        }
+        
+        dropdown += '<option {'+option[0]+'} ' + selected + ' value="'+option[0]+'">'+displayname;
+    });
+    return dropdown;
+}
+
+
 exports.autoremote = autoremote;
 exports.DateAdd = DateAdd;
 exports.dynamicSortMultiple = dynamicSortMultiple;
 exports.dynamicSort = dynamicSort;
 exports.log = log;
+exports.createdropdown = createdropdown;
+exports.createdropdown_alphanumeric = createdropdown_alphanumeric;

@@ -19,7 +19,7 @@ var compareversion = require('compare-version');
 
 var sharedfunctions = require('./model/sharedfunctions');
 
-var doubletap = [];
+
 var lasttimestamp_recalculate = new Date();
 
 
@@ -425,6 +425,51 @@ async.series([
         callback();
         */
         devicefunctions.resetdevices(callback);
+    },
+    function (callback) {
+        // Fetch the watchers and apply them to the correct device  
+        var watchersarray = [];
+        // get the list of schedules from the file
+        var sourcefolder = __dirname.replace("\\","/");
+    
+        // Perhaps limit this to start of application. Then work with schedules stored in memory. Only work with files when removing or adding new schedules.
+        fs.exists(__dirname + '/userdata/watchers.db.js', function (exists) {
+            if(exists) {
+                fs.readFile(sourcefolder + '/userdata/watchers.db.js',{'encoding':'utf8'},function(err,data) {
+                //console.log(err);
+                    //console.log('Reading the scheduledatabase');
+                    if (data.length>1) {
+                       var rows = data.split('\n');
+                        for (var i=0; i<rows.length; i++) {
+                            if (rows[i].length > 1) {
+                                watchersarray.push(JSON.parse(rows[i]));
+                            }
+                        }
+
+                        variables.devices.forEach(function(device) {
+                            //console.log('DeviceID : ' + device.id);
+                            device.watchers.length = 0;
+                            watchersarray.forEach (function (currentwatcher) {
+                                if (device.id == currentwatcher.deviceid) {
+                                    var newwatcher = new classes.watcher();
+
+                                    for (var key in currentwatcher) {
+                                      newwatcher[key] = currentwatcher[key];  
+                                    }
+                                    
+                                    device.watchers.push(newwatcher);
+                                }
+                            });
+                        });
+                    }
+                    //console.log(variables.devices);
+                    callback();
+                });
+                
+            } else {
+                callback();
+            }
+        });
     }
     
 ],function (err) {
@@ -461,111 +506,91 @@ async.series([
 function timer_getdevicestatus() {
 	var timestamp_start = new Date();
 		
-	if (os.platform() === 'win32') {
-        //console.log('Server is a Windows machine. Run tdtool.exe to fetch a list of devices.');
-        var sourcefolder = __dirname.replace(/\\/g,"/");
-        var path =  sourcefolder + '/requirements/tdtool.exe';
-		//console.log(path);
-    } else if (os.platform() == 'linux') {
-        //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
-        var path = 'tdtool';
-    } 
-    exec('"'+path+'" --version', null, function (error,stdout,stderr) {
-        var lines = stdout.toString().split('\n');
-        var version = lines[0].substr(lines[0].indexOf(' ')+1);
+    //if (variables.doubletap.length > 0) {
+    //    console.log('There is something in doubletap. Waiting to update device info untill all commands are sent.');  
+    //    setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
+    //} else {
 
-        if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
-            exec('"'+path+'" --list-devices', null, function (error,stdout,stderr) {
-                //console.log(error);
-                var lines = stdout.toString().split('\n');
-                lines.forEach(function(line) {
-                    if (line.length > 0) {
-                        var currentdevice = new classes.device();
-                        //console.log('Line: ' + line);
-                        var columns = line.split('\t');
-                        columns.forEach(function(column) {
-                            //console.log('Column:' + column);
-                            var data = column.split('=');
-                            //console.log('data: ' + data[0]);
-                            if (data[0] == "id") {
-                                currentdevice.id = data[1].trim();   
-                            }
-                            if (data[0] == "type") {
-                                currentdevice.type = data[1].trim();   
-                            }
-                            if (data[0] == "name") {
-                                currentdevice.name = data[1].trim();   
-                            }
-                            if (data[0] == "lastsentcommand") {
-                                currentdevice.lastcommand = data[1].trim();   
-                            }
-                            currentdevice.schedule = [];
-                            currentdevice.activescheduleid = '';
-                            currentdevice.currentstatus = '';
-                            currentdevice.activeday = '';
+        if (os.platform() === 'win32') {
+            //console.log('Server is a Windows machine. Run tdtool.exe to fetch a list of devices.');
+            var sourcefolder = __dirname.replace(/\\/g,"/");
+            var path =  sourcefolder + '/requirements/tdtool.exe';
+            //console.log(path);
+        } else if (os.platform() == 'linux') {
+            //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
+            var path = 'tdtool';
+        } 
+        exec('"'+path+'" --version', null, function (error,stdout,stderr) {
+            var lines = stdout.toString().split('\n');
+            var version = lines[0].substr(lines[0].indexOf(' ')+1);
 
-                        });
-                        var alreadyinlist = false;
-                        variables.devices.forEach(function(device) {
-                            if (device.id == currentdevice.id) {
-                                device.lastcommand = currentdevice.lastcommand;
-                                device.name = currentdevice.name;
-                                alreadyinlist = true;
-                            }
-                        });
-                        if (!alreadyinlist) {
-                            variables.devices.push(currentdevice);
-                        }
+            if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
+                exec('"'+path+'" --list-devices', null, function (error,stdout,stderr) {
+                    //console.log(error);
+                    var lines = stdout.toString().split('\n');
+                    lines.forEach(function(line) {
+                        if (line.length > 0) {
+                            var currentdevice = new classes.device();
+                            //console.log('Line: ' + line);
+                            var columns = line.split('\t');
+                            columns.forEach(function(column) {
+                                //console.log('Column:' + column);
+                                var data = column.split('=');
+                                //console.log('data: ' + data[0]);
+                                if (data[0] == "id") {
+                                    currentdevice.id = data[1].trim();   
+                                }
+                                if (data[0] == "type") {
+                                    currentdevice.type = data[1].trim();   
+                                }
+                                if (data[0] == "name") {
+                                    currentdevice.name = data[1].trim();   
+                                }
+                                if (data[0] == "lastsentcommand") {
+                                    currentdevice.lastcommand = data[1].trim();   
+                                }
+                                currentdevice.schedule = [];
+                                currentdevice.activescheduleid = '';
+                                currentdevice.currentstatus = '';
+                                currentdevice.activeday = '';
 
-                    }
-                });
-                variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
-                schedulefunctions.highlightactiveschedule();
-                var devicejson = [];
-                for (var i=0; i<variables.devices.length; i++) {
-                    var deviceid = variables.devices[i].id;
-                    var devicecommand = variables.devices[i].lastcommand;
-                    //console.log({ device : deviceid+':'+devicecommand});
-                    devicejson.push({ device :  deviceid+':'+devicecommand});
-                }
-                sendtoclient(devicejson);     
-                setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
-            });
-        } else {
-            // This is run if the tdtool is older than version 2.1.2
-            exec('"'+path+'" -l', null, function (error,stdout,stderr) {
-                var lines = stdout.toString().split('\n');
-                var sensorsfound = false;
-                lines.forEach(function(line) {
-                    if (line.indexOf('sensor') > 0) {
-                        sensorsfound = true;
-                    }
-                    if ( (line.length > 0) && (sensorsfound === false) ) {
-                        var currentdevice = new classes.device();
-                        //console.log('Line: ' + line);
-                        var columns = line.split('\t');
-
-                        //columns[0] = columns[0].toString().replace(/(\r\n|\n|\r)/gm,"none");
-                        columns[0] = columns[0].trim();
-                        //console.log(columns);
-
-                        if ( (!isNaN(columns[0])) && (columns[0].length > 0)) {
-
-                            //console.log(columns[0].length + " : " + columns[0]);
-
-                            currentdevice.id = columns[0].trim();   
-                            currentdevice.type = 'device';  
-                            currentdevice.name = columns[1].trim();
-                            currentdevice.lastcommand = columns[2].trim();
-
-                            currentdevice.schedule = [];
-                            currentdevice.activescheduleid = '';
-                            currentdevice.currentstatus = '';
-                            currentdevice.activeday = '';
-                            
+                            });
                             var alreadyinlist = false;
                             variables.devices.forEach(function(device) {
                                 if (device.id == currentdevice.id) {
+                                    if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
+                                        console.log('There is a watcher connected to this device.');
+                                        device.watchers.forEach(function(watcher) {
+                                            //console.log('triggerstatus: ' + watcher.triggerstatus.toLowerCase());
+                                            //console.log('current device last command: ' + currentdevice.lastcommand.toLowerCase());
+                                            //console.log('watcher enabled: ' + watcher.enabled);
+                                           if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
+                                               // Create a schedule, runonce.
+                                               var currenttime = new Date();
+
+                                               // Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
+                                               sharedfunctions.DateAdd('n',currenttime,Number(watcher.delay));
+
+                                               var currenthour = '0' + currenttime.getHours();
+                                               var currentminutes = '0' + currenttime.getMinutes();
+                                               var triggertime = currenthour.substr(currenthour.length-2) + ":" + currentminutes.substr(currentminutes.length-2);
+
+                                               var watcherschedule = new classes.schedule();
+                                               watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
+                                               watcherschedule.deviceid = device.id;
+                                               watcherschedule.time = triggertime;
+                                               watcherschedule.enabled = watcher.enabled;
+                                               watcherschedule.action = watcher.setstatus;
+                                               watcherschedule.dayofweek = [currenttime.getUTCDay()];
+                                               watcherschedule.controller = 'Time';
+                                               watcherschedule.runonce = 'true';
+                                               watcherschedule.sendautoremote = watcheer.autoremoteonschedule;
+                                               device.schedule.push(watcherschedule);
+                                               variables.savetofile = true;
+                                           }
+                                        });
+                                    }
+                                    
                                     device.lastcommand = currentdevice.lastcommand;
                                     device.name = currentdevice.name;
                                     alreadyinlist = true;
@@ -574,44 +599,137 @@ function timer_getdevicestatus() {
                             if (!alreadyinlist) {
                                 variables.devices.push(currentdevice);
                             }
-                            
-                        }                   
 
+                        }
+                    });
+                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
+                    schedulefunctions.highlightactiveschedule();
+                    var devicejson = [];
+                    for (var i=0; i<variables.devices.length; i++) {
+                        var deviceid = variables.devices[i].id;
+                        var devicecommand = variables.devices[i].lastcommand;
+                        //console.log({ device : deviceid+':'+devicecommand});
+                        devicejson.push({ device :  deviceid+':'+devicecommand});
                     }
+                    sendtoclient(devicejson);     
+                    setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
                 });
-                variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
-                schedulefunctions.highlightactiveschedule();
-                var devicejson = [];
-                for (var i=0; i<variables.devices.length; i++) {
-                    var deviceid = variables.devices[i].id;
-                    var devicecommand = variables.devices[i].lastcommand;
-                    //console.log({ device : deviceid+':'+devicecommand});
-                    devicejson.push({ device :  deviceid+':'+devicecommand});
-                }
-                sendtoclient(devicejson);     
-                setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
-            });
-        }
-    });
-	
+            } else {
+                // This is run if the tdtool is older than version 2.1.2
+                exec('"'+path+'" -l', null, function (error,stdout,stderr) {
+                    var lines = stdout.toString().split('\n');
+                    var sensorsfound = false;
+                    lines.forEach(function(line) {
+                        if (line.indexOf('sensor') > 0) {
+                            sensorsfound = true;
+                        }
+                        if ( (line.length > 0) && (sensorsfound === false) ) {
+                            var currentdevice = new classes.device();
+                            //console.log('Line: ' + line);
+                            var columns = line.split('\t');
+
+                            //columns[0] = columns[0].toString().replace(/(\r\n|\n|\r)/gm,"none");
+                            columns[0] = columns[0].trim();
+                            //console.log(columns);
+
+                            if ( (!isNaN(columns[0])) && (columns[0].length > 0)) {
+
+                                //console.log(columns[0].length + " : " + columns[0]);
+
+                                currentdevice.id = columns[0].trim();   
+                                currentdevice.type = 'device';  
+                                currentdevice.name = columns[1].trim();
+                                currentdevice.lastcommand = columns[2].trim();
+
+                                currentdevice.schedule = [];
+                                currentdevice.activescheduleid = '';
+                                currentdevice.currentstatus = '';
+                                currentdevice.activeday = '';
+
+                                var alreadyinlist = false;
+                                variables.devices.forEach(function(device) {
+                                    if (device.id == currentdevice.id) {
+                                        
+                                        // INSERT WATCHER HERE...
+                                        if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
+                                        console.log('There is a watcher connected to this device.');
+                                        device.watchers.forEach(function(watcher) {
+                                            //console.log('triggerstatus: ' + watcher.triggerstatus.toLowerCase());
+                                            //console.log('current device last command: ' + currentdevice.lastcommand.toLowerCase());
+                                            //console.log('watcher enabled: ' + watcher.enabled);
+                                           if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
+                                               // Create a schedule, runonce.
+                                               var currenttime = new Date();
+
+                                               // Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
+                                               sharedfunctions.DateAdd('n',currenttime,Number(watcher.delay));
+
+                                               var currenthour = '0' + currenttime.getHours();
+                                               var currentminutes = '0' + currenttime.getMinutes();
+                                               var triggertime = currenthour.substr(currenthour.length-2) + ":" + currentminutes.substr(currentminutes.length-2);
+
+                                               var watcherschedule = new classes.schedule();
+                                               watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
+                                               watcherschedule.deviceid = device.id;
+                                               watcherschedule.time = triggertime;
+                                               watcherschedule.enabled = watcher.enabled;
+                                               watcherschedule.action = watcher.setstatus;
+                                               watcherschedule.dayofweek = [currenttime.getUTCDay()];
+                                               watcherschedule.controller = 'Time';
+                                               watcherschedule.runonce = 'true';
+                                               watcherschedule.sendautoremote = watcheer.autoremoteonschedule;
+                                               device.schedule.push(watcherschedule);
+                                               variables.savetofile = true;
+                                           }
+                                        });
+                                    }
+                                        
+                                        device.lastcommand = currentdevice.lastcommand;
+                                        device.name = currentdevice.name;
+                                        alreadyinlist = true;
+                                    }
+                                });
+                                if (!alreadyinlist) {
+                                    variables.devices.push(currentdevice);
+                                }
+
+                            }                   
+
+                        }
+                    });
+                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
+                    schedulefunctions.highlightactiveschedule();
+                    var devicejson = [];
+                    for (var i=0; i<variables.devices.length; i++) {
+                        var deviceid = variables.devices[i].id;
+                        var devicecommand = variables.devices[i].lastcommand;
+                        //console.log({ device : deviceid+':'+devicecommand});
+                        devicejson.push({ device :  deviceid+':'+devicecommand});
+                    }
+                    sendtoclient(devicejson);     
+                    setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
+                });
+            }
+        });
+    //}
 }
 
  // Doubletap interval check
 function doubletapcheck() {
 	var timestamp_start = new Date();
-	doubletap.forEach(function(repeatschedule) {
+	variables.doubletap.forEach(function(repeatschedule) {
 		if(repeatschedule.count > 0) {
 			// DEBUG
 			var debugtimestamp = new Date();
-			console.log(debugtimestamp.getHours() + ":" + debugtimestamp.getMinutes() + ":" + debugtimestamp.getSeconds());
+			//console.log(debugtimestamp.getHours() + ":" + debugtimestamp.getMinutes() + ":" + debugtimestamp.getSeconds());
 			// END OF DEBUG
 			devicefunctions.deviceaction(repeatschedule.schedule.deviceid,repeatschedule.action);
 			repeatschedule.count = repeatschedule.count-1;
 		}
 	});
-	 for (var i=0; i<doubletap.length; i++) {
-		if (doubletap[i].count < 1) {
-			doubletap.splice(i,1);
+	 for (var i=0; i<variables.doubletap.length; i++) {
+		if (variables.doubletap[i].count < 1) {
+			variables.doubletap.splice(i,1);
 			i = 0;
 		}
 	}
@@ -699,7 +817,7 @@ function minutecheck (timestamp_start) {
                                     schedule.stage = 1;
                                     // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
                                     if (variables.options.doubletapcount > 0) {
-                                        doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: schedule.action});
+                                        variables.doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: schedule.action});
                                     }
                                 } else {
                                     sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] not triggered. Out of allowed intervall.'); 
@@ -789,6 +907,17 @@ function minutecheck (timestamp_start) {
 				});
 			});
 		});
+        
+        fs.unlink(sourcefolder + '/userdata/watchers.db.js', function() {  
+			variables.devices.forEach(function (device) {
+				device.watchers.forEach( function(watcher) {
+					fs.appendFile(sourcefolder + '/userdata/watchers.db.js',JSON.stringify(watcher)+'\n', function() {
+						console.log('Saved Watcher to file with id: ' + watcher.uniqueid);
+					});    
+				});
+			});
+		});
+        
 		variables.savetofile = false;
 	} 
 	

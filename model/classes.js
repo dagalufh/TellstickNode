@@ -3,6 +3,7 @@ function device() {
     this.name = '';
     this.type = '';
     this.lastcommand = '';
+    this.watchers = [];
 }
 
 function schedule() {
@@ -18,7 +19,7 @@ function schedule() {
     this.weatherbadfunction = '+';
     this.weatherbadtime = 0;
     this.runonce = 'false';
-    this.duration = '';
+    this.duration = 0;
     this.uniqueid = '';
     this.originaltime = '';
     this.stage = 0;
@@ -31,5 +32,25 @@ function schedule() {
     this.intervalnotaftercontroller = 'None';
 }
 
+function devicegroup() {
+    this.deviceids = [];
+    this.name = '';
+    this.schedule = [];
+    this.activescheduleid = '';
+    this.currentstatus = '';
+    this.delaybetweendevices = 0;
+}
+
+function watcher() {
+    this.deviceid = '';
+    this.triggerstatus = '';
+    this.delay = 0;
+    this.setstatus = '';
+    this.enabled = 'true';
+    this.autoremoteonschedule = 'false';
+}
+
 exports.device = device;
 exports.schedule = schedule;
+exports.devicegroup = devicegroup;
+exports.watcher = watcher;

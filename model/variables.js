@@ -17,5 +17,6 @@ module.exports = {
     tdtoolversionlimit : '2.1.2',
     debug : false,
     pauseschedules : false,
-    currentversion: '1.0.8'
+    currentversion: '1.0.9',
+    doubletap: []
 }

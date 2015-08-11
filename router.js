@@ -38,12 +38,23 @@ module.exports = function (app) {
     app.route('/newschedule')
         .get(function(req,res) {
             if (checklogin(req, res)) {
-            require('./controllers/newschedule').get(req,res);
+                require('./controllers/newschedule').get(req,res);
             }
         })
         .post(function(req,res) {
             if (checklogin(req,res)) {
                 require('./controllers/newschedule').post(req,res);
+            }
+        })
+    app.route('/newwatcher')
+        .get(function(req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/newwatcher').get(req,res);
+            }
+        })
+        .post(function(req,res) {
+            if (checklogin(req,res)) {
+                require('./controllers/newwatcher').post(req,res);
             }
         })
     app.route('/pauseschedules')
@@ -67,6 +78,17 @@ module.exports = function (app) {
         .post(function(req,res) {
             if (checklogin(req,res)) {
                 require('./controllers/editschedule').post(req,res);
+            }
+        })
+    app.route('/editwatcher')
+        .get(function(req,res) {
+            if (checklogin(req, res)) {
+            require('./controllers/editwatchers').get(req,res);
+            }
+        })
+        .post(function(req,res) {
+            if (checklogin(req,res)) {
+                require('./controllers/editwatchers').post(req,res);
             }
         })
     app.route('/showscheduleinfo')
@@ -110,6 +132,12 @@ module.exports = function (app) {
                 require('./controllers/schedulefunctions').getremove(req,res);
             }
         }) 
+    app.route('/removewatcher')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/editwatchers').removewatcher(req,res);
+            }
+        }) 
     app.route('/remote')
         .get(function (req,res) {
             var remoteIP = req.connection.remoteAddress;
@@ -121,6 +149,11 @@ module.exports = function (app) {
             } else {
                 require('./controllers/forbidden').get(req,res);  
             }
+        })
+    app.route('/restart')
+        .get(function(req,res) {
+            res.redirect(302,'/');
+            process.exit();
         })
 }
 

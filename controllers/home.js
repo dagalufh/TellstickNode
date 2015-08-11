@@ -78,6 +78,18 @@ function get(request, response) {
                     '{scheduled-devices-by-day}',
                     '</table>',
                     '</div>',
+                '</div>',
+                '<div class="panel panel-default">',
+                    '<div class="panel-heading">',
+                        '<h5 class="panel-title">Watchers</h5>',
+                    '</div>',
+                    '<div class="panel-body">',
+                    '<div class="table-responsive">',
+                    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+                    '{Watchers}',
+                    '</table>',
+                    '</div>',
+                    '</div>',
                 '</div>'
                 ];
     
@@ -92,14 +104,16 @@ function get(request, response) {
     function display_devices () {
         var device_options = '';
         var available_devices = '';
-        var schedules = '<tr><th>Name</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>';
-        var timers = '<tr><th>Name</th><th>Duration</th><th>Day of Week</th><th>Time</th><th></th></tr>';
+        var schedules = '<tr><th>Device</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>';
+        var timers = '<tr><th>Device</th><th>Duration</th><th>Day of Week</th><th>Time</th><th></th></tr>';
+        var watchers = '<tr><th>Device</th><th>Trigger State</th><th>Wait (Minutes)</th><th>Set State</th><th></th></tr>';
         var dayofweektranslate = {0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
         var devicetoview = '';
         var selected_deviceid = 0;
         var selected_scheduletype = '';
         var schedulesfound = false;
         var timersfound = false;
+        var watchersfound = false;
         
         
         if(typeof(request.query.deviceid) != 'undefined') {
@@ -170,6 +184,17 @@ function get(request, response) {
                     }
                 });
             };
+            
+            if (device.watchers.length > 0) {
+                device.watchers.forEach (function(watcher) {
+                    if ( (device.id == selected_deviceid) || (selected_deviceid == 0) ) {
+                            if ( (selected_scheduletype == '') || (selected_scheduletype == singleschedule.enabled) ) {
+                                watchersfound = true;
+                                watchers += '<tr onclick="showwatcherinfo(\''+watcher.uniqueid+'\')"><td>' + device.name + '</td><td>'+  watcher.triggerstatus +  '</td><td>'  + watcher.delay + '</td><td>' + watcher.setstatus + '</td><td><a class="btn btn-default" href="/editwatcher?uniqueid='+watcher.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removewatcher(\''+watcher.uniqueid+'\')">Remove</button></tr>';
+                            }
+                    }
+                });
+            }
         });
         // Testing new shcedulethingy
         var sortedbyday = schedulefunctions.getschedulesbyday();
@@ -216,6 +241,10 @@ function get(request, response) {
         if(timersfound == false) {
             timers = '<tr><td><p class="text-info">No timers found.</p></td></tr>';
         }
+        
+        if (watchersfound == false) {
+            watchers = '<tr><td><p class="text-info">No watchers found.</p></td></tr>';  
+        }
         if(schedulesbydayfound == false) {
             schedulesbyday = '<tr><td><p class="text-info">No schedules found.</p></td></tr>';
         }
@@ -227,6 +256,7 @@ function get(request, response) {
         body = body.replace(/{select_device}/g,device_options);
         body = body.replace(/{available-devices}/g,available_devices);
         body = body.replace(/{Timers}/g,timers);
+        body = body.replace(/{Watchers}/g,watchers);
         body = body.replace(/{devicetoview}/g,devicetoview);
         body = body.replace(/{schedulestoview}/g,createdropdown_alphanumeric([['','Any'],['true','Enabled'],['false','Disabled']],selected_scheduletype));
         var schedulestatus = 'Running normal';

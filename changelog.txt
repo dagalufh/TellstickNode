@@ -1,3 +1,9 @@
+Version : 1.0.9
+Fully implemented Watchers.
+- This means you can set a watch on a device, so that when it changes state, it automatically changes back after x minutes.
+- There is also the option to have the automatic revert of the status to also trigger a AutoRemote message.
+Changed so that even direct-commands for turning a device on/off is done using doubletap function.
+
 Version : 1.0.8
 Corrected an issue that caused Timers to turn on again after the off command if doubletap was configured.
 
