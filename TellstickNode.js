@@ -584,7 +584,7 @@ function timer_getdevicestatus() {
                                                watcherschedule.dayofweek = [currenttime.getUTCDay()];
                                                watcherschedule.controller = 'Time';
                                                watcherschedule.runonce = 'true';
-                                               watcherschedule.sendautoremote = watcheer.autoremoteonschedule;
+                                               watcherschedule.sendautoremote = watcher.autoremoteonschedule;
                                                device.schedule.push(watcherschedule);
                                                variables.savetofile = true;
                                            }
@@ -677,7 +677,7 @@ function timer_getdevicestatus() {
                                                watcherschedule.dayofweek = [currenttime.getUTCDay()];
                                                watcherschedule.controller = 'Time';
                                                watcherschedule.runonce = 'true';
-                                               watcherschedule.sendautoremote = watcheer.autoremoteonschedule;
+                                               watcherschedule.sendautoremote = watcher.autoremoteonschedule;
                                                device.schedule.push(watcherschedule);
                                                variables.savetofile = true;
                                            }

@@ -136,6 +136,7 @@ function getdevicestatus () {
                                            watcherschedule.dayofweek = [currenttime.getUTCDay()];
                                            watcherschedule.controller = 'Time';
                                            watcherschedule.runonce = 'true';
+                                           watcherschedule.sendautoremote = watcher.autoremoteonschedule;
                                            device.schedule.push(watcherschedule);
                                            variables.savetofile = true;
                                        }
@@ -199,6 +200,38 @@ function getdevicestatus () {
                             var alreadyinlist = false;
                             variables.devices.forEach(function(device) {
                                 if (device.id == currentdevice.id) {
+                                    if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
+                                        console.log('There is a watcher connected to this device.');
+                                        device.watchers.forEach(function(watcher) {
+                                            //console.log('triggerstatus: ' + watcher.triggerstatus.toLowerCase());
+                                            //console.log('current device last command: ' + currentdevice.lastcommand.toLowerCase());
+                                            //console.log('watcher enabled: ' + watcher.enabled);
+                                           if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
+                                               // Create a schedule, runonce.
+                                               var currenttime = new Date();
+
+                                               // Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
+                                               sharedfunctions.DateAdd('n',currenttime,Number(watcher.delay));
+
+                                               var currenthour = '0' + currenttime.getHours();
+                                               var currentminutes = '0' + currenttime.getMinutes();
+                                               var triggertime = currenthour.substr(currenthour.length-2) + ":" + currentminutes.substr(currentminutes.length-2);
+
+                                               var watcherschedule = new classes.schedule();
+                                               watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
+                                               watcherschedule.deviceid = device.id;
+                                               watcherschedule.time = triggertime;
+                                               watcherschedule.enabled = watcher.enabled;
+                                               watcherschedule.action = watcher.setstatus;
+                                               watcherschedule.dayofweek = [currenttime.getUTCDay()];
+                                               watcherschedule.controller = 'Time';
+                                               watcherschedule.runonce = 'true';
+                                               watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+                                               device.schedule.push(watcherschedule);
+                                               variables.savetofile = true;
+                                           }
+                                        });
+                                    }
                                     device.lastcommand = currentdevice.lastcommand;
                                     device.name = currentdevice.name;
                                     alreadyinlist = true;

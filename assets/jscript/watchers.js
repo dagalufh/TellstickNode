@@ -63,6 +63,7 @@ function createwatcher(uniqueid) {
     }
 }
 
+
 // Make sure that the user can't select the same state as both trigger and set.
 $(function(ready){
     $('#Select_Action').change(function() {
