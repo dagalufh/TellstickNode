@@ -1,6 +1,7 @@
 userdata/user.js
 userdata/options.js
 userdata/schedules.db.js
+userdata/watchers.db.js
 node_modules/
 sessions/
 daemon/

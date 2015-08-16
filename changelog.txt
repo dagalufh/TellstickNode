@@ -1,3 +1,7 @@
+Version : 1.0.10
+Switched from using session-file-store to Connect-Session-Knex, a sqlite3 session storage.
+This should resolve the error that could occur when restarting.
+
 Version : 1.0.9
 Fully implemented Watchers.
 - This means you can set a watch on a device, so that when it changes state, it automatically changes back after x minutes.

@@ -8,7 +8,10 @@ var exec = require('child_process').exec;
 var classes = require('./model/classes');
 var express = require('express');
 var session = require('express-session');
-var FileStore = require('session-file-store')(session);
+
+var KnexSessionStore = require('connect-session-knex')(session);
+var dbstore = new KnexSessionStore();
+
 var io = require('socket.io')(app);
 var devicefunctions = require('./controllers/device');
 var schedulefunctions = require('./controllers/schedulefunctions');
@@ -18,7 +21,6 @@ var http = require('http');
 var compareversion = require('compare-version');
 
 var sharedfunctions = require('./model/sharedfunctions');
-
 
 var lasttimestamp_recalculate = new Date();
 
@@ -30,7 +32,7 @@ app.use(session({
     cookie: { maxAge: (1000*60)*120 },
     resave: true,
     saveUninitialized: false,
-    store: new FileStore()
+    store: dbstore
     }));
 
 // Require a parser for handling POST requests and use it.
