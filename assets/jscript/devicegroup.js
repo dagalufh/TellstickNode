@@ -32,7 +32,7 @@ function newdevicegroup(deviceid) {
         return false;
     }
     
-    if (typeof(deviceid) == 'undefined') {
+    if (deviceid.length == 0) {
         $.post('/new_devicegroup',{
             devices:devicearray,
             name:$('#devicegroupname').val()
