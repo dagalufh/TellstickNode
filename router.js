@@ -116,11 +116,6 @@ module.exports = function (app) {
         })
     
     app.route('/createuser')
-        //.get(function (req,res) {
-            //if (checklogin(req, res)) {
-        //        require('./controllers/createuser').get(req,res);
-            //}
-        //})
         .post(function (req,res) {
             //if (checklogin(req, res)) {
                 require('./controllers/createuser').post(req,res); 
@@ -152,9 +147,57 @@ module.exports = function (app) {
         })
     app.route('/restart')
         .get(function(req,res) {
-            res.redirect(302,'/');
-            process.exit();
+            require('./controllers/restart').get(req,res);
+            
         })
+    app.route('/view_schedules')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/view_schedules').get(req,res);
+            }
+        }) 
+    app.route('/view_watchers')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/view_watchers').get(req,res);
+            }
+        }) 
+    
+    app.route('/view_devicegroups')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/view_devicegroups').get(req,res);
+            }
+        })
+    app.route('/new_devicegroup')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/new_devicegroup').get(req,res);
+            }
+        })
+        .post(function(req,res) {
+            if (checklogin(req,res)) {
+                require('./controllers/new_devicegroup').post(req,res);
+            }
+        })
+    app.route('/remove_devicegroup')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/new_devicegroup').removedevicegroup(req,res);
+            }
+        })
+    app.route('/showdevicegroup')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/new_devicegroup').showdevicegroup(req,res);
+            }
+        })
+    
+    
+    
+    app.get('*', function(req, res){
+      require('./controllers/404').get(req,res);
+    });
 }
 
 function checklogin(req, res) {

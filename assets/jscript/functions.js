@@ -52,7 +52,8 @@ function switchdevicestatus(deviceid, switchto) {
             //$('#respons-modal-body').html(data);
             //$('#myModal').modal('show');
         },
-        error: function (data) {alert('error occured when setting new status: ' + data);}
+        error: function (data) {alert('error occured when setting new status: ' + data);
+                               console.log(data);}
     });
 }
 
@@ -269,8 +270,8 @@ $(function(ready){
     }
 });
 
-function filter_home() {
-    window.location.href = '/?deviceid='+$('#devicetoview').val() + '&scheduletype='+$('#schedulestoview').val();
+function filter() {
+    window.location.href = window.location.href.substr(0,window.location.href.indexOf('?')) + '?deviceid='+$('#devicetoview').val() + '&scheduletype='+$('#schedulestoview').val();
 }
 
 function pause_schedules() {
@@ -330,7 +331,7 @@ function showscheduleinfo(scheduleid) {
         error: function (data) {
             //$('#respons-modal-body').html('Error occured: ' + data.statusText);
             //$('#myModal').modal('show');
-            console.log('Error when showing schedule infor: ' + data.statusText);
+            console.log('Error when showing schedule info: ' + data.statusText);
         }
     }); 
 }

@@ -4,6 +4,10 @@ function device() {
     this.type = '';
     this.lastcommand = '';
     this.watchers = [];
+    this.schedule = [];
+    this.activescheduleid = '';
+    this.currentstatus = '';
+    this.activeday = '';
 }
 
 function schedule() {

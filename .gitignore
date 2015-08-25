@@ -2,6 +2,8 @@ userdata/user.js
 userdata/options.js
 userdata/schedules.db.js
 userdata/watchers.db.js
+userdata/groups.db.js
 node_modules/
 sessions/
 daemon/
+connect-session-knex.sqlite

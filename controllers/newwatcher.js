@@ -58,7 +58,9 @@ function get(req,res) {
     var device_options = '';
     var controllermessage = '';
     variables.devices.forEach(function(device, index) {
-        device_options += '<option value="' + device.id + '">'+device.name + '\n';
+        if (device.type != 'group') {
+            device_options += '<option value="' + device.id + '">'+device.name + '\n';
+        }
     });
 
     body = body.replace(/{select_device}/g,device_options);

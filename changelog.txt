@@ -1,3 +1,10 @@
+Version : 1.0.11
+Changed the design of the menu, the home page now contains less information to ease the eyes.
+Devicegroups has been implemented!
+- This is a way to create a custom device that contains other devices. Allowing you do send commands to multiple at one go.
+- The devicegroups can have schedules just as normal devices. They can however not have watches connected to them.
+Also changed to that it now verifies if sqlite3 has been installed and if it can be used for session storage. Otherwise it will fall back on session-file-store.
+
 Version : 1.0.10
 Switched from using session-file-store to Connect-Session-Knex, a sqlite3 session storage.
 This should resolve the error that could occur when restarting.

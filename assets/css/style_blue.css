@@ -1,6 +1,7 @@
 .devicestatus {width: 180px;}
 .td-middle {width: 180px;}
 .td-small {width: 70px;}
+.alignmiddle {vertical-align: middle;}
 
 .color-primary-0 { color: #336799 }	/* Main Primary color */
 .color-primary-1 { color: #D3D7DA }
@@ -17,6 +18,10 @@
 .navbar-default .navbar-brand:hover {color: #7A9CBC;}
 .navbar-default .navbar-nav>.active>a {background-color: #7A9CBC; color: #022B53;}
 .navbar-default .navbar-nav>.active>a:hover {background-color: #0A457F; color: #FFFFFF;}
+.navbar-default .navbar-nav>.open>a {background-color: #7A9CBC; color: #022B53;}
+.navbar-default .navbar-nav>.open>a, .navbar-default .navbar-nav>.open>a:focus, .navbar-default .navbar-nav>.open>a:hover {background-color: #0A457F; color: #FFFFFF;}
+.dropdown-menu>li>a:hover {background-color: #0A457F; color: #FFFFFF;}
+.dropdown-menu>li>a {background-color: #FFFFFF;}
 .panel-body {background-color: #FFFFFF; padding: 8px;}
 
 .panel-default {background-color: #336799;}

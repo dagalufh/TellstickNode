@@ -80,7 +80,7 @@ function build (pagetitle, content,loggedin) {
     }
     body = body.replace(/{activestylesheet}/g,activesheet);
     
-    
+    var activedevicegroup = '';
     var activeschedule = '';
     var activehome = '';
     var activeoptions = '';
@@ -90,30 +90,50 @@ function build (pagetitle, content,loggedin) {
     var PageSpecificJS = '';
     switch(pagetitle){
             case('New Schedule'):
-                activeschedule = 'class="active"';
+                activeschedule = 'active';
                 PageSpecificJS = '<script src="jscript/schedule.js"></script>';
                 break;
             case('Home'):
-                activehome = 'class="active"';
+                activehome = 'active';
                 break;
             case('Options'):
-                activeoptions = 'class="active"';
+                activeoptions = 'active';
                 break;
             case('View Log'):
-                activelogs = 'class="active"';
+                activelogs = 'active';
                 break;
             case('Remote'):
-                activeremote = 'class="active"';
+                activeremote = 'active';
                 break;
             case('New Watcher'):
-                activewatcher = 'class="active"';
+                activewatcher = 'active';
                 PageSpecificJS = '<script src="jscript/watchers.js"></script>';
                 break;
             case('Edit Watcher'):
+                activewatcher = 'active';
                 PageSpecificJS = '<script src="jscript/watchers.js"></script>';
                 break;
+            case('View All Watchers'):
+                activewatcher = 'active';
+                break;
             case('Edit Schedule'):
+                activeschedule = 'active';
                 PageSpecificJS = '<script src="jscript/schedule.js"></script>';
+                break;
+            case('View All Schedules'):
+                activeschedule = 'active';
+                break;
+            case('New Devicegroup'):
+                activedevicegroup = 'active';
+                PageSpecificJS = '<script src="jscript/devicegroup.js"></script>';
+                break;
+            case('View All Devicegroups'):
+                activedevicegroup = 'active';
+                PageSpecificJS = '<script src="jscript/devicegroup.js"></script>';
+                break;
+            case('Edit Devicegroup'):
+                activedevicegroup = 'active';
+                PageSpecificJS = '<script src="jscript/devicegroup.js"></script>';
                 break;
     }
             
@@ -121,16 +141,43 @@ function build (pagetitle, content,loggedin) {
         '<li ' + activeremote + '><a href="/remote">Remote</a></li>'];
     
     if(loggedin) {
-        navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
-                         '<li ' + activeremote + '><a href="/remote">Remote</a></li>',
-                         '<li ' + activeschedule + '><a href="/newschedule">New Schedule</a></li>',
-                         '<li ' + activewatcher + '><a href="/newwatcher">New Watcher</a></li>',
-                         '<li ' + activeoptions + '><a href="/options">Options</a></li>',
-                         '<li ' + activelogs + '><a href="/logs">View Log</a></li>',
+        navigationbar = ['<li class="' + activehome + '"><a href="/">Home</a></li>',
+                         '<li class="dropdown ' + activeschedule + '">',
+                          '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Schedules/Timers <span class="caret"></span></a>',
+                          '<ul class="dropdown-menu">',
+                            '<li><a href="/newschedule">New</a></li>',
+                            '<li><a href="/view_schedules">View All</a></li>',
+                          '</ul>',
+                        '</li>',
+                         '<li class="dropdown ' + activewatcher + '">',
+                          '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Watchers <span class="caret"></span></a>',
+                          '<ul class="dropdown-menu">',
+                            '<li><a href="/newwatcher">New</a></li>',
+                            '<li><a href="/view_watchers">View All</a></li>',
+                          '</ul>',
+                        '</li>',
+                         '<li class="dropdown ' + activedevicegroup + '">',
+                          '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devicegroups <span class="caret"></span></a>',
+                          '<ul class="dropdown-menu">',
+                            '<li><a href="/new_devicegroup">New</a></li>',
+                            '<li><a href="/view_devicegroups">View All</a></li>',
+                          '</ul>',
+                        '</li>',
+                         //'<li class="' + activeschedule + '"><a href="/newschedule">New Schedule</a></li>',
+                         //'<li class="' + activewatcher + '"><a href="/newwatcher">New Watcher</a></li>',
+                         '<li class="' + activeoptions + '"><a href="/options">Options</a></li>',
+                         '<li class="' + activelogs + '"><a href="/logs">View Log</a></li>',
                          '<li><a href="/logout">Logout</a></li>'];
     }
     navigationbar = navigationbar.join('\n');
     
+'<li class="dropdown">',
+  '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Schedules <span class="caret"></span></a>',
+  '<ul class="dropdown-menu">',
+    '<li><a href="#">New</a></li>',
+    '<li><a href="#">View All</a></li>',
+  '</ul>',
+'</li>',
     
     
     

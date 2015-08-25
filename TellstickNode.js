@@ -9,9 +9,6 @@ var classes = require('./model/classes');
 var express = require('express');
 var session = require('express-session');
 
-var KnexSessionStore = require('connect-session-knex')(session);
-var dbstore = new KnexSessionStore();
-
 var io = require('socket.io')(app);
 var devicefunctions = require('./controllers/device');
 var schedulefunctions = require('./controllers/schedulefunctions');
@@ -24,16 +21,32 @@ var sharedfunctions = require('./model/sharedfunctions');
 
 var lasttimestamp_recalculate = new Date();
 
+try {
+    console.log('Using Knex for sessiong storage');
+    var KnexSessionStore = require('connect-session-knex')(session);
+    var dbstore = new KnexSessionStore();
+    // Use the sessionhandler from express-session 60 * 60 * 1000
+    app.use(session({
+        secret:'thisisasecret',
+        cookie: { maxAge: (1000*60)*120 },
+        resave: true,
+        saveUninitialized: false,
+        store: dbstore
+        }));   
+} catch (e) {
+    console.log('Using session-file-store for sessiong storage');
+    var filestorage = require('session-file-store')(session);
+    // Use the sessionhandler from express-session 60 * 60 * 1000
+    app.use(session({
+        secret:'thisisasecret',
+        cookie: { maxAge: (1000*60)*120 },
+        resave: true,
+        saveUninitialized: false,
+        store: new filestorage()
+        }));
+}
+    
 
-
-// Use the sessionhandler from express-session 60 * 60 * 1000
-app.use(session({
-    secret:'thisisasecret',
-    cookie: { maxAge: (1000*60)*120 },
-    resave: true,
-    saveUninitialized: false,
-    store: dbstore
-    }));
 
 // Require a parser for handling POST requests and use it.
 var bodyparser = require('body-parser');
@@ -283,6 +296,61 @@ async.series([
                 });
             }
             
+        });
+       
+    },
+    
+    function (callback) {
+        // Fetch the groups of devices
+        fs.exists(__dirname + '/userdata/groups.db.js', function (exists) {
+            if (exists) {
+                var groupsarray = [];
+                fs.readFile(__dirname.replace("\\","/") + '/userdata/groups.db.js',{'encoding':'utf8'},function(err,data) {
+                    if (data.length>1) {
+                       var rows = data.split('\n');
+                        for (var i=0; i<rows.length; i++) {
+                            if (rows[i].length > 1) {
+                                groupsarray.push(JSON.parse(rows[i]));
+                            }
+                        }
+                        
+                        groupsarray.forEach (function (group) {
+                                var newgroup = new classes.device();
+
+                                for (var key in group) {
+                                  newgroup[key] = group[key];  
+                                }
+                            
+                                for (var i=0; i < newgroup.devices.length; i++) {
+                                    var validmemberid = false;
+                                    variables.devices.forEach(function(searchid) {
+                                        console.log(searchid.id + ' == ' + newgroup.devices[i])
+                                        if (searchid.id == newgroup.devices[i]) {
+                                            console.log('Match found in above string');
+                                            validmemberid = true;
+                                        }
+                                    });
+                                    
+                                    if (validmemberid === false) {
+                                        
+                                        console.log(newgroup.devices.splice(i,1));
+                                        i=0;
+                                        
+                                    }
+                                };
+                                variables.savetofile = true;
+
+                                variables.devices.push(newgroup);
+                            
+                        });
+                       
+                    }
+                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
+                    callback();
+                });
+            } else {
+                callback();
+            }
         });
        
     },
@@ -808,7 +876,9 @@ function minutecheck (timestamp_start) {
                                 if (runschedule) {
                                     console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
                                     sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered.');
+                                    
                                     devicefunctions.deviceaction(device.id,schedule.action);
+                                    
                                     if (schedule.sendautoremote == 'true') {
                                         sharedfunctions.autoremote(device.name,schedule.action);
                                     }
@@ -917,6 +987,24 @@ function minutecheck (timestamp_start) {
 						console.log('Saved Watcher to file with id: ' + watcher.uniqueid);
 					});    
 				});
+			});
+		});
+        
+        fs.unlink(sourcefolder + '/userdata/groups.db.js', function() {  
+			variables.devices.forEach(function (device) {
+				if (device.type == 'group') {
+                    var tempgroup = new classes.device();
+
+                    for (var key in device) {
+                      tempgroup[key] = device[key];  
+                    }
+                    tempgroup.schedule = [];
+                    tempgroup.watchers = [];
+                    
+                    fs.appendFile(sourcefolder + '/userdata/groups.db.js',JSON.stringify(tempgroup)+'\n', function() {
+						console.log('Saved devicegroup to file with id: ' + tempgroup.id);
+					}); 
+                }
 			});
 		});
         

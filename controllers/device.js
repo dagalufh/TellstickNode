@@ -10,9 +10,10 @@ var compareversion = require('compare-version');
 
 // Send a command to a device.
 function send(req,res) {
-    deviceaction(req.query.deviceid, req.query.switchto, res);
-    variables.doubletap.push({schedule : {deviceid: req.query.deviceid},count : variables.options.doubletapcount, action: req.query.switchto});
-    //res.send('Send command to device.');
+        deviceaction(req.query.deviceid, req.query.switchto);
+        variables.doubletap.push({schedule : {deviceid: req.query.deviceid},count : variables.options.doubletapcount, action: req.query.switchto});
+    res.send('Send command to device.');
+    
 }
 
 exports.send = send;
@@ -20,6 +21,7 @@ exports.deviceaction = deviceaction;
 exports.getdevicestatus = getdevicestatus;
 exports.resetdevices = resetdevices;
 exports.getresetdevices = getresetdevices;
+
 function deviceaction (deviceid, action, res) {
    if (os.platform() === 'win32') {
         //console.log('Server is a Windows machine. Run tdtool.exe to switch status on device.');
@@ -36,10 +38,10 @@ function deviceaction (deviceid, action, res) {
     } else {
         actiontotrigger = '--'+action;
     }
-    
+    if (deviceid.indexOf('group') == -1) {
     exec('"'+path+'" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
             if (typeof(res) !== 'undefined') {
-                res.send(stdout);
+                //res.send(stdout);
             }
         
             var currentdevice = '';
@@ -58,6 +60,35 @@ function deviceaction (deviceid, action, res) {
             // Request an update of the status of devices.
             getdevicestatus();
         });
+    } else {
+        variables.devices.forEach(function (device) {
+            if (device.id == deviceid) {
+                device.devices.forEach(function(device_in_group) {
+                    exec('"'+path+'" '+ actiontotrigger.toLowerCase() +' ' + device_in_group, null, function (error,stdout,stderr) {
+                        if (typeof(res) !== 'undefined') {
+                            //res.send(stdout);
+                        }
+
+                        var currentdevice = '';
+                        variables.devices.forEach(function (device) {
+                            if (device.id == device_in_group) {
+                                currentdevice = device;
+                            }
+                        });
+                        console.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']'); 
+                        sharedfunctions.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']');
+                        if (variables.debug == 'true') {
+                            sharedfunctions.log('Debug - tdtool set action stderr: ' + stderr);
+                            sharedfunctions.log('Debug - tdtool set action stdout: ' + stdout);
+                        }
+                        //listmodule.updatelist();
+                        // Request an update of the status of devices.
+                        getdevicestatus();
+                    });
+                });
+            }
+        });
+    }
 }
 
 function getdevicestatus () {
