@@ -152,7 +152,7 @@ async.series([
                 } else {
 					var options = {
 						host : 'api.openweathermap.org',
-						path: '/data/2.5/weather?q=' + encodeURIComponent(variables.options.city) + '&units=metric&lang=en'
+						path: '/data/2.5/weather?q=' + encodeURIComponent(variables.options.city) + '&units=metric&lang=en&appid=' + variables.options.openweatherappid
 					};
 					  
 					var reg = http.get(options, function(res){
@@ -1032,7 +1032,7 @@ function minutecheck (timestamp_start) {
 							//var http = require('http');						  
 							var options = {
 								host : 'api.openweathermap.org',
-								path: '/data/2.5/weather?q=' + encodeURIComponent(variables.options.city) + '&units=metric&lang=en'
+								path: '/data/2.5/weather?q=' + encodeURIComponent(variables.options.city) + '&units=metric&lang=en&appid=' + variables.options.openweatherappid
 							};
 							
 							var weatherreq = http.get(options, function(res){
@@ -1046,7 +1046,16 @@ function minutecheck (timestamp_start) {
 									  
 									try {				
 										console.log('Fetched new weatherinfo.');
+                                        sharedfunctions.log('Fetched new weatherinfo.');
 										variables.weather = JSON.parse(chunk)
+                                        var weatherinfo = ['City: ' + variables.weather.name,
+                                                           'Country: ' + variables.weather.sys.country,
+                                                          'Weathercode: ' + variables.weather.weather[0].id,
+                                                          'Weather: ' + variables.weather.weather[0].main,
+                                                          'Sunrise: ' + sunrisetime,
+                                                          'Sunset: ' + sunsettime];
+                                        weatherinfo = weatherinfo.join('<br>');
+                                        sharedfunctions.log(weatherinfo);
 									} catch (e) {
 										console.log('Error with fetching the weather. Openweathermap.org might be busy or something.');
 									}
@@ -1063,6 +1072,7 @@ function minutecheck (timestamp_start) {
                                     });
 								} else {
 									console.log('openweather: error. Received wrong statuscode');
+                                    sharedfunctions.log('openweather: error. Received wrong statuscode from openweathermap.org: ' + res.statusCode);
 									if (weatherfetched == false) {
                                         weatherfetched = true;
 									   callback(null, 'original'); 

@@ -301,6 +301,7 @@ function save_options() {
                         autoremote_key:$('#autoremote_key').val(),
                         autoremote_message:$('#autoremote_message').val(),
                         debug:debugselector,
+                        appid: $('#appid').val(),
                         theme:$('#Select_Theme').val()}, function (data) {
         $('#respons-modal-body').html('Options has been saved.');
         $('#myModal').modal('show');

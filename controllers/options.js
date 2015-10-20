@@ -23,6 +23,11 @@ function get(req,res) {
                                 '<p class="text-info">Enter it without any special characters, english characters only.</p>',
                             '</div>',
                             '<div class="form-group">',
+                                '<label for="appid">OpenWeatherMap APPID:</label>',
+                                '<input type="text" class="form-control" id="appid" placeholder="AppID" value="{appid}">',
+                                '<p class="text-info">Register at <a href="http://home.openweathermap.org/users/sign_in">OpenWeatherMap.org</a> to get a AppID. It\'s free for small use.</p>',
+                            '</div>',
+                            '<div class="form-group">',
                                 '<label for="port">Port:</label>',
                                 '<input type="text" class="form-control" id="port" placeholder="Port" value="{port}">',
                                 '<p class="text-info">Requires restart of server to take effect.</p>',
@@ -74,6 +79,7 @@ function get(req,res) {
     body = body.join('\n');
     body = body.replace(/{city}/g,variables.options.city);
     body = body.replace(/{port}/g,variables.options.port);
+    body = body.replace(/{appid}/g,variables.options.openweatherappid);
     body = body.replace(/{doubletapcount}/g,variables.options.doubletapcount);
     body = body.replace(/{doubletapseconds}/g,variables.options.doubletapseconds);
     body = body.replace(/{weathercodes}/g,variables.options.weathercodes);
@@ -110,7 +116,7 @@ function get(req,res) {
         weatherinfo = weatherinfo.join('<br>');
     }
     var debugchecked = '';
-    if(variables.debug == 'true') {
+    if ( (variables.debug == 'true') || (variables.debug === true) ) {
         debugchecked = 'checked=checked';
     };
     body = body.replace(/{weatherinfo}/g,weatherinfo);    
@@ -124,6 +130,7 @@ function post(req,res) {
 
     variables.options.city = req.body.city;
     variables.options.port = req.body.port;
+    variables.options.openweatherappid = req.body.appid;
     variables.options.doubletapcount = req.body.doubletapcount;
     variables.options.doubletapseconds = req.body.doubletapseconds;
     variables.options.weathercodes = req.body.weathercodes;

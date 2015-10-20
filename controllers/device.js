@@ -62,7 +62,9 @@ function deviceaction (deviceid, action, res) {
         });
     } else {
         variables.devices.forEach(function (device) {
+            
             if (device.id == deviceid) {
+                device.lastcommand = actiontotrigger.toLowerCase();
                 device.devices.forEach(function(device_in_group) {
                     exec('"'+path+'" '+ actiontotrigger.toLowerCase() +' ' + device_in_group, null, function (error,stdout,stderr) {
                         if (typeof(res) !== 'undefined') {

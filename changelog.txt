@@ -1,3 +1,8 @@
+Version : 1.0.12
+Debug: Enabled by default each startup.
+Added support for Openweathermap.org APPID requirement.
+Fixed and issue that caused devicegroups to not display active state correctly.
+
 Version : 1.0.11.1
 Bugfix.
 

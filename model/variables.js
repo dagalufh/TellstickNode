@@ -9,14 +9,15 @@ module.exports = {
                autoremote_password: '',
                autoremote_message: 'Device {device-name} was set to {device-lastcommand}',
                showdimoption: false,
-               theme: 'blue'
+               theme: 'blue',
+               openweatherappid: ''
               },
     weather : {},
     savetofile : false,
     log : [],
     tdtoolversionlimit : '2.1.2',
-    debug : false,
+    debug : true,
     pauseschedules : false,
-    currentversion: '1.0.11.1',
+    currentversion: '1.0.12',
     doubletap: []
 }
