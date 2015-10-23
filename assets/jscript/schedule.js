@@ -130,7 +130,7 @@ function createschedule(uniqueid) {
             $('#myModal').modal('show');
             //window.location.href = '/';
             $('#myModal').on('hidden.bs.modal',function (e) {
-                window.location.href='/';
+                window.location.href='/view_schedules';
             });
         }); 
     }
