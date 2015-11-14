@@ -1,12 +1,7 @@
-// Include the template view (Do all the presentation(?))
-var template = require('../views/template-main').build;
-var variables = require('../model/variables');
-var sharedfunctions = require('../model/sharedfunctions');
-
-// Include the functions for handling files
-var fs = require('fs');
-
 function get(req,res) {
+    var template = require('../views/template-main').build;
+    var variables = require('../model/variables');
+    var sharedfunctions = require('../model/sharedfunctions');
     // Save via socket.io call, this means we can toss back a reply that it's done. Or not needed.. res.send('Complete') will suffice.
     var headline = 'Options';
     var body = ['<div class="panel panel-default">',
@@ -86,7 +81,7 @@ function get(req,res) {
     body = body.replace(/{autoremote_password}/g,variables.options.autoremote_password);
     body = body.replace(/{autoremote_key}/g,variables.options.autoremote_key);
     body = body.replace(/{autoremote_message}/g,variables.options.autoremote_message);
-    body = body.replace(/{selecttheme}/g,createdropdown_alphanumeric([['blue','Blue'],['white','White'], ['green','Green']],variables.options.theme));
+    body = body.replace(/{selecttheme}/g,sharedfunctions.createdropdown_alphanumeric([['blue','Blue'],['white','White'], ['green','Green']],variables.options.theme));
     var weatherinfo = 'No weather info available.';
     
     if (typeof(variables.weather.sys) != 'undefined') {
@@ -104,9 +99,6 @@ function get(req,res) {
         minutes = minutes.substr(minutes.length-2);
         var sunrisetime = hour + ":" + minutes;
 
-
-        
-    
         var weatherinfo = ['City: ' + variables.weather.name,
                            'Country: ' + variables.weather.sys.country,
                           'Weathercode: ' + variables.weather.weather[0].id,
@@ -127,6 +119,10 @@ function get(req,res) {
 }
 
 function post(req,res) {
+    var variables = require('../model/variables');
+    var sharedfunctions = require('../model/sharedfunctions');
+    // Include the functions for handling files
+    var fs = require('fs');
 
     variables.options.city = req.body.city;
     variables.options.port = req.body.port;
@@ -151,24 +147,3 @@ function post(req,res) {
 
 exports.get = get;
 exports.post = post;
-
-
-function createdropdown_alphanumeric(options,selecteditem) {
-    // Generate dropdown options with the value and display from 'options[[value,displayname]]'
-    // Displayname is optional as a second paremeter to the array. If not present, value will be displayed.
-    var dropdown = '';
-    options.forEach(function(option) {
-        var selected = '';
-        if (selecteditem.toLowerCase() == option[0].toLowerCase()) {
-            selected = 'selected';
-        }
-        
-        var displayname = option[0];
-        if (typeof(option[1]) != 'undefined') {
-            displayname = option[1];
-        }
-        
-        dropdown += '<option ' + selected + ' value="'+option[0]+'">'+displayname;
-    });
-    return dropdown;
-}

@@ -7,4 +7,3 @@ node_modules/
 sessions/
 daemon/
 connect-session-knex.sqlite
-connect-session-knex.sqlite

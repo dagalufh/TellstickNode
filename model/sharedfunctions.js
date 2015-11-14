@@ -63,24 +63,25 @@ function dynamicSort (property) {
 }	
 
 function log (message) {
-    var maxlog = 300;
-    if (variables.debug == 'true') {
-     maxlog = 1000;   
-    }
-    
-    while (variables.log.length > maxlog) {
-        variables.log.shift();   
-    }
-    
-    var timestamp_start = new Date();
+	
+	var maxlog = 300;
+	if (variables.debug == 'true') {
+	 maxlog = 2000;   
+	}
+
+	while (variables.log.length > maxlog) {
+			variables.log.shift();   
+	}
+
+	var timestamp_start = new Date();
 	var hour = '0' + timestamp_start.getHours();
 	var minutes = '0' + timestamp_start.getMinutes();
-    var seconds = '0' + timestamp_start.getSeconds();
+	var seconds = '0' + timestamp_start.getSeconds();
 	hour = hour.substr(hour.length-2);
 	minutes = minutes.substr(minutes.length-2);
-    seconds = seconds.substr(seconds.length-2);
-    
-    variables.log.push({time: hour + ':' + minutes + ':' + seconds,message: message});
+	seconds = seconds.substr(seconds.length-2);
+	console.log('UserLog:' + hour + ':' + minutes + ':' + seconds + ":" + message)
+	variables.log.push({time: hour + ':' + minutes + ':' + seconds,message: message});
 }
 
 function autoremote (devicename, action) {
@@ -89,7 +90,11 @@ function autoremote (devicename, action) {
     var message = variables.options.autoremote_message;
     message = message.replace(/{device-name}/g,devicename);
     message = message.replace(/{device-lastcommand}/g,action);
-    
+    if ( (variables.autoremote_password.length === 0) || (variables.autoremote_key.length === 0) ) {
+			log('No configuration for autoremote available. Unable to send message.');
+			return;
+		}
+	
     dns.lookup('autoremotejoaomgcd.appspot.com',function onLookup (err) {
 						if (err) { 
 							console.log('Unable to reach autoremotejoaomgcd.appspot.com');
@@ -97,7 +102,7 @@ function autoremote (devicename, action) {
 							//var http = require('http');						  
 							var options = {
 								host : 'autoremotejoaomgcd.appspot.com',
-								path: 'http://autoremotejoaomgcd.appspot.com/sendmessage?message=' + encodeURIComponent(message) + '&password=' + variables.options.autoremote_password + '&key=' + variables.options.autoremote_key
+								path: 'http://autoremotejoaomgcd.appspot.com/sendmessage?message=' + encodeURIComponent(message) + '&password=' + variables.options.autoremote_password + '&key=' + encodeURIComponent(variables.options.autoremote_key)
 							};
 							
 							var weatherreq = http.get(options, function(res){
@@ -107,16 +112,16 @@ function autoremote (devicename, action) {
 								  
 								if (res.statusCode == 200) {
 									console.log('Sent message to AutoRemote.');
-                                    res.on('error', function (chunk) {
-                                        // Error
-                                    });
+									res.on('error', function (chunk) {
+											// Error
+									});
 								} else {
 									console.log('autoremote: error. Received wrong statuscode');
 								}
                                 
-                                res.on('error', function (chunk) {
-                                        // Error
-                                });
+								res.on('error', function (chunk) {
+												// Error
+								});
 								
 							}); 
                             

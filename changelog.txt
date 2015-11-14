@@ -1,3 +1,9 @@
+Version : 1.0.13
+Added backup of userdata on a day by day basis. Max 7 backups are stored.
+Fixed an issue causing Watchers to not be created unless AutoRemote was checked.
+Fixed an issue that crashed the application if autoremote was selected but no key/password was configured.
+Fixed redirect after creating new schedules.
+
 Version : 1.0.12
 Debug: Enabled by default each startup.
 Added support for Openweathermap.org APPID requirement.

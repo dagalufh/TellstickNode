@@ -8,11 +8,12 @@ var exec = require('child_process').exec;
 var classes = require('./model/classes');
 var express = require('express');
 var session = require('express-session');
-
 var io = require('socket.io')(app);
+
 var devicefunctions = require('./controllers/device');
 var schedulefunctions = require('./controllers/schedulefunctions');
 var app = express();
+
 
 var http = require('http');		
 var compareversion = require('compare-version');
@@ -111,7 +112,7 @@ async.series([
             fs.writeFile(__dirname + '/userdata/options.js',optionsjson, function(err) {
                 // Write the options to the file. Saving any additions that has been made.
                 if(err) return callback(err);
-                console.log('Saved the default options.');
+                sharedfunctions.log('Saved the default options.');
                 callback();
             });    
         });
@@ -165,11 +166,9 @@ async.series([
                                 var parsed = {};
 
                                 try {				
-                                    console.log('Fetched new weatherinfo.');
                                     sharedfunctions.log('Startup - Fetched weather information');
                                     variables.weather = JSON.parse(chunk)
                                 } catch (e) {
-                                    console.log('Error with fetching the weather. Openweathermap.org might be busy or something.');
                                     sharedfunctions.log('Startup - Error with fetching the weather. Openweathermap.org might be busy or something.');
                                 }
 						    });
@@ -196,7 +195,6 @@ async.series([
                 }
             });
         } else {
-            console.log('No city provided. Unable to fetch weather information.');
             sharedfunctions.log('Startup - No city provided. Unable to fetch weather information.');
             callback();
         }
@@ -568,7 +566,7 @@ async.series([
     //heapdump.writeSnapshot(__dirname.replace("\\","/") + '/' + Date.now() + '.heapsnapshot');
 	var timerstart = new Date();
 	setTimeout(timer_getdevicestatus,15000);
-    setTimeout(doubletapcheck,1000*variables.options.doubletapseconds);
+  setTimeout(doubletapcheck,1000*variables.options.doubletapseconds);
 	setTimeout(minutecheck,60000,timerstart);
 	//setTimeout(timer_getweather,60000);
 });
@@ -590,6 +588,7 @@ function timer_getdevicestatus() {
             //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
             var path = 'tdtool';
         } 
+	
         exec('"'+path+'" --version', null, function (error,stdout,stderr) {
             var lines = stdout.toString().split('\n');
             var version = lines[0].substr(lines[0].indexOf(' ')+1);
@@ -821,10 +820,10 @@ function minutecheck (timestamp_start) {
 
 	var hour = '0' + timestamp_start.getHours();
 	var minutes = '0' + timestamp_start.getMinutes();
-    var seconds = '0' + timestamp_start.getSeconds();
+  var seconds = '0' + timestamp_start.getSeconds();
 	hour = hour.substr(hour.length-2);
 	minutes = minutes.substr(minutes.length-2);
-    seconds = seconds.substr(seconds.length-2);
+  seconds = seconds.substr(seconds.length-2);
 	console.log('Start of Minutescheck: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_start.getMilliseconds());
 	
 	var dayofweek = timestamp_start.getUTCDay();
@@ -836,69 +835,60 @@ function minutecheck (timestamp_start) {
 			schedule.dayofweek.forEach(function (day) {
 				if (day == dayofweek) {
 					if (schedule.time == hour + ':' + minutes) {
-                        if (variables.pauseschedules) {
-                            console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW. This has not been executed as schedules are paused.');
-                            sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered. This has not been executed as schedules are paused.'); 
-                        } else {
-                            if (schedule.enabled == 'true') {
-                                var runschedule = true;
-                                
-                                if (schedule.intervalnotbefore.indexOf(':') != -1) {
-                                    var notbefore = new Date();
-                                    notbeforearray = schedule.intervalnotbefore.split(':');
-                                    notbefore.setHours(notbeforearray[0]);
-                                    notbefore.setMinutes(notbeforearray[1]); 
-                                    var minutedifference_notbefore = Math.floor(((timestamp_start - notbefore)/1000)/60);
-                                    if (minutedifference_notbefore < 0) {
-                                        // if less than 0, don't run the schedule! // This means that the before time has not yet been reached.
-                                        runschedule = false;
-                                    }
-                                }
-                                
-                                if (schedule.intervalnotafter.indexOf(':') != -1) {
-                                    var notafter = new Date();
-                                    notafterearray = schedule.intervalnotafter.split(':');
-                                    notafter.setHours(notafterearray[0]);
-                                    notafter.setMinutes(notafterearray[1]); 
-                                    var minutedifference_notafter = Math.floor(((timestamp_start - notafter)/1000)/60);
-                                    if (minutedifference_notafter > 0) {
-                                        // if more than 0, don't run the schedule! | This means that the after time has already passes.
-                                        runschedule = false;
-                                    }
-                                }
-                                
-                                
-                                
-                                //sharedfunctions.log('notbefore difference: ' + minutedifference_notbefore); // Run schedule if notbefore is above 0
-                                //sharedfunctions.log('notafter difference: ' + minutedifference_notafter); // Run schedule if notafter is below 0
-                                
-                                
-                                if (runschedule) {
-                                    console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW');
-                                    sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered.');
-                                    
-                                    devicefunctions.deviceaction(device.id,schedule.action);
-                                    
-                                    if (schedule.sendautoremote == 'true') {
-                                        sharedfunctions.autoremote(device.name,schedule.action);
-                                    }
-                                    if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
-                                        removeschedules.push(schedule.uniqueid);
-                                    }
-                                    sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
-                                    schedule.stage = 1;
-                                    // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
-                                    if (variables.options.doubletapcount > 0) {
-                                        variables.doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: schedule.action});
-                                    }
-                                } else {
-                                    sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] not triggered. Out of allowed intervall.'); 
-                                }
-                            } else {
-                                console.log('Device: ' + device.id + ' | Scheduled for an event TODAY and NOW (Schedule disabled)');
-                                sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] did not trigger now because the schedule is disabled.');  
-                            }
-                        }
+						if (variables.pauseschedules) {
+								sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered. This has not been executed as schedules are paused.'); 
+						} else {
+							if (schedule.enabled == 'true') {
+									var runschedule = true;
+
+									if (schedule.intervalnotbefore.indexOf(':') != -1) {
+											var notbefore = new Date();
+											notbeforearray = schedule.intervalnotbefore.split(':');
+											notbefore.setHours(notbeforearray[0]);
+											notbefore.setMinutes(notbeforearray[1]); 
+											var minutedifference_notbefore = Math.floor(((timestamp_start - notbefore)/1000)/60);
+											if (minutedifference_notbefore < 0) {
+													// if less than 0, don't run the schedule! // This means that the before time has not yet been reached.
+													runschedule = false;
+											}
+									}
+
+									if (schedule.intervalnotafter.indexOf(':') != -1) {
+											var notafter = new Date();
+											notafterearray = schedule.intervalnotafter.split(':');
+											notafter.setHours(notafterearray[0]);
+											notafter.setMinutes(notafterearray[1]); 
+											var minutedifference_notafter = Math.floor(((timestamp_start - notafter)/1000)/60);
+											if (minutedifference_notafter > 0) {
+													// if more than 0, don't run the schedule! | This means that the after time has already passes.
+													runschedule = false;
+											}
+									}
+
+									if (runschedule) {
+											sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered.');
+
+											devicefunctions.deviceaction(device.id,schedule.action);
+
+											if (schedule.sendautoremote == 'true') {
+													sharedfunctions.autoremote(device.name,schedule.action);
+											}
+											if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
+													removeschedules.push(schedule.uniqueid);
+											}
+											sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+											schedule.stage = 1;
+											// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+											if (variables.options.doubletapcount > 0) {
+													variables.doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: schedule.action});
+											}
+									} else {
+											sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] not triggered. Out of allowed intervall.'); 
+									}
+							} else {
+									sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] did not trigger now because the schedule is disabled.');  
+							}
+						}
 					}
 					
 					if (schedule.controller == 'Timer') {
@@ -922,26 +912,25 @@ function minutecheck (timestamp_start) {
 						//console.log('id ' + schedule.uniqueid + ' [' + schedule.time + " ] " + timertime  +' == '+ hour + ':' + minutes + ' and schedule.stage == ' + schedule.stage);
 						if ( (timertime  == hour + ':' + minutes) && (schedule.stage == 1) ) {
 							if (variables.pauseschedules) {
-                                console.log('Timer off event for "' + device.name + '" has not been executed as schedules are paused.');
-                                sharedfunctions.log('Timer off event for "' + device.name + '" has not been executed as schedules are paused.');  
-                            } else {
-                                devicefunctions.deviceaction(device.id,'off');
-                                
-                                if (schedule.sendautoremote == 'true') {
-                                    sharedfunctions.autoremote(device.name,'off');
-                                }
-                                
-                                schedule.stage = 2;
-                                if (schedule.runonce == 'true') {
-                                    removeschedules.push(schedule.uniqueid);
-                                }
-                                sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+									sharedfunctions.log('Timer off event for "' + device.name + '" has not been executed as schedules are paused.');  
+							} else {
+									devicefunctions.deviceaction(device.id,'off');
 
-                                // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
-                                if (variables.options.doubletapcount > 0) {
-                                    doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: 'off'});
-                                }    
-                            }
+									if (schedule.sendautoremote == 'true') {
+											sharedfunctions.autoremote(device.name,'off');
+									}
+
+									schedule.stage = 2;
+									if (schedule.runonce == 'true') {
+											removeschedules.push(schedule.uniqueid);
+									}
+									sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+
+									// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+									if (variables.options.doubletapcount > 0) {
+											doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: 'off'});
+									}    
+							}
 						}
 					}
 				}
@@ -967,46 +956,92 @@ function minutecheck (timestamp_start) {
 	});
 	
 	if(variables.savetofile) {
-		console.log('Saving all schedules to the file');
-        sharedfunctions.log('Saving all schedules to file.');
-		var sourcefolder = __dirname.replace("\\","/");
-		fs.unlink(sourcefolder + '/userdata/schedules.db.js', function() {  
-			variables.devices.forEach(function (device) {
-				device.schedule.forEach( function(schedule) {
-					fs.appendFile(sourcefolder + '/userdata/schedules.db.js',JSON.stringify(schedule)+'\n', function() {
-						console.log('Saved Schedule to file with id: ' + schedule.uniqueid);
-					});    
-				});
-			});
-		});
-        
-        fs.unlink(sourcefolder + '/userdata/watchers.db.js', function() {  
-			variables.devices.forEach(function (device) {
-				device.watchers.forEach( function(watcher) {
-					fs.appendFile(sourcefolder + '/userdata/watchers.db.js',JSON.stringify(watcher)+'\n', function() {
-						console.log('Saved Watcher to file with id: ' + watcher.uniqueid);
-					});    
-				});
-			});
-		});
-        
-        fs.unlink(sourcefolder + '/userdata/groups.db.js', function() {  
-			variables.devices.forEach(function (device) {
-				if (device.type == 'group') {
-                    var tempgroup = new classes.device();
+		
+		// Backup function for userdata. Keep 7 copies.
+		var fs = require('fs');
+		var fsextra = require('fs-extra');
 
-                    for (var key in device) {
-                      tempgroup[key] = device[key];  
-                    }
-                    tempgroup.schedule = [];
-                    tempgroup.watchers = [];
-                    
-                    fs.appendFile(sourcefolder + '/userdata/groups.db.js',JSON.stringify(tempgroup)+'\n', function() {
-						console.log('Saved devicegroup to file with id: ' + tempgroup.id);
-					}); 
-                }
-			});
+		var rootbackupdir = __dirname + '/backup/auto/';
+		// Create the directory if it dosn't exist.
+		fsextra.mkdirsSync(rootbackupdir);
+		
+		var backupfoldercontents = fs.readdirSync(rootbackupdir);
+		var currentdate = new Date();
+		var year = currentdate.getUTCFullYear();
+		var month = '0' + (currentdate.getUTCMonth()+1);
+		var day = '0' + currentdate.getUTCDate();
+		month = month.substr(month.length-2);
+		day = day.substr(day.length-2);
+		
+		// Sort the directory of backups so we don't remove anything we shoudln't.
+		backupfoldercontents.sort(function(a, b) {
+				return a < b ? -1 : 1;
+		})
+
+		if (backupfoldercontents.indexOf( year.toString() + month.toString() +day.toString()) != -1) {
+			sharedfunctions.log('Today Found In Directory. Not doing a backup, already been done.');
+		} else {
+			sharedfunctions.log('No backup done yet today. Initializing method for it.');
+			sharedfunctions.log('Currently there is ' + backupfoldercontents.length + ' folders in Tellsticknode/backup/auto/.'); 
+
+				while(backupfoldercontents.length > 6) {
+					var oldest = backupfoldercontents.shift();
+					var userdata = fs.readdirSync(rootbackupdir+ oldest);
+					userdata.forEach(function(filename) {
+						fs.unlinkSync(rootbackupdir + oldest + '/' + filename);
+					});
+					fs.rmdirSync(rootbackupdir + oldest);
+					sharedfunctions.log('Removed backup: ' + oldest);
+				}
+			
+				sharedfunctions.log('Remaining backups are: ');
+				backupfoldercontents.forEach(function(file, key) {
+						sharedfunctions.log(file);
+				});
+
+				fs.mkdirSync(rootbackupdir + year.toString() + month.toString() +day.toString());
+				var userdatadir = fs.readdirSync(__dirname + '/userdata');
+				userdatadir.forEach(function(filename) {
+						sharedfunctions.log('Backing up : ' + filename);
+						fsextra.copySync(__dirname + '/userdata/' + filename, rootbackupdir + year+month+day + '/' + filename);
+				});
+		}
+		
+    sharedfunctions.log('Saving all schedules, watchers and devicegroups to file.');
+		
+		var sourcefolder = __dirname.replace("\\","/");
+		var device_schedules = '';
+		var device_watchers = '';
+		var device_groups = '';
+		variables.devices.forEach(function (device) {
+				device.schedule.forEach( function(schedule) {
+					device_schedules += JSON.stringify(schedule) + '\n';
+				});
+			
+				device.watchers.forEach( function(watcher) {
+					device_watchers += JSON.stringify(watcher) + '\n';
+				});
+			
+				if (device.type == 'group') {
+						var tempgroup = new classes.device();
+
+						for (var key in device) {
+							tempgroup[key] = device[key];  
+						}
+						tempgroup.schedule = [];
+						tempgroup.watchers = [];
+						device_groups += JSON.stringify(tempgroup) + '\n';
+				}
 		});
+		
+		fs.writeFileSync(sourcefolder + '/userdata/schedules.db.js',device_schedules);
+		sharedfunctions.log('Saved Schedules:\n' + device_schedules);
+		
+    fs.writeFileSync(sourcefolder + '/userdata/watchers.db.js',device_watchers);
+		sharedfunctions.log('Saved Watchers:\n' + device_watchers);    
+		
+		fs.writeFileSync(sourcefolder + '/userdata/groups.db.js',device_groups);
+		sharedfunctions.log('Saved Devicegroups:\n' + device_groups);    
         
 		variables.savetofile = false;
 	} 
@@ -1045,34 +1080,32 @@ function minutecheck (timestamp_start) {
 									var parsed = {};
 									  
 									try {				
-										console.log('Fetched new weatherinfo.');
-                                        sharedfunctions.log('Fetched new weatherinfo.');
+										sharedfunctions.log('Fetched new weatherinfo.');
 										variables.weather = JSON.parse(chunk)
-                                        var weatherinfo = ['City: ' + variables.weather.name,
-                                                           'Country: ' + variables.weather.sys.country,
-                                                          'Weathercode: ' + variables.weather.weather[0].id,
-                                                          'Weather: ' + variables.weather.weather[0].main,
-                                                          'Sunrise: ' + sunrisetime,
-                                                          'Sunset: ' + sunsettime];
-                                        weatherinfo = weatherinfo.join('<br>');
-                                        sharedfunctions.log(weatherinfo);
+										var weatherinfo = ['City: ' + variables.weather.name,
+																			 'Country: ' + variables.weather.sys.country,
+																			'Weathercode: ' + variables.weather.weather[0].id,
+																			'Weather: ' + variables.weather.weather[0].main,
+																			'Sunrise: ' + sunrisetime,
+																			'Sunset: ' + sunsettime];
+										weatherinfo = weatherinfo.join('<br>');
+										sharedfunctions.log(weatherinfo);
 									} catch (e) {
 										console.log('Error with fetching the weather. Openweathermap.org might be busy or something.');
 									}
                                         
-                                    if (weatherfetched == false) {
-                                        weatherfetched = true;
+									if (weatherfetched == false) {
+											weatherfetched = true;
 									   callback(null, 'original'); 
-                                    } else {
-                                        callback(null, 'dublicate'); 
-                                    }
+									} else {
+											callback(null, 'dublicate'); 
+									}
 								  });
-                                    res.on('error', function (chunk) {
-                                        // Error
-                                    });
+									res.on('error', function (chunk) {
+											// Error
+									});
 								} else {
-									console.log('openweather: error. Received wrong statuscode');
-                                    sharedfunctions.log('openweather: error. Received wrong statuscode from openweathermap.org: ' + res.statusCode);
+                  sharedfunctions.log('openweather: error. Received wrong statuscode from openweathermap.org: ' + res.statusCode);
 									if (weatherfetched == false) {
                                         weatherfetched = true;
 									   callback(null, 'original'); 
@@ -1081,37 +1114,35 @@ function minutecheck (timestamp_start) {
                                     }
 								}
                                 
-                                res.on('error', function (chunk) {
-                                        // Error
-                                });
+								res.on('error', function (chunk) {
+												// Error
+								});
 								
 							}); 
                             
 						}
 					});
 				} else {
-					console.log('No city defined. Unable to fetch info.');
-                    sharedfunctions.log('No city provided in Options. Unable to fetch weather info.');
+					sharedfunctions.log('No city provided in Options. Unable to fetch weather info.');
 					callback();
 				}
 			}
 		],function(err, result) {
             //console.log('Result: ' + weatherfetched);
 			// For each device
-			console.log('Recalculating schedules trigger time.');
-            sharedfunctions.log('Recalculating schedules');
+      sharedfunctions.log('Recalculating schedules');
 			
 			if (typeof(variables.weather.weather) != 'undefined') {
 				var sunrise = new Date(variables.weather.sys.sunrise*1000); 
 				var sunset = new Date(variables.weather.sys.sunset*1000);
                 
-                var hour = '0' + sunset.getHours();
-                var minutes = '0' + sunset.getMinutes();
-                sunset = hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2);
-                
-                var hour = '0' + sunrise.getHours();
-                var minutes = '0' + sunrise.getMinutes();
-                sunrise = hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2);
+				var hour = '0' + sunset.getHours();
+				var minutes = '0' + sunset.getMinutes();
+				sunset = hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2);
+
+				var hour = '0' + sunrise.getHours();
+				var minutes = '0' + sunrise.getMinutes();
+				sunrise = hour.substr(hour.length-2) + ":" + minutes.substr(minutes.length-2);
                 
 			}
 			
@@ -1242,55 +1273,55 @@ function minutecheck (timestamp_start) {
                         } else {
                             // If the recalculated time is set to occur earlier or later than +/- 5 minutes from now, we can update the schedule with the new time.
                             //console.log('The schedule is going to be updated.');
-                            var hour = '0' + original.getHours();
-							var minutes = '0' + original.getMinutes();
-							hour = hour.substr(hour.length-2);
-							minutes = minutes.substr(minutes.length-2);
-                            
-                            if (variables.debug == 'true') {
-                                sharedfunctions.log('['+schedule.uniqueid+']After recalculate the new time is: ' + hour + ":" + minutes);
-                                sharedfunctions.log('['+schedule.uniqueid+']Recalculated Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
-                            }
-                            
-							schedule.time = hour + ":" + minutes;
-							variables.savetofile = true;
+													var hour = '0' + original.getHours();
+													var minutes = '0' + original.getMinutes();
+													hour = hour.substr(hour.length-2);
+													minutes = minutes.substr(minutes.length-2);
+
+													if (variables.debug == 'true') {
+															sharedfunctions.log('['+schedule.uniqueid+']After recalculate the new time is: ' + hour + ":" + minutes);
+															sharedfunctions.log('['+schedule.uniqueid+']Recalculated Time compared to now: (>0 is in the past, <0 is in the future.) ' + difference_minutes_recalculate_compare);
+													}
+
+													schedule.time = hour + ":" + minutes;
+													variables.savetofile = true;
                         }
                     }
                     
 				});
 		   });
             
-            var timestamp_end = new Date();
-            var hour = '0' + timestamp_end.getHours();
-            var minutes = '0' + timestamp_end.getMinutes();
-            var seconds = '0' + timestamp_end.getSeconds();
-            hour = hour.substr(hour.length-2);
-            minutes = minutes.substr(minutes.length-2);
-            seconds = seconds.substr(seconds.length-2);
-            
-            //console.log('[recalculate] End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
-            var enddifference = timestamp_end-timestamp_start;
-            //console.log('enddifference: ' + enddifference);
-            //console.log('[recalculate] Milliseconds untill next launch: ' + (60000-enddifference));
-            timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
-            //console.log('[recalculate] End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
-		   setTimeout(minutecheck,(60000-enddifference),timestamp_end);
+			var timestamp_end = new Date();
+			var hour = '0' + timestamp_end.getHours();
+			var minutes = '0' + timestamp_end.getMinutes();
+			var seconds = '0' + timestamp_end.getSeconds();
+			hour = hour.substr(hour.length-2);
+			minutes = minutes.substr(minutes.length-2);
+			seconds = seconds.substr(seconds.length-2);
+
+			//console.log('[recalculate] End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+			var enddifference = timestamp_end-timestamp_start;
+			//console.log('enddifference: ' + enddifference);
+			//console.log('[recalculate] Milliseconds untill next launch: ' + (60000-enddifference));
+			timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
+			//console.log('[recalculate] End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+		 	setTimeout(minutecheck,(60000-enddifference),timestamp_end);
 		});
 	} else {
-        var timestamp_end = new Date();
-        var hour = '0' + timestamp_end.getHours();
-        var minutes = '0' + timestamp_end.getMinutes();
-        var seconds = '0' + timestamp_end.getSeconds();
-        hour = hour.substr(hour.length-2);
-        minutes = minutes.substr(minutes.length-2);
-        seconds = seconds.substr(seconds.length-2);        
-        
-        //console.log('End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
-        var enddifference = timestamp_end-timestamp_start;
-        //console.log('enddifference: ' + enddifference);
-        //console.log('Milliseconds untill next launch: ' + (60000-enddifference));
-        timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
-        //console.log('End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+		var timestamp_end = new Date();
+		var hour = '0' + timestamp_end.getHours();
+		var minutes = '0' + timestamp_end.getMinutes();
+		var seconds = '0' + timestamp_end.getSeconds();
+		hour = hour.substr(hour.length-2);
+		minutes = minutes.substr(minutes.length-2);
+		seconds = seconds.substr(seconds.length-2);        
+
+		//console.log('End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+		var enddifference = timestamp_end-timestamp_start;
+		//console.log('enddifference: ' + enddifference);
+		//console.log('Milliseconds untill next launch: ' + (60000-enddifference));
+		timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
+		//console.log('End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
 		setTimeout(minutecheck,(60000-enddifference),timestamp_end);
 	}
 };

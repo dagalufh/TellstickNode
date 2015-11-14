@@ -3,7 +3,7 @@ function createwatcher(uniqueid) {
     var validaction = $('#Select_Action').val();
     var validsetstatus = $('#Select_Action_After').val();
     var validdelay = $('#WaitTime').val();
-    
+    var validautoremote = false;
     // Check for a nuemrical value in duration for Timers
     if ($.isNumeric(validdelay) === false) {
         $('#WaitTime').parent().addClass('has-error');
