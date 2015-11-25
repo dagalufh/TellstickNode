@@ -10,9 +10,11 @@ function get(req,res) {
     var headline = 'View Log';
     var body = ['<div class="panel panel-default">',
                         '<div class="panel-body">',
+                            '<div class="table-responsive">',
                             '<table class="table table-bordered table-condensed">',
                                 '{log}',
                             '</table>',
+                            '</div>',
                         '</div>',
                     '</div>'];
     

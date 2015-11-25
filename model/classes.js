@@ -8,6 +8,7 @@ function device() {
     this.activescheduleid = '';
     this.currentstatus = '';
     this.activeday = '';
+    this.nextschedule = '';
 }
 
 function schedule() {

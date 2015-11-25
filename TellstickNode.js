@@ -1,4 +1,7 @@
 process.chdir(__dirname);
+
+// ADD CHECK FOR REQUIRES!! TRY CATCH
+
 var variables = require('./model/variables');
 var fs = require('fs');
 var async = require('async');
@@ -46,8 +49,6 @@ try {
         store: new filestorage()
         }));
 }
-    
-
 
 // Require a parser for handling POST requests and use it.
 var bodyparser = require('body-parser');
@@ -92,31 +93,6 @@ async.series([
         });
         
     },
-    
-    function (callback) {
-        
-        // Read the options
-        fs.readFile(__dirname + '/userdata/options.js',{'encoding':'utf8'},function(err,data) {
-            optionsobject = JSON.parse(data);
-            for (var key in optionsobject) {
-              variables.options[key] = optionsobject[key];  
-            }
-            //variables.options = optionsobject;
-			if (variables.options.doubletapseconds < 1) {
-				variables.options.doubletapseconds = 1;
-			}
-            console.log(variables.options);
-            sharedfunctions.log('Startup - Read options from file.');
-			
-            var optionsjson = JSON.stringify(variables.options,null,2);
-            fs.writeFile(__dirname + '/userdata/options.js',optionsjson, function(err) {
-                // Write the options to the file. Saving any additions that has been made.
-                if(err) return callback(err);
-                sharedfunctions.log('Saved the default options.');
-                callback();
-            });    
-        });
-    },
     function (callback) {
         // Check if the optionsfile already exists or not. otherwise, create it.
          fs.exists(__dirname + '/changelog.txt', function (exists) {
@@ -132,6 +108,7 @@ async.series([
                                 break;
                             }
                         }
+                        
                         sharedfunctions.log(changelog);
                     }
                     callback();
@@ -142,82 +119,13 @@ async.series([
          });
         
     },
-    function (callback) {
-        // Fetch weather information
-        if (variables.options.city.toString().length > 0) {
-            //weather.setCity(encodeURIComponent(variables.options.city));
-            dns.lookup('api.openweathermap.org',function onLookup (err) {
-                if (err) { 
-                    console.log('Unable to reach api.openweathermap.org');
-                    callback();
-                } else {
-					var options = {
-						host : 'api.openweathermap.org',
-						path: '/data/2.5/weather?q=' + encodeURIComponent(variables.options.city) + '&units=metric&lang=en&appid=' + variables.options.openweatherappid
-					};
-					  
-					var reg = http.get(options, function(res){
-						//console.log(res);
-						res.setEncoding('utf-8');
-						console.log(res.statusCode);
-						  
-						if (res.statusCode == 200) {
-				            res.on('data', function (chunk) {
-                                var parsed = {};
-
-                                try {				
-                                    sharedfunctions.log('Startup - Fetched weather information');
-                                    variables.weather = JSON.parse(chunk)
-                                } catch (e) {
-                                    sharedfunctions.log('Startup - Error with fetching the weather. Openweathermap.org might be busy or something.');
-                                }
-						    });
-                            res.on('error', function (chunk) {
-                                // Error
-                            });
-						} else {
-							console.log('openweather: error. Received wrong statuscode');
-                            sharedfunctions.log('Startup - Openweather: error. Received wrong statuscode');
-						}
-						callback();
-					}); 
-					//console.log(reg);
-                   /* weather.getAllWeather(function(err, JSONObj){
-						if (typeof(JSONObj.error) == 'undefined') {
-							variables.weather = JSONObj;
-						} else {
-							console.log('Error with fetching the weather. Openweathermap.org might be busy or something.');
-						}
-						
-                        callback();
-                    });
-				   */
-                }
-            });
-        } else {
-            sharedfunctions.log('Startup - No city provided. Unable to fetch weather information.');
-            callback();
-        }
-        
-    },
-    
-    function (callback) {
-        // get the list of devices
-        if (os.platform() === 'win32') {
-            //console.log('Server is a Windows machine. Run tdtool.exe to fetch a list of devices.');
-            var sourcefolder = __dirname.replace(/\\/g,"/");
-            var path =  sourcefolder + '/./requirements/tdtool.exe';
-        } else if (os.platform() == 'linux') {
-            //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
-            var path = 'tdtool';
-        } 
-        exec('"'+path+'" --version', null, function (error,stdout,stderr) {
+    function (callback) {    
+        exec('"' + variables.tdtool() + '" --version', null, function (error,stdout,stderr) {
             var lines = stdout.toString().split('\n');
             var version = lines[0].substr(lines[0].indexOf(' ')+1);
-            
             if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
                 console.log('New Version of Telldus. >= ' + variables.tdtoolversionlimit);
-                exec('"'+path+'" --list-devices', null, function (error,stdout,stderr) {
+                exec('"' + variables.tdtool() + '" --list-devices', null, function (error,stdout,stderr) {
                     var lines = stdout.toString().split('\n');
 
                     lines.forEach(function(line) {
@@ -255,7 +163,7 @@ async.series([
                 });
             } else {
                 console.log('Old Version of Telldus. < ' + variables.tdtoolversionlimit);
-                exec('"'+path+'" -l', null, function (error,stdout,stderr) {
+                exec('"' + variables.tdtool() + '" -l', null, function (error,stdout,stderr) {
                     var lines = stdout.toString().split('\n');
                     var sensorsfound = false;
                     lines.forEach(function(line) {
@@ -297,105 +205,60 @@ async.series([
         });
        
     },
-    
     function (callback) {
-        // Fetch the groups of devices
-        fs.exists(__dirname + '/userdata/groups.db.js', function (exists) {
-            if (exists) {
-                var groupsarray = [];
-                fs.readFile(__dirname.replace("\\","/") + '/userdata/groups.db.js',{'encoding':'utf8'},function(err,data) {
-                    if (data.length>1) {
-                       var rows = data.split('\n');
-                        for (var i=0; i<rows.length; i++) {
-                            if (rows[i].length > 1) {
-                                groupsarray.push(JSON.parse(rows[i]));
-                            }
-                        }
-                        
-                        groupsarray.forEach (function (group) {
-                                var newgroup = new classes.device();
-
-                                for (var key in group) {
-                                  newgroup[key] = group[key];  
-                                }
-                            
-                                for (var i=0; i < newgroup.devices.length; i++) {
-                                    var validmemberid = false;
-                                    variables.devices.forEach(function(searchid) {
-                                        console.log(searchid.id + ' == ' + newgroup.devices[i])
-                                        if (searchid.id == newgroup.devices[i]) {
-                                            console.log('Match found in above string');
-                                            validmemberid = true;
-                                        }
-                                    });
-                                    
-                                    if (validmemberid === false) {
-                                        
-                                        console.log(newgroup.devices.splice(i,1));
-                                        i=0;
-                                        
-                                    }
-                                };
-                                variables.savetofile = true;
-
-                                variables.devices.push(newgroup);
-                            
-                        });
-                       
-                    }
-                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
-                    callback();
-                });
-            } else {
-                callback();
-            }
-        });
-       
+      // CALL LOAD USERDATA      
+        var load_userdata = require('./controllers/load_userdata');
+        load_userdata(callback);
     },
-    
     function (callback) {
-        var schedulesarray = [];
-        // get the list of schedules from the file
-        var sourcefolder = __dirname.replace("\\","/");
-    
-        // Perhaps limit this to start of application. Then work with schedules stored in memory. Only work with files when removing or adding new schedules.
-        fs.exists(__dirname + '/userdata/schedules.db.js', function (exists) {
-            if(exists) {
-                fs.readFile(sourcefolder + '/userdata/schedules.db.js',{'encoding':'utf8'},function(err,data) {
-                //console.log(err);
-                    //console.log('Reading the scheduledatabase');
-                    if (data.length>1) {
-                       var rows = data.split('\n');
-                        for (var i=0; i<rows.length; i++) {
-                            if (rows[i].length > 1) {
-                                schedulesarray.push(JSON.parse(rows[i]));
-                            }
-                        }
+        // Fetch weather information
+        if (variables.options.city.toString().length > 0) {
+            //weather.setCity(encodeURIComponent(variables.options.city));
+            dns.lookup('api.openweathermap.org',function onLookup (err) {
+                if (err) { 
+                    console.log('Unable to reach api.openweathermap.org');
+                    callback();
+                } else {
+					var options = {
+						host : 'api.openweathermap.org',
+						path: '/data/2.5/weather?q=' + encodeURIComponent(variables.options.city) + '&units=metric&lang=en&appid=' + variables.options.openweatherappid
+					};
+					  
+					var reg = http.get(options, function(res){
+						//console.log(res);
+						res.setEncoding('utf-8');
+						console.log(res.statusCode);
+						  
+						if (res.statusCode == 200) {
+				            res.on('data', function (chunk) {
+                                var parsed = {};
 
-                        variables.devices.forEach(function(device) {
-                            //console.log('DeviceID : ' + device.id);
-                            device.schedule.length = 0;
-                            schedulesarray.forEach (function (currentschedule) {
-                                if (device.id == currentschedule.deviceid) {
-                                    var newschedule = new classes.schedule();
-
-                                    for (var key in currentschedule) {
-                                      newschedule[key] = currentschedule[key];  
-                                    }
-                                    
-                                    device.schedule.push(newschedule);
+                                try {				
+                                    sharedfunctions.log('Startup - Fetched weather information');
+                                    variables.weather = JSON.parse(chunk)
+                                } catch (e) {
+                                    sharedfunctions.log('Startup - Error with fetching the weather. Openweathermap.org might be busy or something.');
                                 }
+						    });
+                            res.on('error', function (chunk) {
+                                // Error
                             });
-                        });
-                    }
-                    callback();
-                });
-            } else {
-                callback();
-            }
-        });
+						} else {
+							console.log('openweather: error. Received wrong statuscode');
+                            sharedfunctions.log('Startup - Openweather: error. Received wrong statuscode');
+						}
+						callback();
+					}); 
+
+                }
+            });
+        } else {
+            sharedfunctions.log('Startup - No city provided. Unable to fetch weather information.');
+            callback();
+        }
+        
     },
-    
+        
     function (callback) {
         // Highlight the active / last active schedule
         var currenttimestamp = new Date();
@@ -478,68 +341,8 @@ async.series([
     },
     function (callback) {
         // Reset devices to correct status
-        /*
-        variables.devices.forEach(function(device) {
-            
-            if (device.activescheduleid.toString().length > 0) {
-                console.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
-                sharedfunctions.log('Startup - Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
-                devicefunctions.deviceaction(device.id, device.currentstatus);
-                // Perhaps add DoubleTap here..
-            } else {
-                console.log('Found no schedules for ' + device.id + ":" +  device.name);
-            }
-        });
-        callback();
-        */
         devicefunctions.resetdevices(callback);
-    },
-    function (callback) {
-        // Fetch the watchers and apply them to the correct device  
-        var watchersarray = [];
-        // get the list of schedules from the file
-        var sourcefolder = __dirname.replace("\\","/");
-    
-        // Perhaps limit this to start of application. Then work with schedules stored in memory. Only work with files when removing or adding new schedules.
-        fs.exists(__dirname + '/userdata/watchers.db.js', function (exists) {
-            if(exists) {
-                fs.readFile(sourcefolder + '/userdata/watchers.db.js',{'encoding':'utf8'},function(err,data) {
-                //console.log(err);
-                    //console.log('Reading the scheduledatabase');
-                    if (data.length>1) {
-                       var rows = data.split('\n');
-                        for (var i=0; i<rows.length; i++) {
-                            if (rows[i].length > 1) {
-                                watchersarray.push(JSON.parse(rows[i]));
-                            }
-                        }
-
-                        variables.devices.forEach(function(device) {
-                            //console.log('DeviceID : ' + device.id);
-                            device.watchers.length = 0;
-                            watchersarray.forEach (function (currentwatcher) {
-                                if (device.id == currentwatcher.deviceid) {
-                                    var newwatcher = new classes.watcher();
-
-                                    for (var key in currentwatcher) {
-                                      newwatcher[key] = currentwatcher[key];  
-                                    }
-                                    
-                                    device.watchers.push(newwatcher);
-                                }
-                            });
-                        });
-                    }
-                    //console.log(variables.devices);
-                    callback();
-                });
-                
-            } else {
-                callback();
-            }
-        });
-    }
-    
+    }    
 ],function (err) {
     // Start the server here
     variables.savetofile = true;
@@ -563,38 +366,21 @@ async.series([
       });
     });
  
-    //heapdump.writeSnapshot(__dirname.replace("\\","/") + '/' + Date.now() + '.heapsnapshot');
+
 	var timerstart = new Date();
 	setTimeout(timer_getdevicestatus,15000);
-  setTimeout(doubletapcheck,1000*variables.options.doubletapseconds);
+    setTimeout(doubletapcheck,1000*variables.options.doubletapseconds);
 	setTimeout(minutecheck,60000,timerstart);
-	//setTimeout(timer_getweather,60000);
 });
 
 function timer_getdevicestatus() {
 	var timestamp_start = new Date();
-		
-    //if (variables.doubletap.length > 0) {
-    //    console.log('There is something in doubletap. Waiting to update device info untill all commands are sent.');  
-    //    setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
-    //} else {
-
-        if (os.platform() === 'win32') {
-            //console.log('Server is a Windows machine. Run tdtool.exe to fetch a list of devices.');
-            var sourcefolder = __dirname.replace(/\\/g,"/");
-            var path =  sourcefolder + '/requirements/tdtool.exe';
-            //console.log(path);
-        } else if (os.platform() == 'linux') {
-            //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
-            var path = 'tdtool';
-        } 
-	
-        exec('"'+path+'" --version', null, function (error,stdout,stderr) {
+        exec('"' + variables.tdtool() + '" --version', null, function (error,stdout,stderr) {
             var lines = stdout.toString().split('\n');
             var version = lines[0].substr(lines[0].indexOf(' ')+1);
 
             if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
-                exec('"'+path+'" --list-devices', null, function (error,stdout,stderr) {
+                exec('"' + variables.tdtool() + '" --list-devices', null, function (error,stdout,stderr) {
                     //console.log(error);
                     var lines = stdout.toString().split('\n');
                     lines.forEach(function(line) {
@@ -685,7 +471,7 @@ function timer_getdevicestatus() {
                 });
             } else {
                 // This is run if the tdtool is older than version 2.1.2
-                exec('"'+path+'" -l', null, function (error,stdout,stderr) {
+                exec('"' + variables.tdtool() + '" -l', null, function (error,stdout,stderr) {
                     var lines = stdout.toString().split('\n');
                     var sensorsfound = false;
                     lines.forEach(function(line) {
@@ -780,7 +566,6 @@ function timer_getdevicestatus() {
                 });
             }
         });
-    //}
 }
 
  // Doubletap interval check
@@ -805,25 +590,42 @@ function doubletapcheck() {
 	if (variables.options.doubletapseconds < 1) {
 		variables.options.doubletapseconds = 1;
 	}
-	// (60000+(timestamp_start-new Date().getTime()))
+    
    setTimeout(doubletapcheck,((1000*variables.options.doubletapseconds)+(timestamp_start-new Date().getTime())));
 }
 
-//// implement timestamp argument!!!!! Solves it??
+// Implement locking device to not let this do anything if a restore is in progress.
 function minutecheck (timestamp_start) {
     sharedfunctions.DateAdd('n',timestamp_start,1);
+    
+    if(variables.restoreInProgress === true) {
+        var timestamp_end = new Date();
+		var hour = '0' + timestamp_end.getHours();
+		var minutes = '0' + timestamp_end.getMinutes();
+		var seconds = '0' + timestamp_end.getSeconds();
+		hour = hour.substr(hour.length-2);
+		minutes = minutes.substr(minutes.length-2);
+		seconds = seconds.substr(seconds.length-2);        
+
+		//console.log('End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+		var enddifference = timestamp_end-timestamp_start;
+		//console.log('enddifference: ' + enddifference);
+		//console.log('Milliseconds untill next launch: ' + (60000-enddifference));
+		timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
+		//console.log('End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
+		setTimeout(minutecheck,(60000-enddifference),timestamp_end);   
+        return;
+    }
+    
+    
     console.log('_________________________________________________________________');
-	//var timestamp_start = new Date();
-	//timestamp_start.setSeconds(0);
-    //timestamp_start.setMilliseconds(0);
-	
 
 	var hour = '0' + timestamp_start.getHours();
 	var minutes = '0' + timestamp_start.getMinutes();
-  var seconds = '0' + timestamp_start.getSeconds();
+    var seconds = '0' + timestamp_start.getSeconds();
 	hour = hour.substr(hour.length-2);
 	minutes = minutes.substr(minutes.length-2);
-  seconds = seconds.substr(seconds.length-2);
+    seconds = seconds.substr(seconds.length-2);
 	console.log('Start of Minutescheck: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_start.getMilliseconds());
 	
 	var dayofweek = timestamp_start.getUTCDay();
@@ -839,52 +641,52 @@ function minutecheck (timestamp_start) {
 								sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered. This has not been executed as schedules are paused.'); 
 						} else {
 							if (schedule.enabled == 'true') {
-									var runschedule = true;
+                                var runschedule = true;
 
-									if (schedule.intervalnotbefore.indexOf(':') != -1) {
-											var notbefore = new Date();
-											notbeforearray = schedule.intervalnotbefore.split(':');
-											notbefore.setHours(notbeforearray[0]);
-											notbefore.setMinutes(notbeforearray[1]); 
-											var minutedifference_notbefore = Math.floor(((timestamp_start - notbefore)/1000)/60);
-											if (minutedifference_notbefore < 0) {
-													// if less than 0, don't run the schedule! // This means that the before time has not yet been reached.
-													runschedule = false;
-											}
-									}
+                                if (schedule.intervalnotbefore.indexOf(':') != -1) {
+                                        var notbefore = new Date();
+                                        notbeforearray = schedule.intervalnotbefore.split(':');
+                                        notbefore.setHours(notbeforearray[0]);
+                                        notbefore.setMinutes(notbeforearray[1]); 
+                                        var minutedifference_notbefore = Math.floor(((timestamp_start - notbefore)/1000)/60);
+                                        if (minutedifference_notbefore < 0) {
+                                                // if less than 0, don't run the schedule! // This means that the before time has not yet been reached.
+                                                runschedule = false;
+                                        }
+                                }
 
-									if (schedule.intervalnotafter.indexOf(':') != -1) {
-											var notafter = new Date();
-											notafterearray = schedule.intervalnotafter.split(':');
-											notafter.setHours(notafterearray[0]);
-											notafter.setMinutes(notafterearray[1]); 
-											var minutedifference_notafter = Math.floor(((timestamp_start - notafter)/1000)/60);
-											if (minutedifference_notafter > 0) {
-													// if more than 0, don't run the schedule! | This means that the after time has already passes.
-													runschedule = false;
-											}
-									}
+                                if (schedule.intervalnotafter.indexOf(':') != -1) {
+                                        var notafter = new Date();
+                                        notafterearray = schedule.intervalnotafter.split(':');
+                                        notafter.setHours(notafterearray[0]);
+                                        notafter.setMinutes(notafterearray[1]); 
+                                        var minutedifference_notafter = Math.floor(((timestamp_start - notafter)/1000)/60);
+                                        if (minutedifference_notafter > 0) {
+                                                // if more than 0, don't run the schedule! | This means that the after time has already passes.
+                                                runschedule = false;
+                                        }
+                                }
 
-									if (runschedule) {
-											sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered.');
+                                if (runschedule) {
+                                        sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] triggered.');
 
-											devicefunctions.deviceaction(device.id,schedule.action);
+                                        devicefunctions.deviceaction(device.id,schedule.action);
 
-											if (schedule.sendautoremote == 'true') {
-													sharedfunctions.autoremote(device.name,schedule.action);
-											}
-											if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
-													removeschedules.push(schedule.uniqueid);
-											}
-											sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
-											schedule.stage = 1;
-											// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
-											if (variables.options.doubletapcount > 0) {
-													variables.doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: schedule.action});
-											}
-									} else {
-											sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] not triggered. Out of allowed intervall.'); 
-									}
+                                        if (schedule.sendautoremote == 'true') {
+                                                sharedfunctions.autoremote(device.name,schedule.action);
+                                        }
+                                        if ( (schedule.runonce == 'true') && (schedule.controller != 'Timer') ) {
+                                                removeschedules.push(schedule.uniqueid);
+                                        }
+                                        sendtoclient([{device :  device.id+':'+schedule.uniqueid}])
+                                        schedule.stage = 1;
+                                        // Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+                                        if (variables.options.doubletapcount > 0) {
+                                                variables.doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: schedule.action});
+                                        }
+                                } else {
+                                        sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] not triggered. Out of allowed intervall.'); 
+                                }
 							} else {
 									sharedfunctions.log('Schedule [' + schedule.uniqueid + '] for device ['+device.name+'] did not trigger now because the schedule is disabled.');  
 							}
@@ -928,7 +730,7 @@ function minutecheck (timestamp_start) {
 
 									// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
 									if (variables.options.doubletapcount > 0) {
-											doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: 'off'});
+											variables.doubletap.push({schedule : schedule,count : variables.options.doubletapcount, action: 'off'});
 									}    
 							}
 						}
@@ -967,9 +769,9 @@ function minutecheck (timestamp_start) {
 		
 		var backupfoldercontents = fs.readdirSync(rootbackupdir);
 		var currentdate = new Date();
-		var year = currentdate.getUTCFullYear();
-		var month = '0' + (currentdate.getUTCMonth()+1);
-		var day = '0' + currentdate.getUTCDate();
+		var year = currentdate.getFullYear();
+		var month = '0' + (currentdate.getMonth()+1);
+		var day = '0' + currentdate.getDate();
 		month = month.substr(month.length-2);
 		day = day.substr(day.length-2);
 		

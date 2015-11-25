@@ -23,14 +23,7 @@ exports.resetdevices = resetdevices;
 exports.getresetdevices = getresetdevices;
 
 function deviceaction (deviceid, action, res) {
-   if (os.platform() === 'win32') {
-        //console.log('Server is a Windows machine. Run tdtool.exe to switch status on device.');
-        var sourcefolder = __dirname.replace(/\\/g,"/");
-        var path =  sourcefolder + '/../requirements/tdtool.exe';
-    } else if (os.platform() == 'linux') {
-        //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
-        var path = 'tdtool';
-    } 
+
     var actiontotrigger = '';
     if (action.indexOf(':') != -1) {
         var dimsettings = action.split(':');
@@ -39,7 +32,7 @@ function deviceaction (deviceid, action, res) {
         actiontotrigger = '--'+action;
     }
     if (deviceid.indexOf('group') == -1) {
-    exec('"'+path+'" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
+    exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
             if (typeof(res) !== 'undefined') {
                 //res.send(stdout);
             }
@@ -66,7 +59,7 @@ function deviceaction (deviceid, action, res) {
             if (device.id == deviceid) {
                 device.lastcommand = actiontotrigger.toLowerCase();
                 device.devices.forEach(function(device_in_group) {
-                    exec('"'+path+'" '+ actiontotrigger.toLowerCase() +' ' + device_in_group, null, function (error,stdout,stderr) {
+                    exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + device_in_group, null, function (error,stdout,stderr) {
                         if (typeof(res) !== 'undefined') {
                             //res.send(stdout);
                         }
@@ -94,23 +87,13 @@ function deviceaction (deviceid, action, res) {
 }
 
 function getdevicestatus () {
-    
-    if (os.platform() === 'win32') {
-        //console.log('Server is a Windows machine. Run tdtool.exe to fetch a list of devices.');
-        var sourcefolder = __dirname.replace(/\\/g,"/");
-        var path =  sourcefolder + '/../requirements/tdtool.exe';
-		//console.log(path);
-    } else if (os.platform() == 'linux') {
-        //console.log('Server is a Linux machine. Run tdtool to switch status on device.');
-        var path = 'tdtool';
-    } 
-    
-    exec('"'+path+'" --version', null, function (error,stdout,stderr) {
+
+    exec('"' + variables.tdtool() + '" --version', null, function (error,stdout,stderr) {
         var lines = stdout.toString().split('\n');
         var version = lines[0].substr(lines[0].indexOf(' ')+1);
 
         if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
-            exec('"'+path+'" --list-devices', null, function (error,stdout,stderr) {
+            exec('"' + variables.tdtool() + '" --list-devices', null, function (error,stdout,stderr) {
                 //console.log(error);
                 var lines = stdout.toString().split('\n');
                 lines.forEach(function(line) {
@@ -200,7 +183,7 @@ function getdevicestatus () {
             });
         } else {
             // This is run if the tdtool is older than version 2.1.2
-            exec('"'+path+'" -l', null, function (error,stdout,stderr) {
+            exec('"' + variables.tdtool() + '" -l', null, function (error,stdout,stderr) {
                 var lines = stdout.toString().split('\n');
                 var sensorsfound = false;
                 lines.forEach(function(line) {

@@ -24,7 +24,7 @@ function get(request, response) {
                     '</div>',
                     '<div class="panel-body">',
                     '<table class="table table-bordered">',
-                    '<tr><th>Status</th><th>Device</th></tr>',
+                    '<tr><th>Status</th><th>Next Schedule</th><th>Device</th></tr>',
                     '{available-devices}',
                     '</table>',
                     '</div>',
@@ -53,6 +53,15 @@ function get(request, response) {
         var status_off = '';
         var status_dim = '';
         var dimbutton = '';
+        var schedule = {time: '', action: ''};
+        
+        
+        device.schedule.forEach(function (singleschedule) {
+            if (singleschedule.uniqueid == device.nextschedule) {
+                schedule = singleschedule;
+            }
+        });
+        
 
         if (device.lastcommand.toLowerCase() == 'on') {
             status_on = 'btn-success';
@@ -68,9 +77,9 @@ function get(request, response) {
             dimbutton = '<button disabled class="btn btn-default '+status_dim+'" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button>';
         }
         if (device.type == 'group') {
-            available_devicegroups += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>'+dimbutton+'</td><td>'+device.name+'</td></tr>';
+            avalable_devicegroups += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>'+dimbutton+'</td><td class="devicestatus">'+schedule.time+' '+ schedule.action +'</td><td>'+device.name+'</td></tr>';
         } else {
-            available_devices += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>'+dimbutton+'</td><td>'+device.name+'</td></tr>';
+            available_devices += '<tr><td class="devicestatus"><button class="btn btn-default '+status_on+'" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default '+status_off+'" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>'+dimbutton+'</td><td class="devicestatus">'+schedule.time+' '+ schedule.action +'</td><td>'+device.name+'</td></tr>';
         }
 
     });

@@ -91,6 +91,7 @@ function get(request, response) {
         
         
         variables.devices.forEach(function(device, index) {
+            var highlightnext = false;
             if (device.id == selected_deviceid) {
                 devicetoview = devicetoview + '<option selected value="'+device.id + '">'+device.name;
             } else {
@@ -111,10 +112,19 @@ function get(request, response) {
                     });
                     dayname = dayname.substring(0,(dayname.length-2));
                     
+                    
+                    if (highlightnext === true) {
+                       activeschedule = 'class="bg-danger"';
+                        highlightnext = false;
+                    }
+                    
                     if (device.activescheduleid == singleschedule.uniqueid) {
                                 activeschedule = 'class="bg-success"';
+                                highlightnext = true;
                                 
                     }
+                    
+                    
                     if ( (device.id == selected_deviceid) || (selected_deviceid == 0) ) {
                         if ( (selected_scheduletype == '') || (selected_scheduletype == singleschedule.enabled) ) {
                             if (singleschedule.controller != 'Timer') {

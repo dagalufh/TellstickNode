@@ -127,7 +127,7 @@ function highlightactiveschedule() {
 
     //console.log('Inside Resetstatusfunction();');
     variables.devices.forEach(function(device) {
-
+        device.nextschedule = 'none';
         var startday = today+1;
         var todayreached = false;
         if (today == 6) {
@@ -181,7 +181,13 @@ function highlightactiveschedule() {
                         device.currentstatus = day[i].action;
                         device.activeday = startday;
                         //console.log('Schedule Unique ID: ' + day[i].uniqueid + ' and action: ' + day[i].action + ' on day ' + i );
-                    } else {
+                    }else if (currenttime < day[i].time) {
+                        if (device.nextschedule == 'none') {
+                            device.nextschedule = day[i].uniqueid;   
+                        } else {
+                            break;
+                        }
+                    }else {
                         //console.log('Breaking..');
                         break;
                     }
@@ -201,6 +207,20 @@ function highlightactiveschedule() {
             }
 
         } while (todayreached == false);
+        
+        
+        var highlightnext = false;
+        device.schedule.forEach (function(singleschedule) {
+
+            if (highlightnext === true) {
+                highlightnext = false;
+                device.nextschedule = singleschedule.uniqueid; 
+            }
+
+            if (device.activescheduleid == singleschedule.uniqueid) {
+                highlightnext = true;
+            }
+        });
 
     });
 }

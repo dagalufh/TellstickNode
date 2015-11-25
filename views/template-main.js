@@ -135,6 +135,14 @@ function build (pagetitle, content,loggedin) {
                 activedevicegroup = 'active';
                 PageSpecificJS = '<script src="jscript/devicegroup.js"></script>';
                 break;
+            case('Edit Devicegroup'):
+                activedevicegroup = 'active';
+                PageSpecificJS = '<script src="jscript/devicegroup.js"></script>';
+                break;
+            case('Backups and Updates'):
+                activeoptions = 'active';
+                PageSpecificJS = '<script src="jscript/backupupdate.js"></script>';
+                break;
     }
             
     navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
@@ -163,9 +171,15 @@ function build (pagetitle, content,loggedin) {
                             '<li><a href="/view_devicegroups">View All</a></li>',
                           '</ul>',
                         '</li>',
+                         '<li class="dropdown ' + activeoptions + '">',
+                          '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Options <span class="caret"></span></a>',
+                          '<ul class="dropdown-menu">',
+                            '<li><a href="/options">Options</a></li>',
+                            '<li><a href="/view_restorebackup">Backup/Restore</a></li>',
+                          '</ul>',
+                        '</li>',
                          //'<li class="' + activeschedule + '"><a href="/newschedule">New Schedule</a></li>',
                          //'<li class="' + activewatcher + '"><a href="/newwatcher">New Watcher</a></li>',
-                         '<li class="' + activeoptions + '"><a href="/options">Options</a></li>',
                          '<li class="' + activelogs + '"><a href="/logs">View Log</a></li>',
                          '<li><a href="/logout">Logout</a></li>'];
     }

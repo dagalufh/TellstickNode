@@ -7,3 +7,5 @@ node_modules/
 sessions/
 daemon/
 connect-session-knex.sqlite
+requirements/tellstickdemo.config
+backup/

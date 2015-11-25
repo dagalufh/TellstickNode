@@ -2,6 +2,7 @@
 var saltedpasswords = require('./controllers/saltedpasswords.js').saltedpasswords;
 var fs = require('fs');
 var ip = require('ip');
+var variables = require('./model/variables');
 
 var currentSession;
 module.exports = function (app) {
@@ -169,6 +170,18 @@ module.exports = function (app) {
                 require('./controllers/view_devicegroups').get(req,res);
             }
         })
+    app.route('/view_restorebackup')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/view_updatebackup').get(req,res);
+            }
+      }) 
+     app.route('/restore-backup')
+        .post(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/restorebackup').restore(req,res);
+            }
+      })
     app.route('/new_devicegroup')
         .get(function (req,res) {
             if (checklogin(req, res)) {
@@ -192,7 +205,12 @@ module.exports = function (app) {
                 require('./controllers/new_devicegroup').showdevicegroup(req,res);
             }
         })
-    
+    app.route('/updates-check')
+        .get(function (req,res) {
+            if (checklogin(req, res)) {
+                require('./controllers/check_updates').check_updates(variables.currentversion,null,req,res);
+            }
+      })
     
     
     app.get('*', function(req, res){

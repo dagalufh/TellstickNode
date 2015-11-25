@@ -116,7 +116,7 @@ if (process.platform == 'win32') {
         console.log('Platform is arm architecture. Lets use filesession.');
         fs.renameSync(packagefs, packageoriginal);
     } else {
-        console.log('Platform is arm architecture. Lets use sqlite3.');
+        console.log('Platform is not arm architecture. Lets use sqlite3.');
         fs.renameSync(packagesqlite3, packageoriginal);
     }
 

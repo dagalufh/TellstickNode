@@ -66,7 +66,7 @@ function log (message) {
 	
 	var maxlog = 300;
 	if (variables.debug == 'true') {
-	 maxlog = 2000;   
+	 maxlog = 3000;   
 	}
 
 	while (variables.log.length > maxlog) {
