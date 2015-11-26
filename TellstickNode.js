@@ -258,86 +258,9 @@ async.series([
         }
         
     },
-        
     function (callback) {
-        // Highlight the active / last active schedule
-        var currenttimestamp = new Date();
-        var today = currenttimestamp.getUTCDay();
-
-        var hour = '0' + currenttimestamp.getHours();
-        var minutes = '0' + currenttimestamp.getMinutes();
-        hour = hour.substr(hour.length-2);
-        minutes = minutes.substr(minutes.length-2);
-        var currenttime = hour + ":" + minutes;
-
-
-        //console.log('Inside Resetstatusfunction();');
-        variables.devices.forEach(function(device) {
-
-            var startday = today+1;
-            var todayreached = false;
-            if (today == 6) {
-                startday = 0;
-            }
-
-            // For EACH device
-            var daysoftheweek = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
-            // Store each schedule in the right day of the week
-            device.schedule.forEach(function (schedule) {
-                schedule.dayofweek.forEach( function (day) {
-                    if (schedule.controller != 'Timer') {
-                        daysoftheweek[day].push(schedule);
-                    }
-                });
-            });
-
-            // Sort the times for each day so they are in the right order
-            for (var key in daysoftheweek) {
-                if (daysoftheweek.hasOwnProperty(key)) {
-                    var day = daysoftheweek[key];
-                    if(day.length > 0) {
-                        day.sort(sharedfunctions.dynamicSortMultiple('time'));
-                    }
-                }
-            }
-
-            var schedulefound = false;
-
-            do {
-                // check if we are on 'today'
-                if (startday == today) {
-                    todayreached = true;
-                }
-                
-                var day = daysoftheweek[startday];
-                for (var i = 0; i < day.length; i++) {
-
-                    if (todayreached) {
-
-                        if (currenttime > day[i].time) {
-                            device.activescheduleid = day[i].uniqueid;
-                            device.currentstatus = day[i].action;
-                            device.activeday = startday;
-                        } else {
-                            break;
-                        }
-                    } else {
-                            device.activescheduleid = day[i].uniqueid;
-                            device.currentstatus = day[i].action;
-                            device.activeday = startday;
-                    }
-                };
-
-                if (startday == 6) {
-                    startday = 0;
-                } else {
-                    startday++;
-                }
-
-            } while (todayreached == false);
-            
-        });
-        callback();
+        var highlight = require('./controllers/schedulefunctions').highlightactiveschedule;
+        highlight(callback);
     },
     function (callback) {
         // Reset devices to correct status
@@ -374,7 +297,16 @@ async.series([
 });
 
 function timer_getdevicestatus() {
-	var timestamp_start = new Date();
+    var timestamp_start = new Date();
+    
+    
+    if(variables.restoreInProgress === true) {
+     
+        setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
+        return;
+    }
+    
+	
         exec('"' + variables.tdtool() + '" --version', null, function (error,stdout,stderr) {
             var lines = stdout.toString().split('\n');
             var version = lines[0].substr(lines[0].indexOf(' ')+1);
@@ -571,6 +503,13 @@ function timer_getdevicestatus() {
  // Doubletap interval check
 function doubletapcheck() {
 	var timestamp_start = new Date();
+    
+    // Do not run if restore is in progress.
+    if (variables.restoreInProgress === true) {
+        setTimeout(doubletapcheck,((1000*variables.options.doubletapseconds)+(timestamp_start-new Date().getTime())));
+        return;
+    }
+    
 	variables.doubletap.forEach(function(repeatschedule) {
 		if(repeatschedule.count > 0) {
 			// DEBUG

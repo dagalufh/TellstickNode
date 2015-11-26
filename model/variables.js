@@ -18,7 +18,7 @@ module.exports = {
     tdtoolversionlimit : '2.1.2',
     debug : true,
     pauseschedules : false,
-    currentversion: '1.0.13',
+    currentversion: '1.0.14',
     doubletap: [],
     rootdir: __dirname.substr(0,__dirname.lastIndexOf('\\')).replace(/\\/g,"/") + '/',
     tdtool: function () {

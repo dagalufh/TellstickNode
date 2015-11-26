@@ -114,7 +114,7 @@ function getschedule(req,res) {
     res.send(display.join('\n'));
 }
 
-function highlightactiveschedule() {
+function highlightactiveschedule(callback) {
     var currenttimestamp = new Date();
     var today = currenttimestamp.getUTCDay();
 
@@ -223,6 +223,10 @@ function highlightactiveschedule() {
         });
 
     });
+    
+    if (callback) {
+        callback();
+    }
 }
 
 function  getpauseschedules(req,res) {
