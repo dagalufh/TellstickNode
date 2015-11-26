@@ -210,17 +210,24 @@ function highlightactiveschedule(callback) {
         
         
         var highlightnext = false;
-        device.schedule.forEach (function(singleschedule) {
+        
+        
+        for(var i = 0; i< device.schedule.length;i++) {
+            
 
-            if (highlightnext === true) {
-                highlightnext = false;
-                device.nextschedule = singleschedule.uniqueid; 
-            }
-
-            if (device.activescheduleid == singleschedule.uniqueid) {
-                highlightnext = true;
-            }
-        });
+            if (device.activescheduleid == device.schedule[i].uniqueid) {
+                highlightnext = i+1;
+            } 
+        }
+        
+        
+        if( (highlightnext !== false) && (highlightnext >= device.schedule.length) ){
+            highlightnext = 0;
+        }
+        
+        if(highlightnext !== false) {
+            device.nextschedule = device.schedule[highlightnext].uniqueid; 
+        }
 
     });
     

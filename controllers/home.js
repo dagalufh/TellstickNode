@@ -35,7 +35,7 @@ function get(request, response) {
                     '</div>',
                     '<div class="panel-body">',
                     '<table class="table table-bordered">',
-                    '<tr><th>Status</th><th>Devicegroup</th></tr>',
+                    '<tr><th>Status</th><th>Next Schedule</th><th>Devicegroup</th></tr>',
                     '{available-devicegroups}',
                     '</table>',
                     '</div>',
