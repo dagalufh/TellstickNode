@@ -1,6 +1,6 @@
 Version : 1.0.14
 Added restore functionality to the backups feature. Available through Options menu.
-Added "Next Schedule" to Remote and Home views.
+Added "Next Schedule" to Remote and Home views. Clickable to show info about specific schedule.
 Fixed output of logs on Log view.
 
 Version : 1.0.13
