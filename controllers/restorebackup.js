@@ -11,13 +11,13 @@ function restore(req,res) {
       var errors = [];
       req.body.files.forEach( function(file) {
         copycounter = copycounter+1;
-        sharedfunctions.log('Restoring [' + variables.rootdir + 'backup/auto/' + req.body.folder + '/' + file + '] To [' +  variables.rootdir + 'userdata/' + file + ']');
+        sharedfunctions.logToFile('Backup,Restoring [' + variables.rootdir + 'backup/auto/' + req.body.folder + '/' + file + '] To [' +  variables.rootdir + 'userdata/' + file + ']','Core');
         fse.copy(variables.rootdir + 'backup/auto/' + req.body.folder + '/' + file, variables.rootdir + 'userdata/' + file, function(err) {
           if (err) {
-              sharedfunctions.log('Error restoring [' + variables.rootdir + 'backup/auto/' + req.body.folder + '/' + file + '] To [' +  variables.rootdir + 'userdata/' + file + ']');
+            sharedfunctions.logToFile('Backup,Error restoring [' + variables.rootdir + 'backup/auto/' + req.body.folder + '/' + file + '] To [' +  variables.rootdir + 'userdata/' + file + ']','Core');
             errors.push('Error occured with file: ' + req.body.folder + '/' + file + ' copying to ' + 'userdata/' + file + '. Err: ' + err);
           }
-            sharedfunctions.log('Successfully restored [' + variables.rootdir + 'backup/auto/' + req.body.folder + '/' + file + '] To [' +  variables.rootdir + 'userdata/' + file + ']');
+            sharedfunctions.logToFile('Backup,Successfully restored [' + variables.rootdir + 'backup/auto/' + req.body.folder + '/' + file + '] To [' +  variables.rootdir + 'userdata/' + file + ']','Core');
           copycounter = copycounter-1;
           if (copycounter === 0) {
             callback(null,errors);

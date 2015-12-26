@@ -5,10 +5,9 @@ var classes = require('../model/classes');
 
 function removedevicegroup(req,res) {
     for (var i = 0; i < variables.devices.length; i++) {
-       if (variables.devices[i].id == req.query.id) {
-           sharedfunctions.log('Removed devicegroup: ' + variables.devices[i].name);
+       if (variables.devices[i].id == req.query.id) {           
+           sharedfunctions.logToFile('DeviceGroup,'+ variables.devices[i].name +',NULL,REMOVED,Devicegroup was removed: ' + JSON.stringify(variables.devices[i]),'Device-'+variables.devices[i].id);
            variables.devices.splice(i,1);
-           
        }
     }
     variables.savetofile = true;
@@ -96,17 +95,12 @@ function post(req,res) {
     }
     
     var newgroup = new classes.device();
-
-    
     newgroup.id = req.body.deviceid;
     newgroup.devices = req.body.devices;
     newgroup.name = req.body.name;
     newgroup.type = 'group';
     newgroup.lastcommand = 'off';
-    
-    
-    //console.log(newschedule);
-    sharedfunctions.log('Created devicegroup: ' + JSON.stringify(newgroup));
+ 
     
     variables.devices.forEach( function (device) {
        if (device.id == newgroup.id) {
@@ -120,8 +114,10 @@ function post(req,res) {
     variables.savetofile = true;
     if (edit === false) {
         variables.devices.push(newgroup);
+        sharedfunctions.logToFile('DeviceGroup,'+ newgroup.name +',NULL,Created,Devicegroup has been created: ' + JSON.stringify(newgroup),'Device-'+newgroup.id);
         res.send({code: 'ok', message: 'Devicegroup has been created.'});
     } else {
+        sharedfunctions.logToFile('DeviceGroup,'+ newgroup.name +',NULL,Save,Devicegroup has been saved: ' + JSON.stringify(newgroup),'Device-'+newgroup.id);
         res.send({code: 'ok', message: 'Devicegroup has been changed and saved.'});
     }
     

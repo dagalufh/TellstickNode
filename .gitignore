@@ -8,4 +8,9 @@ sessions/
 daemon/
 connect-session-knex.sqlite
 requirements/tellstickdemo.config
+tellstickdemo.config
 backup/
+logs/
+tellstickdemo.config
+npm-debug.log
+tellstickdemo.config

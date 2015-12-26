@@ -10,8 +10,8 @@ var compareversion = require('compare-version');
 
 // Send a command to a device.
 function send(req,res) {
-        deviceaction(req.query.deviceid, req.query.switchto);
-        variables.doubletap.push({schedule : {deviceid: req.query.deviceid},count : variables.options.doubletapcount, action: req.query.switchto});
+    deviceaction(req.query.deviceid, req.query.switchto);
+    variables.doubletap.push({schedule : {deviceid: req.query.deviceid},count : variables.options.doubletapcount, action: req.query.switchto});
     res.send('Send command to device.');
     
 }
@@ -21,9 +21,10 @@ exports.deviceaction = deviceaction;
 exports.getdevicestatus = getdevicestatus;
 exports.resetdevices = resetdevices;
 exports.getresetdevices = getresetdevices;
+exports.getdeviceproperty = getdeviceproperty;
 
 function deviceaction (deviceid, action, res) {
-
+    
     var actiontotrigger = '';
     if (action.indexOf(':') != -1) {
         var dimsettings = action.split(':');
@@ -32,24 +33,24 @@ function deviceaction (deviceid, action, res) {
         actiontotrigger = '--'+action;
     }
     if (deviceid.indexOf('group') == -1) {
-    exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
+        exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
             if (typeof(res) !== 'undefined') {
                 //res.send(stdout);
             }
-        
+
             var currentdevice = '';
             variables.devices.forEach(function (device) {
                 if (device.id == deviceid) {
                     currentdevice = device;
                 }
             });
-            console.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']'); 
-            sharedfunctions.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']');
-            if (variables.debug == 'true') {
-                sharedfunctions.log('Debug - tdtool set action stderr: ' + stderr);
-                sharedfunctions.log('Debug - tdtool set action stdout: ' + stdout);
+
+            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',Sent command ' + action.toLowerCase() + ' to device.','Device-'+deviceid);
+            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout.trim(),'Device-'+deviceid);
+            if (stderr) {
+                sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr.trim(),'Device-'+deviceid);
             }
-            //listmodule.updatelist();
+
             // Request an update of the status of devices.
             getdevicestatus();
         });
@@ -70,13 +71,11 @@ function deviceaction (deviceid, action, res) {
                                 currentdevice = device;
                             }
                         });
-                        console.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']'); 
-                        sharedfunctions.log('Sent command ['+action.toLowerCase() +'] to device ['+currentdevice.name+']');
-                        if (variables.debug == 'true') {
-                            sharedfunctions.log('Debug - tdtool set action stderr: ' + stderr);
-                            sharedfunctions.log('Debug - tdtool set action stdout: ' + stdout);
+                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',Sent command ' + action.toLowerCase() + ' to device: ' + currentdevice.name + '(ID: ' + device_in_group + ')','Device-'+deviceid);
+                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout,'Device-'+deviceid);
+                        if (stderr) {
+                            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr,'Device-'+deviceid);
                         }
-                        //listmodule.updatelist();
                         // Request an update of the status of devices.
                         getdevicestatus();
                     });
@@ -94,17 +93,16 @@ function getdevicestatus () {
 
         if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
             exec('"' + variables.tdtool() + '" --list-devices', null, function (error,stdout,stderr) {
-                //console.log(error);
                 var lines = stdout.toString().split('\n');
                 lines.forEach(function(line) {
                     if (line.length > 0) {
                         var currentdevice = new classes.device();
-                        //console.log('Line: ' + line);
+                        
                         var columns = line.split('\t');
                         columns.forEach(function(column) {
-                            //console.log('Column:' + column);
+                        
                             var data = column.split('=');
-                            //console.log('data: ' + data[0]);
+                        
                             if (data[0] == "id") {
                                 currentdevice.id = data[1].trim();   
                             }
@@ -127,11 +125,8 @@ function getdevicestatus () {
                         variables.devices.forEach(function(device) {
                             if (device.id == currentdevice.id) {
                                 if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
-                                    console.log('There is a watcher connected to this device.');
+                        
                                     device.watchers.forEach(function(watcher) {
-                                        //console.log('triggerstatus: ' + watcher.triggerstatus.toLowerCase());
-                                        //console.log('current device last command: ' + currentdevice.lastcommand.toLowerCase());
-                                        //console.log('watcher enabled: ' + watcher.enabled);
                                        if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
                                            // Create a schedule, runonce.
                                            var currenttime = new Date();
@@ -281,12 +276,13 @@ function resetdevices (callback) {
     variables.devices.forEach(function(device) {
 
         if (device.activescheduleid.toString().length > 0) {
-            console.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
-            sharedfunctions.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
+            //console.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
+            //sharedfunctions.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
+            sharedfunctions.logToFile('Reset,' + device.name + ',' + device.activescheduleid + ',' + device.currentstatus + ',Reset device to status: ' + device.currentstatus,'Device-'+device.id)
             deviceaction(device.id, device.currentstatus);
             // Perhaps add DoubleTap here..
         } else {
-            console.log('Found no schedules for ' + device.id + ":" +  device.name);
+            //console.log('Found no schedules for ' + device.id + ":" +  device.name);
         }
         
     });
@@ -299,4 +295,15 @@ function resetdevices (callback) {
 function getresetdevices(req,res) {
     resetdevices();
     res.send(true);
+}
+
+function getdeviceproperty(deviceid, property) {
+    var returnvalue = '';
+    variables.devices.forEach(function(device) {
+       if (device.id == deviceid) {
+            returnvalue = device[property];
+       }
+    });
+    
+    return returnvalue;
 }

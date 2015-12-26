@@ -101,6 +101,7 @@ function build (pagetitle, content,loggedin) {
                 break;
             case('View Log'):
                 activelogs = 'active';
+                PageSpecificJS = '<script src="jscript/logs.js"></script>';
                 break;
             case('Remote'):
                 activeremote = 'active';

@@ -37,8 +37,7 @@ function post(req,res) {
             currentSession.lastactive = date.getTime();
             currentSession.username = Users.username;
             currentSession.hash = saltedpasswords(Users.username + 'tellstick',8);
-            
-            //saltedpasswords(Users.password,Users.password, req.body.password);
+        
             res.send('true');
         } else {
             res.send('false');

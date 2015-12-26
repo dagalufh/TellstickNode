@@ -139,8 +139,7 @@ function post(req,res) {
     var option = JSON.stringify(variables.options,null,2);
     fs.writeFile(__dirname + '/../userdata/options.js',option, function(err) {
         if(err) throw err;
-        console.log('Saved the options.');
-        sharedfunctions.log('Saved the options.');
+        sharedfunctions.logToFile('Options,Saved options.' + JSON.stringify(option),'Core');
         res.send(true);
     });
 }

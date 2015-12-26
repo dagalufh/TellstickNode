@@ -23,14 +23,15 @@ module.exports = function (external_callback) {
 				variables.options.doubletapseconds = 1;
 			}
             
-            console.log(variables.options);
-            sharedfunctions.log('Startup - Read options from file.');
-			
+            //console.log(variables.options);
+            //sharedfunctions.log('Startup - Read options from file.');
+			sharedfunctions.logToFile('Bootprocess,Read options from file.','Core');
+            sharedfunctions.logToFile('Bootprocess,Running with the following options: ' + JSON.stringify(variables.options),'Core');
             var optionsjson = JSON.stringify(variables.options,null,2);
             fs.writeFile(variables.rootdir + 'userdata/options.js',optionsjson, function(err) {
                 // Write the options to the file. Saving any additions that has been made.
                 if(err) return callback(err);
-                sharedfunctions.log('Saved the default options.');
+                sharedfunctions.logToFile('Bootprocess,Saved options back to the file to ensure all options are stored.','Core');
                 callback();
             });    
         });
@@ -59,18 +60,13 @@ module.exports = function (external_callback) {
                             for (var i=0; i < newgroup.devices.length; i++) {
                                 var validmemberid = false;
                                 variables.devices.forEach(function(searchid) {
-                                    console.log(searchid.id + ' == ' + newgroup.devices[i])
-                                    if (searchid.id == newgroup.devices[i]) {
-                                        console.log('Match found in above string');
+                                    if (searchid.id == newgroup.devices[i]) {    
                                         validmemberid = true;
                                     }
                                 });
 
                                 if (validmemberid === false) {
-
-                                    console.log(newgroup.devices.splice(i,1));
                                     i=0;
-
                                 }
                             };
                             variables.savetofile = true;

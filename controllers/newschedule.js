@@ -200,21 +200,19 @@ function get(req,res) {
 }
 
 function post(req,res) {
+    var devicefunctions = require('../controllers/device');
     req.body.uniqueid = new Date().getTime();
     req.body.originaltime = req.body.time;
     req.body.stage = 0;
-    //console.log(req.body);
-    
+
     var newschedule = new classes.schedule();
 
     for (var key in req.body) {
       newschedule[key] = req.body[key];  
     }
-    
-    //console.log(newschedule);
-    sharedfunctions.log('Created schedule: ' + JSON.stringify(newschedule));
+
+    sharedfunctions.logToFile('Schedule,' + devicefunctions.getdeviceproperty(newschedule.deviceid, 'name') + ',Created,Created schedule: ' + JSON.stringify(newschedule),'Device-'+newschedule.deviceid);
     variables.devices.forEach(function(device) {
-        //console.log('DeviceID : ' + device.id);
         if (device.id == newschedule.deviceid) {
             device.schedule.push(newschedule);
         }

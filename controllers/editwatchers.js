@@ -7,10 +7,9 @@ var classes = require('../model/classes');
 function removewatcher (req,res) {
     variables.devices.forEach( function(device) {
         for (var i = 0; i < device.watchers.length; i++) {
-            //console.log(scheduletoremove + "==" + device.schedule[i].uniqueid);
+            
             if(req.query.watcherid == device.watchers[i].uniqueid) {
-                console.log('Watcher ' + device.watchers[i].uniqueid + ' was removed.');
-                sharedfunctions.log('Watcher ' + device.watchers[i].uniqueid + ' was removed.');
+                sharedfunctions.logToFile('Watcher,'+ device.name+','+ device.watchers[i].uniqueid+',REMOVED,Schedule was removed. Info that was removed: ' + JSON.stringify(device.watchers[i]),'Device-'+device.watchers[i].deviceid);
                 device.watchers.splice(i,1);
                 i=0;
             }
@@ -24,8 +23,6 @@ function removewatcher (req,res) {
 function get(req,res) {
     
     var selected_watcher = '';
-    
-    
     variables.devices.forEach(function (device) {
         device.watchers.forEach(function (watcher) {
             if (watcher.uniqueid == req.query.uniqueid) {
@@ -110,7 +107,7 @@ function get(req,res) {
 }
 
 function post(req,res) {
-
+    var devicefunctions = require('../controllers/device');
     var newwatcher = new classes.watcher();
     for (var key in req.body) {
         newwatcher[key] = req.body[key];  
@@ -133,7 +130,7 @@ function post(req,res) {
         }
     });
     variables.savetofile = true;
-    sharedfunctions.log('Saved watcher: ' + JSON.stringify(newwatcher));
+    sharedfunctions.logToFile('Watcher,'+ devicefunctions.getdeviceproperty(newwatcher.deviceid,'name') +','+ newwatcher.uniqueid+',Saved,Watcher was saved with this settings: ' + JSON.stringify(newwatcher),'Device-'+newwatcher.deviceid);
     res.send('Watcher has been saved.');
 }
 

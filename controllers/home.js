@@ -2,6 +2,7 @@
 var variables = require('../model/variables');
 var template = require('../views/template-main');
 var sharedfunctions = require('../model/sharedfunctions');
+var schedulefunctions = require('./schedulefunctions');
 
 // Define the get function that will return the content..?
 function get(request, response) {
@@ -47,7 +48,9 @@ function get(request, response) {
     
     var available_devices = ''; 
     var available_devicegroups = '';
-
+    
+    var sortedbyday = schedulefunctions.getschedulesbyday();
+    
     variables.devices.forEach(function(device, index) {
         var status_on = '';
         var status_off = '';
@@ -56,12 +59,51 @@ function get(request, response) {
         var schedule = {time: '', action: '',uniqueid:''};
         
         
-        device.schedule.forEach(function (singleschedule) {
-            if (singleschedule.uniqueid == device.nextschedule) {
-                schedule = singleschedule;
+        // -- Start of getting next schedule --
+       
+        var allschedules = [];
+        var activeschedule = {uniqueid:''};
+        for (var key in sortedbyday) {
+            if (sortedbyday.hasOwnProperty(key)) {
+                var day = sortedbyday[key];
+                if(day.length > 0) {
+                    day.sort(sharedfunctions.dynamicSortMultiple('time'));
+
+                    day.forEach (function(singleschedule) {
+                        if (singleschedule.enabled == 'true') {
+                            if (device.id == singleschedule.deviceid) {
+                                allschedules.push(singleschedule);
+                            }
+                        }
+                    });
+                } 
             }
-        });
+        }
         
+        var activescheduleIndex = -1;
+        var nextscheduleIndex = -1;
+        for (var i=0; i < allschedules.length; i++) {
+                //console.log("allschedules["+i+"]"+allschedules[i].uniqueid);
+               if (allschedules[i].uniqueid == device.activescheduleid) {
+                    activescheduleIndex = i;   
+               }
+        }
+        
+        if (activescheduleIndex != -1) {
+            if (activescheduleIndex < allschedules.length) {
+                nextscheduleIndex = activescheduleIndex+1;   
+            }
+
+            if (activescheduleIndex == (allschedules.length-1)) {
+                nextscheduleIndex = 0;
+            }
+        }
+       
+        if (nextscheduleIndex != -1) {
+            schedule = allschedules[nextscheduleIndex];
+        }
+        
+        // -- END of getting next schedule
 
         if (device.lastcommand.toLowerCase() == 'on') {
             status_on = 'btn-success';

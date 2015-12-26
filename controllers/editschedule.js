@@ -238,22 +238,17 @@ function get(req,res) {
 }
 
 function post(req,res) {
-    //req.body.uniqueid = new Date().getTime();
+    var devicefunctions = require('../controllers/device');
     req.body.originaltime = req.body.time;
     req.body.stage = 0;
-    //console.log(req.body);
-    
+
     var newschedule = new classes.schedule();
 
     for (var key in req.body) {
         newschedule[key] = req.body[key];  
     }
     
-    //console.log(newschedule);
-    
-    sharedfunctions.log('Saved schedule: ' + JSON.stringify(newschedule));
     variables.devices.forEach(function(device) {
-        //console.log('DeviceID : ' + device.id);
         if (device.id == newschedule.deviceid) {
             device.schedule.forEach(function (schedule) {
                 
@@ -267,7 +262,7 @@ function post(req,res) {
         }
     });
     variables.savetofile = true;
-    
+    sharedfunctions.logToFile('Schedule,'+ devicefunctions.getdeviceproperty(newschedule.deviceid,'name')+','+ newschedule.uniqueid+',Saved,Watcher was saved with this settings: ' + JSON.stringify(newschedule),'Device-'+newschedule.deviceid);
     res.send('Schedule has been saved.');
 }
 

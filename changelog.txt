@@ -1,3 +1,6 @@
+Version : 1.0.15
+Reworked Logging, now stores them in a logs subfolder. Seperated in a logfile per device and one for Core.
+
 Version : 1.0.14
 Added restore functionality to the backups feature. Available through Options menu.
 Added "Next Schedule" to Remote and Home views. Clickable to show info about specific schedule.

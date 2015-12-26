@@ -17,7 +17,7 @@ function get(request, response) {
     
     // Join each row of the body array to a continious string with proper row endings.
     body = body.join("\n");
-    response.send(template.build(headline,body,false),404);
+    response.status(404).send(template.build(headline,body,false));
 
 }
 

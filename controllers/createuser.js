@@ -38,6 +38,7 @@ function get(req,res) {
 var currentSession;
 // Requests that come via POST is handled in this function
 function post(req,res) {
+    var sharedfunctions = require('../model/sharedfunctions');
     //res.send('Create a new user.');
     var postdata = req.body;
     currentSession = req.session;
@@ -60,10 +61,8 @@ function post(req,res) {
     
     fs.writeFile(__dirname + '/../userdata/user.js',jsonuser, function(err) {
         if(err) throw err;
-        console.log('User ' + user.username + ' has been created.');
+        sharedfunctions.logToFile('Login,User ' + user.username + ' has been created.','Core');
     });
-    
-    
     
     res.send(template.build(headline,body));
 };

@@ -239,7 +239,7 @@ function checklogin(req, res) {
                     return false;
                 } else {
                     if (ip.isPrivate(remoteIP)) {
-                        console.log('Initial launch. No user yet defined.');
+                        sharedfunctions.logToFile('Login,Initial Launch, no previous user defined.','Core');
                         require('./controllers/createuser').get(req,res);
                     } else {
                         require('./controllers/forbidden').get(req,res);
@@ -255,7 +255,7 @@ function checklogin(req, res) {
                     return false;
                 } else {
                     if (ip.isPrivate(remoteIP)) {
-                        console.log('Initial launch. No user yet defined.');
+                        sharedfunctions.logToFile('Login,Initial Launch, no previous user defined.','Core');
                         require('./controllers/createuser').get(req,res);
                     } else {
                         require('./controllers/forbidden').get(req,res);

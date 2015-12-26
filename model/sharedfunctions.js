@@ -1,6 +1,7 @@
 var variables = require('./variables');
 var http = require('http');	
 var dns = require('dns');
+
 function DateAdd (ItemType, DateToWorkOn, ValueToBeAdded) {
 			switch (ItemType)
 			{
@@ -64,24 +65,88 @@ function dynamicSort (property) {
 
 function log (message) {
 	
-	var maxlog = 300;
-	if (variables.debug == 'true') {
-	 maxlog = 3000;   
-	}
+    var maxlog = 300;
+    if (variables.debug == 'true') {
+     maxlog = 3000;   
+    }
 
-	while (variables.log.length > maxlog) {
-			variables.log.shift();   
-	}
-
+    while (variables.log.length > maxlog) {
+            variables.log.shift();   
+    }
+    
 	var timestamp_start = new Date();
 	var hour = '0' + timestamp_start.getHours();
 	var minutes = '0' + timestamp_start.getMinutes();
 	var seconds = '0' + timestamp_start.getSeconds();
+    
 	hour = hour.substr(hour.length-2);
 	minutes = minutes.substr(minutes.length-2);
 	seconds = seconds.substr(seconds.length-2);
-	console.log('UserLog:' + hour + ':' + minutes + ':' + seconds + ":" + message)
-	variables.log.push({time: hour + ':' + minutes + ':' + seconds,message: message});
+    
+    console.log('UserLog:' + hour + ':' + minutes + ':' + seconds + ":" + message)
+    variables.log.push({time: hour + ':' + minutes + ':' + seconds,message: message});
+}
+
+function logToFile (message, targetfile) {
+    var fs = require('fs');
+    var os = require("os");
+    var fsextra = require('fs-extra');
+    
+     var timestamp_start = new Date();
+	var hour = '0' + timestamp_start.getHours();
+	var minutes = '0' + timestamp_start.getMinutes();
+	var seconds = '0' + timestamp_start.getSeconds();
+    var milliseconds = '00' + timestamp_start.getMilliseconds();
+	hour = hour.substr(hour.length-2);
+	minutes = minutes.substr(minutes.length-2);
+	seconds = seconds.substr(seconds.length-2);
+    milliseconds = milliseconds.substr(milliseconds.length-3);
+    
+    
+    var month = (Number(("0" + timestamp_start.getUTCMonth()).substr((("0" + timestamp_start.getUTCMonth()).length)-2))+1);
+    var day = ("0" + timestamp_start.getUTCDate()).substr((("0" + timestamp_start.getUTCDate()).length)-2);
+    var year = timestamp_start.getUTCFullYear();
+    
+    
+    
+
+    var logdir = variables.rootdir + '/logs/';
+    // Create the directory if it dosn't exist.
+    fsextra.mkdirsSync(logdir);
+    
+    
+    
+    var logdircontents = fs.readdirSync(variables.rootdir + '/logs');
+    
+    
+    // Sort the directory of backups so we don't remove anything we shoudln't.
+    logdircontents.sort(function(a, b) {
+            return a < b ? -1 : 1;
+    })
+
+    // If there is not a folder for todays logfiles, create one. Also, make sure there is only 7 folders in total after that.
+    if (logdircontents.indexOf( year.toString() + month.toString() +day.toString()) == -1) {
+            while(logdircontents.length > 6) {
+                var oldest = logdircontents.shift();
+                var logdata = fs.readdirSync(logdir+ oldest);
+                logdata.forEach(function(filename) {
+                    fs.unlinkSync(logdir + oldest + '/' + filename);
+                });
+                fs.rmdirSync(logdir + oldest);
+            }
+            //logdircontents.forEach(function(file, key) {
+            //    sharedfunctions.logToFile('Log,' + file,'Core');
+            //});
+            fs.mkdirSync(logdir + year.toString() + month.toString() +day.toString());
+    }
+  
+    targetfile = targetfile + '.log'
+    
+    var filemessage = hour + ':' + minutes + ':' + seconds + ':' + milliseconds + ',' + message;
+
+    console.log("[" + targetfile + "]" + filemessage);
+    fs.appendFileSync(logdir + year.toString() + month.toString() +day.toString() + '/' + targetfile, filemessage + os.EOL);
+
 }
 
 function autoremote (devicename, action) {
@@ -90,14 +155,14 @@ function autoremote (devicename, action) {
     var message = variables.options.autoremote_message;
     message = message.replace(/{device-name}/g,devicename);
     message = message.replace(/{device-lastcommand}/g,action);
-    if ( (variables.autoremote_password.length === 0) || (variables.autoremote_key.length === 0) ) {
-			log('No configuration for autoremote available. Unable to send message.');
+    if ( (variables.options.autoremote_password.length === 0) || (variables.options.autoremote_key.length === 0) ) {
+            logToFile('AutoRemote,Unable to send AutoRemote messages. Not configured.','Core');
 			return;
 		}
 	
     dns.lookup('autoremotejoaomgcd.appspot.com',function onLookup (err) {
 						if (err) { 
-							console.log('Unable to reach autoremotejoaomgcd.appspot.com');
+                            logToFile('AutoRemote,Unable to reach autoremotejoaomgcd.appspot.com','Client');
 						} else {
 							//var http = require('http');						  
 							var options = {
@@ -111,12 +176,12 @@ function autoremote (devicename, action) {
 								//console.log(res.statusCode);
 								  
 								if (res.statusCode == 200) {
-									console.log('Sent message to AutoRemote.');
+									logToFile('AutoRemote,Message has been sent to AutoRemote: ' + message,'Client');
 									res.on('error', function (chunk) {
 											// Error
 									});
 								} else {
-									console.log('autoremote: error. Received wrong statuscode');
+									logToFile('AutoRemote,Received wrong statuscode: ' + res.statusCode,'Client');
 								}
                                 
 								res.on('error', function (chunk) {
@@ -170,3 +235,4 @@ exports.dynamicSort = dynamicSort;
 exports.log = log;
 exports.createdropdown = createdropdown;
 exports.createdropdown_alphanumeric = createdropdown_alphanumeric;
+exports.logToFile = logToFile;

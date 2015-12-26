@@ -115,7 +115,11 @@ function get(request, response) {
 
                     
                     if (device.activescheduleid == singleschedule.uniqueid) {
-                                activeschedule = 'class="bg-success"';
+                        activeschedule = 'class="bg-success"';
+                    }
+                    
+                    if (singleschedule.enabled == 'false') {
+                        activeschedule = 'class="bg-danger"';
                     }
                     
                     
@@ -123,10 +127,10 @@ function get(request, response) {
                         if ( (selected_scheduletype == '') || (selected_scheduletype == singleschedule.enabled) ) {
                             if (singleschedule.controller != 'Timer') {
                                 schedulesfound = true;
-                                schedules += '<tr onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')"><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></td></tr>';
+                                schedules += '<tr><td ' + activeschedule +' onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')">' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.action +  '</td><td ' + activeschedule +'>'+ singleschedule.controller +'</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></td></tr>';
                             } else {
                                 timersfound = true;
-                                timers += '<tr onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')"><td ' + activeschedule +'>' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.duration +  ' minutes</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></td></tr>';
+                                timers += '<tr><td ' + activeschedule +' onclick="showscheduleinfo(\''+singleschedule.uniqueid+'\')">' + device.name + '</td><td ' + activeschedule +'>'+  singleschedule.duration +  ' minutes</td><td ' + activeschedule +'>'  + dayname + '</td><td ' + activeschedule +'>' + singleschedule.time + '</td><td ' + activeschedule +'><a class="btn btn-default" href="/editschedule?uniqueid='+singleschedule.uniqueid+'">Edit</a><button class="btn btn-default" onclick="removeschedule(\''+singleschedule.uniqueid+'\')">Remove</button></td></tr>';
                             }
                         }
                     }

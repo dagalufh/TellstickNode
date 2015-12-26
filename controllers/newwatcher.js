@@ -70,33 +70,7 @@ function get(req,res) {
 }
 
 function post(req,res) {
-    console.log(req.body);
-    
-    /*
-    req.body.uniqueid = new Date().getTime();
-    req.body.originaltime = req.body.time;
-    req.body.stage = 0;
-    //console.log(req.body);
-    
-    var newschedule = new classes.schedule();
-
-    for (var key in req.body) {
-      newschedule[key] = req.body[key];  
-    }
-    
-    //console.log(newschedule);
-    sharedfunctions.log('Created schedule: ' + JSON.stringify(newschedule));
-    variables.devices.forEach(function(device) {
-        //console.log('DeviceID : ' + device.id);
-        if (device.id == newschedule.deviceid) {
-            device.schedule.push(newschedule);
-        }
-    });
-    variables.savetofile = true;
-    
-    {"deviceid" : 1, "triggerstatus" : "On", "delay" : 120, "setstatus" : "Off", "enabled" : "true"}
-    
-    */
+    var devicefunctions = require('../controllers/device');
     var watcheralreadyfound = false;
     variables.devices.forEach(function (device) {
         device.watchers.forEach(function (watcher) {
@@ -129,6 +103,7 @@ function post(req,res) {
         });
         
         variables.savetofile = true;
+        sharedfunctions.logToFile('Watcher,'+ devicefunctions.getdeviceproperty(newwatcher.deviceid,'name') +','+ newwatcher.uniqueid+',Created,Watcher has been created with these settings: ' + JSON.stringify(newwatcher),'Device-'+newwatcher.deviceid);
         res.send({code: 'ok', message: 'Watcher has been created.'});
     }
     

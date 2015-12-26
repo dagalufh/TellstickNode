@@ -7,7 +7,6 @@ var TellstickNode = require('../TellstickNode');
 
 function getremove(req,res) {
     var removeschedulearray = [req.query.scheduleid];
-    //console.log(req.query);
     removeschedule(removeschedulearray);
     res.send(true);
 }
@@ -16,10 +15,8 @@ function removeschedule(schedulesidarray) {
     variables.devices.forEach( function(device) {
         for (var i = 0; i < device.schedule.length; i++) {
             schedulesidarray.forEach(function(scheduletoremove) {
-                //console.log(scheduletoremove + "==" + device.schedule[i].uniqueid);
                 if(scheduletoremove == device.schedule[i].uniqueid) {
-                    console.log('Schedule ' + device.schedule[i].uniqueid + ' was removed.');
-                    sharedfunctions.log('Schedule ' + device.schedule[i].uniqueid + ' was removed.');
+                    sharedfunctions.logToFile('Schedule,'+ device.name+','+ device.schedule[i].uniqueid+',REMOVED,Schedule was removed. Info that was removed: ' + JSON.stringify(device.schedule[i]),'Device-'+device.schedule[i].deviceid);
                     device.schedule.splice(i,1);
                     i=0;
                 }
@@ -67,7 +64,7 @@ function getschedule(req,res) {
     });
     dayname = dayname.substring(0,(dayname.length-2));
     
-    if (requestedschedule.enable == 'false') {
+    if (requestedschedule.enabled == 'false') {
         status = 'Disabled';
     }
     
@@ -125,7 +122,7 @@ function highlightactiveschedule(callback) {
     var currenttime = hour + ":" + minutes;
 
 
-    //console.log('Inside Resetstatusfunction();');
+
     variables.devices.forEach(function(device) {
         device.nextschedule = 'none';
         var startday = today+1;
@@ -134,20 +131,19 @@ function highlightactiveschedule(callback) {
             startday = 0;
         }
 
-       // console.log('Checking latest status for: ' + device.name);
+
         // For EACH device
         var daysoftheweek = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
         // Store each schedule in the right day of the week
         device.schedule.forEach(function (schedule) {
-            //console.log(schedule);
-            schedule.dayofweek.forEach( function (day) {
-                //console.log('Found a schedule');
-                //console.log('Pushing it to daysoftheweek['+day+'] with id:' + schedule.uniqueid);
-                //console.log(schedule);
-                if(schedule.controller != 'Timer') {
-                    daysoftheweek[day].push(schedule);
-                }
-            });
+
+            if (schedule.enabled == 'true') {
+                schedule.dayofweek.forEach( function (day) {
+                    if(schedule.controller != 'Timer') {
+                        daysoftheweek[day].push(schedule);
+                    }
+                });
+            }
         });
 
         // Sort the times for each day so they are in the right order
@@ -172,15 +168,11 @@ function highlightactiveschedule(callback) {
             for (var i = 0; i < day.length; i++) {
 
                 if (todayreached) {
-                    //console.log('For loop - today reached');
-                    //console.log(currenttime + '>' + day[i].time);
                     if (currenttime > day[i].time) {
-                       //console.log('Found a schedule that has already happend. Saving its time and ID.');
 
                         device.activescheduleid = day[i].uniqueid;
                         device.currentstatus = day[i].action;
                         device.activeday = startday;
-                        //console.log('Schedule Unique ID: ' + day[i].uniqueid + ' and action: ' + day[i].action + ' on day ' + i );
                     }else if (currenttime < day[i].time) {
                         if (device.nextschedule == 'none') {
                             device.nextschedule = day[i].uniqueid;   
@@ -188,7 +180,6 @@ function highlightactiveschedule(callback) {
                             break;
                         }
                     }else {
-                        //console.log('Breaking..');
                         break;
                     }
                 } else {
@@ -199,36 +190,13 @@ function highlightactiveschedule(callback) {
             };
 
             if (startday == 6) {
-               // console.log('Reset startday to 0.');
                 startday = 0;
             } else {
-               // console.log('Increased startday');
                 startday++;
             }
 
         } while (todayreached == false);
         
-        
-        var highlightnext = false;
-        
-        
-        for(var i = 0; i< device.schedule.length;i++) {
-            
-
-            if (device.activescheduleid == device.schedule[i].uniqueid) {
-                highlightnext = i+1;
-            } 
-        }
-        
-        
-        if( (highlightnext !== false) && (highlightnext >= device.schedule.length) ){
-            highlightnext = 0;
-        }
-        
-        if(highlightnext !== false) {
-            device.nextschedule = device.schedule[highlightnext].uniqueid; 
-        }
-
     });
     
     if (callback) {
@@ -244,10 +212,8 @@ function  getpauseschedules(req,res) {
         variables.pauseschedules = true;
         message = 'Paused';
     }
-    
-    console.log('Pause Schedules set to: ' + variables.pauseschedules);
-    sharedfunctions.log('Pause Schedules set to: ' + variables.pauseschedules);
-    
+
+    sharedfunctions.logToFile('Schedule,Pause Schedules is set to ' + variables.pauseschedules,'Core');
     TellstickNode.sendtoclient([{device: 'pausedschedules:'+ message+':'+variables.pauseschedules}]);
     res.send(true);
 }
