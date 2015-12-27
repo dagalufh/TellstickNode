@@ -229,7 +229,6 @@ function createdropdown(max, intervall) {
     var dropdown = '<option value="0">0';
     for (var i = 1; i<=Math.floor(max/intervall); i++) {
         dropdown += '<option value="'+(i*intervall)+'">'+(i*intervall);
-
     }
     return dropdown;
 }

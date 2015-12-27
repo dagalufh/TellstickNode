@@ -20,7 +20,6 @@ function get(req,res) {
         });
     });
     
-    console.log(selected_schedule);
     // Need to create some sort of unique ID for each sechedule.
     var headline = 'Edit Schedule';
     var body = ['<div class="panel panel-default">',

@@ -98,7 +98,6 @@ function post(req,res) {
         variables.devices.forEach(function(device) {
             if (device.id == newwatcher.deviceid) {
                 device.watchers.push(newwatcher);
-                sharedfunctions.log('Created watcher: ' + JSON.stringify(newwatcher));
             }
         });
         

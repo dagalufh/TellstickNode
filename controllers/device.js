@@ -10,7 +10,7 @@ var compareversion = require('compare-version');
 
 // Send a command to a device.
 function send(req,res) {
-    deviceaction(req.query.deviceid, req.query.switchto);
+    deviceaction(req.query.deviceid, req.query.switchto,'Manual');
     variables.doubletap.push({schedule : {deviceid: req.query.deviceid},count : variables.options.doubletapcount, action: req.query.switchto});
     res.send('Send command to device.');
     
@@ -23,7 +23,7 @@ exports.resetdevices = resetdevices;
 exports.getresetdevices = getresetdevices;
 exports.getdeviceproperty = getdeviceproperty;
 
-function deviceaction (deviceid, action, res) {
+function deviceaction (deviceid, action, source) {
     
     var actiontotrigger = '';
     if (action.indexOf(':') != -1) {
@@ -34,8 +34,8 @@ function deviceaction (deviceid, action, res) {
     }
     if (deviceid.indexOf('group') == -1) {
         exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
-            if (typeof(res) !== 'undefined') {
-                //res.send(stdout);
+            if (typeof(source) == 'undefined') {
+                source = 'NULL';
             }
 
             var currentdevice = '';
@@ -45,10 +45,10 @@ function deviceaction (deviceid, action, res) {
                 }
             });
 
-            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',Sent command ' + action.toLowerCase() + ' to device.','Device-'+deviceid);
-            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout.trim(),'Device-'+deviceid);
+            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',Sent command ' + action.toLowerCase() + ' to device.','Device-'+deviceid);
+            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout.trim(),'Device-'+deviceid);
             if (stderr) {
-                sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr.trim(),'Device-'+deviceid);
+                sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr.trim(),'Device-'+deviceid);
             }
 
             // Request an update of the status of devices.
@@ -60,7 +60,7 @@ function deviceaction (deviceid, action, res) {
             if (device.id == deviceid) {
                 device.lastcommand = actiontotrigger.toLowerCase();
                 device.devices.forEach(function(device_in_group) {
-                    exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + device_in_group, null, function (error,stdout,stderr) {
+                    exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + device_in_group, ' + source + ', function (error,stdout,stderr) {
                         if (typeof(res) !== 'undefined') {
                             //res.send(stdout);
                         }
@@ -71,10 +71,10 @@ function deviceaction (deviceid, action, res) {
                                 currentdevice = device;
                             }
                         });
-                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',Sent command ' + action.toLowerCase() + ' to device: ' + currentdevice.name + '(ID: ' + device_in_group + ')','Device-'+deviceid);
-                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout,'Device-'+deviceid);
+                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',Sent command ' + action.toLowerCase() + ' to device: ' + currentdevice.name + '(ID: ' + device_in_group + ')','Device-'+deviceid);
+                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout,'Device-'+deviceid);
                         if (stderr) {
-                            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',NULL,'+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr,'Device-'+deviceid);
+                            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr,'Device-'+deviceid);
                         }
                         // Request an update of the status of devices.
                         getdevicestatus();
@@ -123,7 +123,12 @@ function getdevicestatus () {
                         });
                         var alreadyinlist = false;
                         variables.devices.forEach(function(device) {
+                            
                             if (device.id == currentdevice.id) {
+                                if  (device.lastcommand != currentdevice.lastcommand) {
+                                            sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
+                                }   
+                                
                                 if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
                         
                                     device.watchers.forEach(function(watcher) {
@@ -148,6 +153,7 @@ function getdevicestatus () {
                                            watcherschedule.controller = 'Time';
                                            watcherschedule.runonce = 'true';
                                            watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+                                           sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
                                            device.schedule.push(watcherschedule);
                                            variables.savetofile = true;
                                        }
@@ -211,12 +217,12 @@ function getdevicestatus () {
                             var alreadyinlist = false;
                             variables.devices.forEach(function(device) {
                                 if (device.id == currentdevice.id) {
+                                    if  (device.lastcommand != currentdevice.lastcommand) {
+                                        sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
+                                    }
+
                                     if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
-                                        console.log('There is a watcher connected to this device.');
                                         device.watchers.forEach(function(watcher) {
-                                            //console.log('triggerstatus: ' + watcher.triggerstatus.toLowerCase());
-                                            //console.log('current device last command: ' + currentdevice.lastcommand.toLowerCase());
-                                            //console.log('watcher enabled: ' + watcher.enabled);
                                            if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
                                                // Create a schedule, runonce.
                                                var currenttime = new Date();
@@ -238,6 +244,7 @@ function getdevicestatus () {
                                                watcherschedule.controller = 'Time';
                                                watcherschedule.runonce = 'true';
                                                watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+                                               sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
                                                device.schedule.push(watcherschedule);
                                                variables.savetofile = true;
                                            }
@@ -279,7 +286,7 @@ function resetdevices (callback) {
             //console.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
             //sharedfunctions.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
             sharedfunctions.logToFile('Reset,' + device.name + ',' + device.activescheduleid + ',' + device.currentstatus + ',Reset device to status: ' + device.currentstatus,'Device-'+device.id)
-            deviceaction(device.id, device.currentstatus);
+            deviceaction(device.id, device.currentstatus,'Reset');
             // Perhaps add DoubleTap here..
         } else {
             //console.log('Found no schedules for ' + device.id + ":" +  device.name);

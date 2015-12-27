@@ -359,6 +359,10 @@ function timer_getdevicestatus() {
                             var alreadyinlist = false;
                             variables.devices.forEach(function(device) {
                                 if (device.id == currentdevice.id) {
+                                    if  (device.lastcommand != currentdevice.lastcommand) {
+                                        sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
+                                    }
+      
                                     if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
                                         sharedfunctions.logToFile('Watcher,'+ device.name + ',NULL,INFO,This device has watchers.','Device-'+device.id);
                                         device.watchers.forEach(function(watcher) {
@@ -449,7 +453,9 @@ function timer_getdevicestatus() {
                                 var alreadyinlist = false;
                                 variables.devices.forEach(function(device) {
                                     if (device.id == currentdevice.id) {
-                                        
+                                        if  (device.lastcommand != currentdevice.lastcommand) {
+                                            sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
+                                        }
                                         // INSERT WATCHER HERE...
                                         if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
                                         sharedfunctions.logToFile('Watcher,'+ device.name + ',NULL,INFO,This device has watchers.','Device-'+device.id);
@@ -528,7 +534,7 @@ function doubletapcheck() {
 			var debugtimestamp = new Date();
 			//console.log(debugtimestamp.getHours() + ":" + debugtimestamp.getMinutes() + ":" + debugtimestamp.getSeconds());
 			// END OF DEBUG
-			devicefunctions.deviceaction(repeatschedule.schedule.deviceid,repeatschedule.action);
+			devicefunctions.deviceaction(repeatschedule.schedule.deviceid,repeatschedule.action,'Repeater');
 			repeatschedule.count = repeatschedule.count-1;
 		}
 	});
@@ -617,7 +623,7 @@ function minutecheck (timestamp_start) {
 
                                 if (runschedule) {
                                     sharedfunctions.logToFile('Schedule,'+ device.name+',' + schedule.uniqueid+',Trigger,Schedule has been triggered. Sending command ' + schedule.action,'Device-'+schedule.deviceid);
-                                    devicefunctions.deviceaction(device.id,schedule.action);
+                                    devicefunctions.deviceaction(device.id,schedule.action,'Schedule');
 
                                     if (schedule.sendautoremote == 'true') {
                                             sharedfunctions.autoremote(device.name,schedule.action);
@@ -664,7 +670,7 @@ function minutecheck (timestamp_start) {
                                 sharedfunctions.logToFile('Schedule,'+ device.name+',' + schedule.uniqueid+',PAUSED,Timer OFF event did not trigger because schedules are paused.','Device-'+schedule.deviceid);
 							} else {
                                 sharedfunctions.logToFile('Schedule,'+ device.name+','+ schedule.uniqueid+',Trigger,Timer OFF event sent to device.','Device-'+schedule.deviceid);
-                                devicefunctions.deviceaction(device.id,'off');
+                                devicefunctions.deviceaction(device.id,'off','Timer');
 
                                 if (schedule.sendautoremote == 'true') {
                                         sharedfunctions.autoremote(device.name,'off');
@@ -795,7 +801,7 @@ function minutecheck (timestamp_start) {
         device_watchers = device_watchers.split('\n');
 		device_watchers.forEach(function(watcher) {
             if (watcher.length > 0) {
-                var watcher = JSOn.parse(watcher);
+                var watcher = JSON.parse(watcher);
                 sharedfunctions.logToFile('Configuration,' + devicefunctions.getdeviceproperty(watcher.deviceid,'name') + ',' + watcher.uniqueid + ',Saved Watcher,' + JSON.stringify(watcher), 'Device-'+watcher.deviceid);
             }
         });
