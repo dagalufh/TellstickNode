@@ -72,9 +72,9 @@ function deviceaction (deviceid, action, source) {
                             }
                         });
                         sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',Sent command ' + action.toLowerCase() + ' to device: ' + currentdevice.name + '(ID: ' + device_in_group + ')','Device-'+deviceid);
-                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout,'Device-'+deviceid);
+                        sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stdout with: ' + stdout.trim(),'Device-'+deviceid);
                         if (stderr) {
-                            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr,'Device-'+deviceid);
+                            sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr.trim(),'Device-'+deviceid);
                         }
                         // Request an update of the status of devices.
                         getdevicestatus();

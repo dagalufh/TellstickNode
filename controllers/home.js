@@ -60,9 +60,11 @@ function get(request, response) {
         
         
         // -- Start of getting next schedule --
-       
+        
         var allschedules = [];
         var activeschedule = {uniqueid:''};
+        var activescheduleIndex = -1;
+        var nextscheduleIndex = -1;
         for (var key in sortedbyday) {
             if (sortedbyday.hasOwnProperty(key)) {
                 var day = sortedbyday[key];
@@ -73,20 +75,14 @@ function get(request, response) {
                         if (singleschedule.enabled == 'true') {
                             if (device.id == singleschedule.deviceid) {
                                 allschedules.push(singleschedule);
+                                if ( (device.activescheduleid == singleschedule.uniqueid) && (device.activeday == key) ) {
+                                    activescheduleIndex = allschedules.length-1;
+                                }
                             }
                         }
                     });
                 } 
             }
-        }
-        
-        var activescheduleIndex = -1;
-        var nextscheduleIndex = -1;
-        for (var i=0; i < allschedules.length; i++) {
-                //console.log("allschedules["+i+"]"+allschedules[i].uniqueid);
-               if (allschedules[i].uniqueid == device.activescheduleid) {
-                    activescheduleIndex = i;   
-               }
         }
         
         if (activescheduleIndex != -1) {
@@ -98,13 +94,13 @@ function get(request, response) {
                 nextscheduleIndex = 0;
             }
         }
-       
+
         if (nextscheduleIndex != -1) {
             schedule = allschedules[nextscheduleIndex];
         }
         
         // -- END of getting next schedule
-
+      
         if (device.lastcommand.toLowerCase() == 'on') {
             status_on = 'btn-success';
         }

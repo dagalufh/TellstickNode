@@ -168,18 +168,12 @@ function highlightactiveschedule(callback) {
             for (var i = 0; i < day.length; i++) {
 
                 if (todayreached) {
+                    
                     if (currenttime > day[i].time) {
-
                         device.activescheduleid = day[i].uniqueid;
                         device.currentstatus = day[i].action;
                         device.activeday = startday;
-                    }else if (currenttime < day[i].time) {
-                        if (device.nextschedule == 'none') {
-                            device.nextschedule = day[i].uniqueid;   
-                        } else {
-                            break;
-                        }
-                    }else {
+                    } else {
                         break;
                     }
                 } else {
@@ -203,6 +197,7 @@ function highlightactiveschedule(callback) {
         callback();
     }
 }
+
 
 function  getpauseschedules(req,res) {
     var message = 'Running normal';

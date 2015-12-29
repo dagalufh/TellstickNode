@@ -134,24 +134,27 @@ function logToFile (message, targetfile) {
                 });
                 fs.rmdirSync(logdir + oldest);
             }
-            //logdircontents.forEach(function(file, key) {
-            //    sharedfunctions.logToFile('Log,' + file,'Core');
-            //});
+
             fs.mkdirSync(logdir + year.toString() + month.toString() +day.toString());
     }
   
     targetfile = targetfile + '.log'
     
     var filemessage = hour + ':' + minutes + ':' + seconds + ':' + milliseconds + ',' + message;
-
-    console.log("[" + targetfile + "]" + filemessage);
+    var tabs = '\t';
+    
+    var neededtabs = 20-targetfile.length;
+    var totallength = targetfile.length;
+    for (var t=0; t<=(neededtabs/8);t++) {
+        tabs += '\t';   
+        totallength += 8;
+    }
+    console.log("[" + targetfile + "]" + tabs + filemessage);
     fs.appendFileSync(logdir + year.toString() + month.toString() +day.toString() + '/' + targetfile, filemessage + os.EOL);
 
 }
 
 function autoremote (devicename, action) {
-    //http://autoremotejoaomgcd.appspot.com/sendmessage?key=YOUR_KEY&message=hi
-    
     var message = variables.options.autoremote_message;
     message = message.replace(/{device-name}/g,devicename);
     message = message.replace(/{device-lastcommand}/g,action);

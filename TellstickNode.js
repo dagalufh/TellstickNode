@@ -823,8 +823,19 @@ function minutecheck (timestamp_start) {
     var difference_minutes_recalculate = Math.floor((difference_milliseconds_recalculate/1000)/60);
     var weatherfetched = false;
     
+    // If the minutes of the hour is either 30 or 0.. Then we do the recalculate.
+    var runRecalculate = false;
+    if (process.argv[2] == '--dev') {
+        if ( (timestamp_start.getMinutes() == 30) || (timestamp_start.getMinutes() == 0) || (timestamp_start.getMinutes() == 15) || (timestamp_start.getMinutes() == 45) ) {    
+            runRecalculate = true;
+        }
+    } else {
+        if ( (timestamp_start.getMinutes() == 30) || (timestamp_start.getMinutes() == 0) ) {
+            runRecalculate = true;
+        }
+    }
     
-	if (difference_minutes_recalculate == 30) {
+    if (runRecalculate === true) {
         lasttimestamp_recalculate = timestamp_start;
  
 		async.series([
@@ -853,14 +864,7 @@ function minutecheck (timestamp_start) {
 									try {				
                                         sharedfunctions.logToFile('Recalculate,Weatherinformation fetched from api.openwathermap.org with appID: ' + variables.options.openweatherappid,'Core');
 										variables.weather = JSON.parse(chunk)
-										var weatherinfo = ['City: ' + variables.weather.name,
-																			 'Country: ' + variables.weather.sys.country,
-																			'Weathercode: ' + variables.weather.weather[0].id,
-																			'Weather: ' + variables.weather.weather[0].main,
-																			'Sunrise: ' + sunrisetime,
-																			'Sunset: ' + sunsettime];
-										weatherinfo = weatherinfo.join('<br>');
-                                        sharedfunctions.logToFile('Recalculate,Weatherinfo received: ' + JSON.stringify(weatherinfo),'Core');
+                                        sharedfunctions.logToFile('Recalculate,Weatherinfo received: ' + JSON.stringify(variables.weather),'Core');
 									} catch (e) {
                                         sharedfunctions.logToFile('Recalculate,Error fetching weatherinformation from api.openweathermap.org. Will try again at next recalculate.','Core');
 									}
@@ -1017,46 +1021,54 @@ function minutecheck (timestamp_start) {
                         sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule OriginalTime (' + schedule.originaltime + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare,'Device-'+schedule.deviceid);
                     }
                            
-                    /*
-                     This needs to be rethinked.
-                     
-                     If a schedule is set to happen in the future. I.e. difference_minutes_recalculate_compare is LESS THAN 0.
-                        Then the recalculated time can NEVER be more than -5 (meaning the recalculated time can never be closer than 5 minutes in the future).
-                        This needs to be corrected!
-                    */
-                    
-                    if  ( (difference_minutes_recalculate_compare > -5) && (difference_minutes_recalculate_compare < 5)  ) {
-                        // If the schedule is set to orignally occur within +/- 5 minutes from NOW, we won't update it.
-                        //console.log('The Schedule is to be triggered either 5 minuters in the past or 5 minutes in the future. I won\'t update the time');
-                    } else {
-                        // If the schedule is set to occur earier or later than +/- 5 minutes from NOW, we can add the randomizer.
-                        sharedfunctions.DateAdd('n',original,Number(randomfunction));
+                    sharedfunctions.DateAdd('n',original,Number(randomfunction));
+                    var difference_minutes_recalculate_compare_new = Math.floor(((original - timestamp_start)/1000)/60);
+                    var hour = '0' + original.getHours();
+                    var minutes = '0' + original.getMinutes();
+                    hour = hour.substr(hour.length-2);
+                    minutes = minutes.substr(minutes.length-2);
+                    // I deliberetly ignore = 0 because if the schedule is set for NOW, no need to recalculate it.
+                    if ( difference_minutes_recalculate_compare > 0 ) {
+                        // If the schedule is set to be in the future. Minute Compare to NOW is larger then 0.
                         
-                        var difference_minutes_recalculate_compare = Math.floor(((original - timestamp_start)/1000)/60);
-                        if  ( (difference_minutes_recalculate_compare > -5) && (difference_minutes_recalculate_compare < 5)  ) {
-                            // If the recalculated time is set to occur within +/- 5 minutes from NOW, we won't update it.
-                            //console.log('The Schedules new time is to be triggered either 5 minuters in the past or 5 minutes in the future. I won\'t update the time');
-                        } else {
-                            // If the recalculated time is set to occur earlier or later than +/- 5 minutes from now, we can update the schedule with the new time.
-                            //console.log('The schedule is going to be updated.');
-                            var hour = '0' + original.getHours();
-                            var minutes = '0' + original.getMinutes();
-                            hour = hour.substr(hour.length-2);
-                            minutes = minutes.substr(minutes.length-2);
+                        // Only update if the NEW time is in the future aswell.
+                        if ( difference_minutes_recalculate_compare_new > 0 ) {
+                            // Update
+                            
 
                             schedule.time = hour + ":" + minutes;
                             sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',New,Schedule TriggerTime is now: ' + schedule.time, 'Device-'+schedule.deviceid);
                             if (difference_minutes_recalculate_compare < 0) {
-                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare + ' minutes ago.','Device-'+schedule.deviceid);
+                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago.','Device-'+schedule.deviceid);
                             } else if (difference_minutes_recalculate_compare > 0) {
-                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare + ' minutes.','Device-'+schedule.deviceid);
+                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes.','Device-'+schedule.deviceid);
                             } else {
-                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare,'Device-'+schedule.deviceid);
+                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare_new,'Device-'+schedule.deviceid);
                             }
                             variables.savetofile = true;
+                        } else {                            
+                            sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + hour + ":" + minutes + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago. [Not saved to schedule. Logged only for information.]','Device-'+schedule.deviceid);
+                        }
+                    }else if (difference_minutes_recalculate_compare < 0) {
+                        // If the schedule is set to be in the past. Minute Compare to NOW is less then 0.
+                        
+                        // Only update if the new time is in the past aswell.
+                        if ( difference_minutes_recalculate_compare_new < 0 ) {
+                            // Update
+                            schedule.time = hour + ":" + minutes;
+                            sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',New,Schedule TriggerTime is now: ' + schedule.time, 'Device-'+schedule.deviceid);
+                            if (difference_minutes_recalculate_compare < 0) {
+                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago.','Device-'+schedule.deviceid);
+                            } else if (difference_minutes_recalculate_compare > 0) {
+                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes.','Device-'+schedule.deviceid);
+                            } else {
+                                sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare_new,'Device-'+schedule.deviceid);
+                            }
+                            variables.savetofile = true;
+                        } else {
+                            sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + hour + ":" + minutes + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes. [Not saved to schedule. Logged only for information.]','Device-'+schedule.deviceid);
                         }
                     }
-                    
 				});
 		   });
             
