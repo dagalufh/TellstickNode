@@ -944,9 +944,9 @@ function minutecheck (timestamp_start) {
 
                     if (schedule.controller == 'Sunrise') {
                         if (typeof(variables.weather.weather) != 'undefined') {
-                            sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',OriginalTime Before,Sunrise: ' +  schedule.originaltime,'Core');
+                            sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',OriginalTime Before,Sunrise: ' +  schedule.originaltime,'Device-'+schedule.deviceid);
                             schedule.originaltime = sunrise;  
-                            sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',OriginalTime After,Sunrise: ' +  schedule.originaltime,'Core');
+                            sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',OriginalTime After,Sunrise: ' +  schedule.originaltime,'Device-'+schedule.deviceid);
                             variables.savetofile = true;
                         } else {
                             sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Failure,Failed updating originaltime because there was no weatherinformation available.','Device-'+schedule.deviceid);
