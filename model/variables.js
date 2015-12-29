@@ -19,7 +19,7 @@ module.exports = {
     tdtoolversionlimit : '2.1.2',
     debug : true,
     pauseschedules : false,
-    currentversion: '1.0.15',
+    currentversion: '1.0.16',
     doubletap: [],
     rootdir: '',
     tdtool: function () {

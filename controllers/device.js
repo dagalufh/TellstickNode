@@ -283,11 +283,8 @@ function resetdevices (callback) {
     variables.devices.forEach(function(device) {
 
         if (device.activescheduleid.toString().length > 0) {
-            //console.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
-            //sharedfunctions.log('Resetting "' + device.name + '" to ' + device.currentstatus + ' as stated by schedule with id: ' + device.activescheduleid);
             sharedfunctions.logToFile('Reset,' + device.name + ',' + device.activescheduleid + ',' + device.currentstatus + ',Reset device to status: ' + device.currentstatus,'Device-'+device.id)
             deviceaction(device.id, device.currentstatus,'Reset');
-            // Perhaps add DoubleTap here..
         } else {
             //console.log('Found no schedules for ' + device.id + ":" +  device.name);
         }
