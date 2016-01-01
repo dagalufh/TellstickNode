@@ -8,6 +8,45 @@ var TellstickNode = require('../TellstickNode');
 var sharedfunctions = require('../model/sharedfunctions');
 var compareversion = require('compare-version');
 
+exports.doubletapcheck = doubletapcheck;
+exports.send = send;
+exports.deviceaction = deviceaction;
+exports.getdevicestatus = getdevicestatus;
+exports.resetdevices = resetdevices;
+exports.getresetdevices = getresetdevices;
+exports.getdeviceproperty = getdeviceproperty;
+
+
+// Doubletap interval check
+function doubletapcheck() {
+	var timestamp_start = new Date();
+    
+    // Do not run if restore is in progress.
+    if (variables.restoreInProgress === true) {
+        setTimeout(doubletapcheck,((1000*variables.options.doubletapseconds)+(timestamp_start-new Date().getTime())));
+        return;
+    }
+    
+	variables.doubletap.forEach(function(repeatschedule) {
+		if(repeatschedule.count > 0) {
+			var debugtimestamp = new Date();
+			deviceaction(repeatschedule.schedule.deviceid,repeatschedule.action,'Repeater');
+			repeatschedule.count = repeatschedule.count-1;
+		}
+	});
+	 for (var i=0; i<variables.doubletap.length; i++) {
+		if (variables.doubletap[i].count < 1) {
+			variables.doubletap.splice(i,1);
+			i = 0;
+		}
+	}
+	if (variables.options.doubletapseconds < 1) {
+		variables.options.doubletapseconds = 1;
+	}
+    
+   setTimeout(doubletapcheck,((1000*variables.options.doubletapseconds)+(timestamp_start-new Date().getTime())));
+}
+
 // Send a command to a device.
 function send(req,res) {
     deviceaction(req.query.deviceid, req.query.switchto,'Manual');
@@ -16,12 +55,7 @@ function send(req,res) {
     
 }
 
-exports.send = send;
-exports.deviceaction = deviceaction;
-exports.getdevicestatus = getdevicestatus;
-exports.resetdevices = resetdevices;
-exports.getresetdevices = getresetdevices;
-exports.getdeviceproperty = getdeviceproperty;
+
 
 function deviceaction (deviceid, action, source) {
     
@@ -32,6 +66,7 @@ function deviceaction (deviceid, action, source) {
     } else {
         actiontotrigger = '--'+action;
     }
+    
     if (deviceid.indexOf('group') == -1) {
         exec('"' + variables.tdtool() + '" '+ actiontotrigger.toLowerCase() +' ' + deviceid, null, function (error,stdout,stderr) {
             if (typeof(source) == 'undefined') {
@@ -52,7 +87,7 @@ function deviceaction (deviceid, action, source) {
             }
 
             // Request an update of the status of devices.
-            getdevicestatus();
+            getdevicestatus(true);
         });
     } else {
         variables.devices.forEach(function (device) {
@@ -77,7 +112,7 @@ function deviceaction (deviceid, action, source) {
                             sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid,'name') + ',' + source + ','+action.toLowerCase() +',tdtool responded on stderr with: ' + stderr.trim(),'Device-'+deviceid);
                         }
                         // Request an update of the status of devices.
-                        getdevicestatus();
+                        getdevicestatus(true);
                     });
                 });
             }
@@ -85,24 +120,33 @@ function deviceaction (deviceid, action, source) {
     }
 }
 
-function getdevicestatus () {
-
+function getdevicestatus (manual) {
+    var timestamp_start = new Date();
+      
+    if(variables.restoreInProgress === true) {
+        if (typeof(manual) == 'undefined') {
+            setTimeout(getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
+        }
+        return;
+    }
+	
     exec('"' + variables.tdtool() + '" --version', null, function (error,stdout,stderr) {
         var lines = stdout.toString().split('\n');
         var version = lines[0].substr(lines[0].indexOf(' ')+1);
 
         if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
             exec('"' + variables.tdtool() + '" --list-devices', null, function (error,stdout,stderr) {
+
                 var lines = stdout.toString().split('\n');
                 lines.forEach(function(line) {
                     if (line.length > 0) {
                         var currentdevice = new classes.device();
-                        
+
                         var columns = line.split('\t');
                         columns.forEach(function(column) {
-                        
+
                             var data = column.split('=');
-                        
+
                             if (data[0] == "id") {
                                 currentdevice.id = data[1].trim();   
                             }
@@ -123,15 +167,15 @@ function getdevicestatus () {
                         });
                         var alreadyinlist = false;
                         variables.devices.forEach(function(device) {
-                            
                             if (device.id == currentdevice.id) {
                                 if  (device.lastcommand != currentdevice.lastcommand) {
-                                            sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
-                                }   
-                                
+                                    sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
+                                }
+
                                 if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
-                        
+                                    sharedfunctions.logToFile('Watcher,'+ device.name + ',NULL,INFO,This device has watchers.','Device-'+device.id);
                                     device.watchers.forEach(function(watcher) {
+
                                        if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
                                            // Create a schedule, runonce.
                                            var currenttime = new Date();
@@ -147,19 +191,20 @@ function getdevicestatus () {
                                            watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
                                            watcherschedule.deviceid = device.id;
                                            watcherschedule.time = triggertime;
+                                           watcherschedule.originaltime = triggertime;
                                            watcherschedule.enabled = watcher.enabled;
                                            watcherschedule.action = watcher.setstatus;
                                            watcherschedule.dayofweek = [currenttime.getUTCDay()];
                                            watcherschedule.controller = 'Time';
                                            watcherschedule.runonce = 'true';
                                            watcherschedule.sendautoremote = watcher.autoremoteonschedule;
-                                           sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
                                            device.schedule.push(watcherschedule);
+                                           sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
                                            variables.savetofile = true;
                                        }
                                     });
                                 }
-                                
+
                                 device.lastcommand = currentdevice.lastcommand;
                                 device.name = currentdevice.name;
                                 alreadyinlist = true;
@@ -177,10 +222,12 @@ function getdevicestatus () {
                 for (var i=0; i<variables.devices.length; i++) {
                     var deviceid = variables.devices[i].id;
                     var devicecommand = variables.devices[i].lastcommand;
-                    //console.log({ device : deviceid+':'+devicecommand});
                     devicejson.push({ device :  deviceid+':'+devicecommand});
                 }
-                TellstickNode.sendtoclient(devicejson);     
+                TellstickNode.sendtoclient(devicejson);   
+                if (typeof(manual) == 'undefined') {
+                    setTimeout(getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
+                }
             });
         } else {
             // This is run if the tdtool is older than version 2.1.2
@@ -193,16 +240,10 @@ function getdevicestatus () {
                     }
                     if ( (line.length > 0) && (sensorsfound === false) ) {
                         var currentdevice = new classes.device();
-                        //console.log('Line: ' + line);
                         var columns = line.split('\t');
-
-                        //columns[0] = columns[0].toString().replace(/(\r\n|\n|\r)/gm,"none");
                         columns[0] = columns[0].trim();
-                        //console.log(columns);
 
                         if ( (!isNaN(columns[0])) && (columns[0].length > 0)) {
-
-                            //console.log(columns[0].length + " : " + columns[0]);
 
                             currentdevice.id = columns[0].trim();   
                             currentdevice.type = 'device';  
@@ -213,43 +254,46 @@ function getdevicestatus () {
                             currentdevice.activescheduleid = '';
                             currentdevice.currentstatus = '';
                             currentdevice.activeday = '';
-                            
+
                             var alreadyinlist = false;
                             variables.devices.forEach(function(device) {
                                 if (device.id == currentdevice.id) {
                                     if  (device.lastcommand != currentdevice.lastcommand) {
                                         sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
                                     }
-
                                     if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
-                                        device.watchers.forEach(function(watcher) {
-                                           if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
-                                               // Create a schedule, runonce.
-                                               var currenttime = new Date();
+                                    sharedfunctions.logToFile('Watcher,'+ device.name + ',NULL,INFO,This device has watchers.','Device-'+device.id);
+                                    device.watchers.forEach(function(watcher) {
 
-                                               // Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
-                                               sharedfunctions.DateAdd('n',currenttime,Number(watcher.delay));
+                                       if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
+                                           // Create a schedule, runonce.
+                                           var currenttime = new Date();
 
-                                               var currenthour = '0' + currenttime.getHours();
-                                               var currentminutes = '0' + currenttime.getMinutes();
-                                               var triggertime = currenthour.substr(currenthour.length-2) + ":" + currentminutes.substr(currentminutes.length-2);
+                                           // Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
+                                           sharedfunctions.DateAdd('n',currenttime,Number(watcher.delay));
 
-                                               var watcherschedule = new classes.schedule();
-                                               watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
-                                               watcherschedule.deviceid = device.id;
-                                               watcherschedule.time = triggertime;
-                                               watcherschedule.enabled = watcher.enabled;
-                                               watcherschedule.action = watcher.setstatus;
-                                               watcherschedule.dayofweek = [currenttime.getUTCDay()];
-                                               watcherschedule.controller = 'Time';
-                                               watcherschedule.runonce = 'true';
-                                               watcherschedule.sendautoremote = watcher.autoremoteonschedule;
-                                               sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
-                                               device.schedule.push(watcherschedule);
-                                               variables.savetofile = true;
-                                           }
-                                        });
-                                    }
+                                           var currenthour = '0' + currenttime.getHours();
+                                           var currentminutes = '0' + currenttime.getMinutes();
+                                           var triggertime = currenthour.substr(currenthour.length-2) + ":" + currentminutes.substr(currentminutes.length-2);
+
+                                           var watcherschedule = new classes.schedule();
+                                           watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
+                                           watcherschedule.deviceid = device.id;
+                                           watcherschedule.time = triggertime;
+                                           watcherschedule.originaltime = triggertime;
+                                           watcherschedule.enabled = watcher.enabled;
+                                           watcherschedule.action = watcher.setstatus;
+                                           watcherschedule.dayofweek = [currenttime.getUTCDay()];
+                                           watcherschedule.controller = 'Time';
+                                           watcherschedule.runonce = 'true';
+                                           watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+                                           sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
+                                           device.schedule.push(watcherschedule);
+                                           variables.savetofile = true;
+                                       }
+                                    });
+                                }
+
                                     device.lastcommand = currentdevice.lastcommand;
                                     device.name = currentdevice.name;
                                     alreadyinlist = true;
@@ -258,7 +302,7 @@ function getdevicestatus () {
                             if (!alreadyinlist) {
                                 variables.devices.push(currentdevice);
                             }
-                            
+
                         }                   
 
                     }
@@ -269,11 +313,12 @@ function getdevicestatus () {
                 for (var i=0; i<variables.devices.length; i++) {
                     var deviceid = variables.devices[i].id;
                     var devicecommand = variables.devices[i].lastcommand;
-                    //console.log({ device : deviceid+':'+devicecommand});
                     devicejson.push({ device :  deviceid+':'+devicecommand});
                 }
-                TellstickNode.sendtoclient(devicejson);     
-                
+                TellstickNode.sendtoclient(devicejson);   
+                if (typeof(manual) == 'undefined') {
+                    setTimeout(getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
+                }
             });
         }
     });

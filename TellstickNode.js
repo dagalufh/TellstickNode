@@ -1,12 +1,18 @@
 process.chdir(__dirname);
 
-// ADD CHECK FOR REQUIRES!! TRY CATCH
-
+var os = require('os');
 var variables = require('./model/variables');
+
+// Define the root directory path to be able to use it later easily.
+if (os.platform() === 'win32') {
+    variables.rootdir = __dirname.replace(/\\/g,"/") + '/'
+} else if (os.platform() == 'linux') {
+    variables.rootdir = __dirname + '/'
+}
+
 var fs = require('fs');
 var async = require('async');
 var dns = require('dns');
-var os = require('os');
 var exec = require('child_process').exec;
 var classes = require('./model/classes');
 var express = require('express');
@@ -103,33 +109,6 @@ async.series([
                 callback();
             }
         });
-        
-    },
-    function (callback) {
-        // Check if the optionsfile already exists or not. otherwise, create it.
-        /*
-         fs.exists(__dirname + '/changelog.txt', function (exists) {
-            if(exists) {
-                fs.readFile(__dirname + '/changelog.txt',{'encoding':'utf8'},function(err,data) {
-                    if (data.length>1) {
-                       var rows = data.split('\n');
-                        var changelog = 'Changelog for ';
-                        for (var i=0; i<rows.length; i++) {
-                            if (rows[i].length > 1) {
-                                changelog = changelog + rows[i] + '<br>';
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                    callback();
-                });
-            } else {
-                callback();
-            }
-         });
-         */
-        callback();
         
     },
     function (callback) {    
@@ -305,251 +284,10 @@ async.series([
  
 
 	var timerstart = new Date();
-	setTimeout(timer_getdevicestatus,15000);
-    setTimeout(doubletapcheck,1000*variables.options.doubletapseconds);
+	setTimeout(devicefunctions.getdevicestatus,15000);
+    setTimeout(devicefunctions.doubletapcheck,1000*variables.options.doubletapseconds);
 	setTimeout(minutecheck,60000,timerstart);
 });
-
-function timer_getdevicestatus() {
-    var timestamp_start = new Date();
-    
-    
-    if(variables.restoreInProgress === true) {
-     
-        setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
-        return;
-    }
-    
-	
-        exec('"' + variables.tdtool() + '" --version', null, function (error,stdout,stderr) {
-            var lines = stdout.toString().split('\n');
-            var version = lines[0].substr(lines[0].indexOf(' ')+1);
-
-            if (compareversion(version,variables.tdtoolversionlimit) >= 0) {
-                exec('"' + variables.tdtool() + '" --list-devices', null, function (error,stdout,stderr) {
-                    
-                    var lines = stdout.toString().split('\n');
-                    lines.forEach(function(line) {
-                        if (line.length > 0) {
-                            var currentdevice = new classes.device();
-                            
-                            var columns = line.split('\t');
-                            columns.forEach(function(column) {
-                            
-                                var data = column.split('=');
-                            
-                                if (data[0] == "id") {
-                                    currentdevice.id = data[1].trim();   
-                                }
-                                if (data[0] == "type") {
-                                    currentdevice.type = data[1].trim();   
-                                }
-                                if (data[0] == "name") {
-                                    currentdevice.name = data[1].trim();   
-                                }
-                                if (data[0] == "lastsentcommand") {
-                                    currentdevice.lastcommand = data[1].trim();   
-                                }
-                                currentdevice.schedule = [];
-                                currentdevice.activescheduleid = '';
-                                currentdevice.currentstatus = '';
-                                currentdevice.activeday = '';
-
-                            });
-                            var alreadyinlist = false;
-                            variables.devices.forEach(function(device) {
-                                if (device.id == currentdevice.id) {
-                                    if  (device.lastcommand != currentdevice.lastcommand) {
-                                        sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
-                                    }
-      
-                                    if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
-                                        sharedfunctions.logToFile('Watcher,'+ device.name + ',NULL,INFO,This device has watchers.','Device-'+device.id);
-                                        device.watchers.forEach(function(watcher) {
-                            
-                                           if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
-                                               // Create a schedule, runonce.
-                                               var currenttime = new Date();
-
-                                               // Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
-                                               sharedfunctions.DateAdd('n',currenttime,Number(watcher.delay));
-
-                                               var currenthour = '0' + currenttime.getHours();
-                                               var currentminutes = '0' + currenttime.getMinutes();
-                                               var triggertime = currenthour.substr(currenthour.length-2) + ":" + currentminutes.substr(currentminutes.length-2);
-
-                                               var watcherschedule = new classes.schedule();
-                                               watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
-                                               watcherschedule.deviceid = device.id;
-                                               watcherschedule.time = triggertime;
-                                               watcherschedule.enabled = watcher.enabled;
-                                               watcherschedule.action = watcher.setstatus;
-                                               watcherschedule.dayofweek = [currenttime.getUTCDay()];
-                                               watcherschedule.controller = 'Time';
-                                               watcherschedule.runonce = 'true';
-                                               watcherschedule.sendautoremote = watcher.autoremoteonschedule;
-                                               device.schedule.push(watcherschedule);
-                                               sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
-                                               variables.savetofile = true;
-                                           }
-                                        });
-                                    }
-                                    
-                                    device.lastcommand = currentdevice.lastcommand;
-                                    device.name = currentdevice.name;
-                                    alreadyinlist = true;
-                                }
-                            });
-                            if (!alreadyinlist) {
-                                variables.devices.push(currentdevice);
-                            }
-
-                        }
-                    });
-                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
-                    schedulefunctions.highlightactiveschedule();
-                    var devicejson = [];
-                    for (var i=0; i<variables.devices.length; i++) {
-                        var deviceid = variables.devices[i].id;
-                        var devicecommand = variables.devices[i].lastcommand;
-                        //console.log({ device : deviceid+':'+devicecommand});
-                        devicejson.push({ device :  deviceid+':'+devicecommand});
-                    }
-                    sendtoclient(devicejson);     
-                    setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
-                });
-            } else {
-                // This is run if the tdtool is older than version 2.1.2
-                exec('"' + variables.tdtool() + '" -l', null, function (error,stdout,stderr) {
-                    var lines = stdout.toString().split('\n');
-                    var sensorsfound = false;
-                    lines.forEach(function(line) {
-                        if (line.indexOf('sensor') > 0) {
-                            sensorsfound = true;
-                        }
-                        if ( (line.length > 0) && (sensorsfound === false) ) {
-                            var currentdevice = new classes.device();
-                            //console.log('Line: ' + line);
-                            var columns = line.split('\t');
-
-                            //columns[0] = columns[0].toString().replace(/(\r\n|\n|\r)/gm,"none");
-                            columns[0] = columns[0].trim();
-                            //console.log(columns);
-
-                            if ( (!isNaN(columns[0])) && (columns[0].length > 0)) {
-
-                                //console.log(columns[0].length + " : " + columns[0]);
-
-                                currentdevice.id = columns[0].trim();   
-                                currentdevice.type = 'device';  
-                                currentdevice.name = columns[1].trim();
-                                currentdevice.lastcommand = columns[2].trim();
-
-                                currentdevice.schedule = [];
-                                currentdevice.activescheduleid = '';
-                                currentdevice.currentstatus = '';
-                                currentdevice.activeday = '';
-
-                                var alreadyinlist = false;
-                                variables.devices.forEach(function(device) {
-                                    if (device.id == currentdevice.id) {
-                                        if  (device.lastcommand != currentdevice.lastcommand) {
-                                            sharedfunctions.logToFile('Status,'+ device.name + ',NULL,INFO,Device changed status from ' + device.lastcommand + ' to ' + currentdevice.lastcommand,'Device-'+device.id);        
-                                        }
-                                        // INSERT WATCHER HERE...
-                                        if ( (device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0) ) {
-                                        sharedfunctions.logToFile('Watcher,'+ device.name + ',NULL,INFO,This device has watchers.','Device-'+device.id);
-                                        device.watchers.forEach(function(watcher) {
- 
-                                           if ( (watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') ) {
-                                               // Create a schedule, runonce.
-                                               var currenttime = new Date();
-
-                                               // Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
-                                               sharedfunctions.DateAdd('n',currenttime,Number(watcher.delay));
-
-                                               var currenthour = '0' + currenttime.getHours();
-                                               var currentminutes = '0' + currenttime.getMinutes();
-                                               var triggertime = currenthour.substr(currenthour.length-2) + ":" + currentminutes.substr(currentminutes.length-2);
-
-                                               var watcherschedule = new classes.schedule();
-                                               watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
-                                               watcherschedule.deviceid = device.id;
-                                               watcherschedule.time = triggertime;
-                                               watcherschedule.enabled = watcher.enabled;
-                                               watcherschedule.action = watcher.setstatus;
-                                               watcherschedule.dayofweek = [currenttime.getUTCDay()];
-                                               watcherschedule.controller = 'Time';
-                                               watcherschedule.runonce = 'true';
-                                               watcherschedule.sendautoremote = watcher.autoremoteonschedule;
-											   sharedfunctions.logToFile('Schedule,' + device.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule),'Device-'+watcherschedule.deviceid);
-                                               device.schedule.push(watcherschedule);
-                                               variables.savetofile = true;
-                                           }
-                                        });
-                                    }
-                                        
-                                        device.lastcommand = currentdevice.lastcommand;
-                                        device.name = currentdevice.name;
-                                        alreadyinlist = true;
-                                    }
-                                });
-                                if (!alreadyinlist) {
-                                    variables.devices.push(currentdevice);
-                                }
-
-                            }                   
-
-                        }
-                    });
-                    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
-                    schedulefunctions.highlightactiveschedule();
-                    var devicejson = [];
-                    for (var i=0; i<variables.devices.length; i++) {
-                        var deviceid = variables.devices[i].id;
-                        var devicecommand = variables.devices[i].lastcommand;
-                        //console.log({ device : deviceid+':'+devicecommand});
-                        devicejson.push({ device :  deviceid+':'+devicecommand});
-                    }
-                    sendtoclient(devicejson);     
-                    setTimeout(timer_getdevicestatus,(15000+(timestamp_start-new Date().getTime())));
-                });
-            }
-        });
-}
-
- // Doubletap interval check
-function doubletapcheck() {
-	var timestamp_start = new Date();
-    
-    // Do not run if restore is in progress.
-    if (variables.restoreInProgress === true) {
-        setTimeout(doubletapcheck,((1000*variables.options.doubletapseconds)+(timestamp_start-new Date().getTime())));
-        return;
-    }
-    
-	variables.doubletap.forEach(function(repeatschedule) {
-		if(repeatschedule.count > 0) {
-			// DEBUG
-			var debugtimestamp = new Date();
-			//console.log(debugtimestamp.getHours() + ":" + debugtimestamp.getMinutes() + ":" + debugtimestamp.getSeconds());
-			// END OF DEBUG
-			devicefunctions.deviceaction(repeatschedule.schedule.deviceid,repeatschedule.action,'Repeater');
-			repeatschedule.count = repeatschedule.count-1;
-		}
-	});
-	 for (var i=0; i<variables.doubletap.length; i++) {
-		if (variables.doubletap[i].count < 1) {
-			variables.doubletap.splice(i,1);
-			i = 0;
-		}
-	}
-	if (variables.options.doubletapseconds < 1) {
-		variables.options.doubletapseconds = 1;
-	}
-    
-   setTimeout(doubletapcheck,((1000*variables.options.doubletapseconds)+(timestamp_start-new Date().getTime())));
-}
 
 // Implement locking device to not let this do anything if a restore is in progress.
 function minutecheck (timestamp_start) {
@@ -564,12 +302,8 @@ function minutecheck (timestamp_start) {
 		minutes = minutes.substr(minutes.length-2);
 		seconds = seconds.substr(seconds.length-2);        
 
-		//console.log('End of Minutescheck inside recalculate: ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
 		var enddifference = timestamp_end-timestamp_start;
-		//console.log('enddifference: ' + enddifference);
-		//console.log('Milliseconds untill next launch: ' + (60000-enddifference));
 		timestamp_end.setMilliseconds(timestamp_end.getMilliseconds()-enddifference);
-		//console.log('End of Minutescheck inside recalculate: (after modification) ' + hour +':'+ minutes + ':' + seconds + ":" + timestamp_end.getMilliseconds());
 		setTimeout(minutecheck,(60000-enddifference),timestamp_end);   
         return;
     }
@@ -981,10 +715,10 @@ function minutecheck (timestamp_start) {
                         }
                     }
 					
-					var original = new Date();
+				    var original = new Date();
 					timearray = schedule.originaltime.split(':');
 					original.setHours(timearray[0]);
-					original.setMinutes(timearray[1]);  
+					original.setMinutes(timearray[1]);
 
 					if (typeof(variables.weather.weather) != 'undefined') {
 						
@@ -1008,17 +742,22 @@ function minutecheck (timestamp_start) {
 								} else {
 									randomfunction = '-';
 								}
-					}
+                    }
+                    
+                    var triggertime = new Date();
+                    timearray = schedule.time.split(':');
+					triggertime.setHours(timearray[0]);
+					triggertime.setMinutes(timearray[1]); 
 					
 					randomfunction += Math.round(Math.random() * schedule.randomiser);
 				    
-                    var difference_minutes_recalculate_compare = Math.floor(((original - timestamp_start)/1000)/60);
+                    var difference_minutes_recalculate_compare = Math.floor(((triggertime - timestamp_start)/1000)/60);
                     if (difference_minutes_recalculate_compare < 0) {
-                        sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule OriginalTime (' + schedule.originaltime + ') is in the past. It occured ' + difference_minutes_recalculate_compare + ' minutes ago.','Device-'+schedule.deviceid);
+                        sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare + ' minutes ago.','Device-'+schedule.deviceid);
                     } else if (difference_minutes_recalculate_compare > 0) {
-                        sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule OriginalTime (' + schedule.originaltime + ') is in the future. It occures in ' + difference_minutes_recalculate_compare + ' minutes.','Device-'+schedule.deviceid);
+                        sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare + ' minutes.','Device-'+schedule.deviceid);
                     } else {
-                        sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule OriginalTime (' + schedule.originaltime + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare,'Device-'+schedule.deviceid);
+                        sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + schedule.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare,'Device-'+schedule.deviceid);
                     }
                            
                     sharedfunctions.DateAdd('n',original,Number(randomfunction));
@@ -1034,7 +773,6 @@ function minutecheck (timestamp_start) {
                         // Only update if the NEW time is in the future aswell.
                         if ( difference_minutes_recalculate_compare_new > 0 ) {
                             // Update
-                            
 
                             schedule.time = hour + ":" + minutes;
                             sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid,'name') + ',' + schedule.uniqueid + ',New,Schedule TriggerTime is now: ' + schedule.time, 'Device-'+schedule.deviceid);

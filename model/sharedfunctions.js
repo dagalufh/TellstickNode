@@ -149,7 +149,10 @@ function logToFile (message, targetfile) {
         tabs += '\t';   
         totallength += 8;
     }
-    console.log("[" + targetfile + "]" + tabs + filemessage);
+    
+    if (targetfile.indexOf('Core') != -1) {
+        console.log("[" + targetfile + "]" + tabs + filemessage);
+    }
     fs.appendFileSync(logdir + year.toString() + month.toString() +day.toString() + '/' + targetfile, filemessage + os.EOL);
 
 }

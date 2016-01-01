@@ -144,6 +144,9 @@ function build (pagetitle, content,loggedin) {
                 activeoptions = 'active';
                 PageSpecificJS = '<script src="jscript/backupupdate.js"></script>';
                 break;
+            case('Login'):
+                PageSpecificJS = '<script src="jscript/login.js"></script>';
+            
     }
             
     navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',

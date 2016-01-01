@@ -50,7 +50,6 @@ function get(req,res) {
 
     var defaultlogfile = '';
     logfolder.forEach(function (folder) {
-        //backuplist += '<table class="table"><tr class="pointer" onclick="showfiles(\'' + backup + '\')"><th>Backup date: ' + backup + '</th></tr>';
         var foldercontents = fs.readdirSync(variables.rootdir + 'logs/' + folder);
         foldercontents.forEach(function(file) {
             var devicename = 'Core';
@@ -60,13 +59,13 @@ function get(req,res) {
                 devicename = devicefunctions.getdeviceproperty(file.substr((file.indexOf('-')+1),(file.indexOf('.')-(file.indexOf('-')+1))),'name');
             }
             
-            if ( (selected_file == folder + '\\' + file) || (selected_file.length === 0) ) {
+            if ( (selected_file == folder + '/' + file) || (selected_file.length === 0) ) {
                 selected = 'selected';   
             }
             
             
-            logfilelist.push('<option ' + selected + ' value="' + folder + '\\' + file + '">'+folder + '\\' + file + ' (' + devicename+ ')');
-            defaultlogfile = folder + '\\' + file;
+            logfilelist.push('<option ' + selected + ' value="' + folder + '/' + file + '">'+folder + '/' + file + ' (' + devicename+ ')');
+            defaultlogfile = folder + '/' + file;
             
             if (selected_file.length === 0) {
                 selected_file = defaultlogfile;
@@ -81,18 +80,11 @@ function get(req,res) {
     if (data.length>1) {
         var rows = data.split('\n');
         for (var i=0; i<rows.length; i++) {
-            //var message = rows[i].message.replace(/\s(id:)\s\d*(\s|$)/g,function (id) {return ' id: <a onclick="showscheduleinfo(\''+id.match(/\d+/g)+'\')">'+id.match(/\d+/g)+'</a>';});
             var time = rows[i].substr(0,rows[i].indexOf(','));
             var message = rows[i].substr(rows[i].indexOf(',')+1);
             logs += '<tr><td class="td-small text-info">' + time + '</td><td class="text-info">' + message + "</td></tr>";
         }
     }
-    
-    
-    //variables.log.forEach(function (logentry) {
-    //    var message = logentry.message.replace(/\s(id:)\s\d*(\s|$)/g,function (id) {return ' id: <a onclick="showscheduleinfo(\''+id.match(/\d+/g)+'\')">'+id.match(/\d+/g)+'</a>';});
-    //    logs += '<tr><td class="td-small text-info">' + logentry.time + '</td><td class="text-info">' + message + "</td></tr>";     
-    //});
     
     body = body.replace(/{log}/g,logs);
     body = body.replace(/{logtoview}/g,logfilelist.join('\n'));
