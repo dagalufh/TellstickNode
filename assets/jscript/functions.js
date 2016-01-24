@@ -287,27 +287,6 @@ function reset_schedules() {
     }); 
 }
 
-function save_options() {
-    var debugselector = false;
-    if($("#debug").prop('checked') == true){
-            debugselector = true;
-    }
-    $.post('/options', {city:$('#city').val(),
-                         port:$('#port').val(),
-                        doubletapcount:$('#doubletapcount').val(),
-                        doubletapseconds:$('#doubletapseconds').val(),
-                        weathercodes:$('#weathercodes').val(),
-                        autoremote_password:$('#autoremote_password').val(),
-                        autoremote_key:$('#autoremote_key').val(),
-                        autoremote_message:$('#autoremote_message').val(),
-                        debug:debugselector,
-                        appid: $('#appid').val(),
-                        theme:$('#Select_Theme').val()}, function (data) {
-        $('#respons-modal-body').html('Options has been saved.');
-        $('#myModal').modal('show');
-    });   
-    return false;
-}
 
 // This function was created by http://stackoverflow.com/users/248343/ocus
 function formatTime(time) {
@@ -333,6 +312,23 @@ function showscheduleinfo(scheduleid) {
             //$('#respons-modal-body').html('Error occured: ' + data.statusText);
             //$('#myModal').modal('show');
             console.log('Error when showing schedule info: ' + data.statusText);
+        }
+    }); 
+}
+function showwatcherinfo(watcherid) {
+    $('#respons-modal-body').html('Fetching watcher data.');
+    $('#myModal').modal('show');
+    $.ajax({
+        url: '/showwatcherinfo',
+        data: {'watcherid':watcherid},
+        success: function (data) {
+            $('#respons-modal-body').html(data);
+            $('#myModal').modal('show');
+        },
+        error: function (data) {
+            //$('#respons-modal-body').html('Error occured: ' + data.statusText);
+            //$('#myModal').modal('show');
+            console.log('Error when showing watcher info: ' + data.statusText);
         }
     }); 
 }

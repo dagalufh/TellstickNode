@@ -1,9 +1,17 @@
+Version : 1.0.17
+Corrected bug that caused the application to be stuck in a loop if no devices were found.
+Restructured entire application. Moving everything into functions/pages/templates folders.
+Reworked watchers to allow for multiple actions per triggering device.
+Editing a Watcher and saving now sends you back to viewing watchers instead of Home.
+Fixed "showwatcherinfo". Clicking on a watcher device in "view watchers" brings up a short info.
+Reworked log viewing - again. Now supports custom logfiles that. These can be added in the Options and then accessed via the "Custom Logs" submenu of "Logs".
+
 Version : 1.0.16
 Attempted to correct issue with schedules recaluclate not being done right. Missing scheduletriggers.
 Changed recalculate time being always on xx.00 and xx.30 instead of a timer.
 
 Version : 1.0.15
-Reworked Logging, now stores them in a logs subfolder. Seperated in a logfile per device and one for Core.
+Reworked Logging. Now stores them in a logs subfolder. Seperated in a logfile per device and one for Core.
 
 Version : 1.0.14
 Added restore functionality to the backups feature. Available through Options menu.
@@ -25,19 +33,19 @@ Version : 1.0.11.1
 Bugfix.
 
 Version : 1.0.11
-Changed the design of the menu, the home page now contains less information to ease the eyes.
+Changed the design of the menu. The home page now contains less information to ease the eyes.
 Devicegroups has been implemented!
 - This is a way to create a custom device that contains other devices. Allowing you do send commands to multiple at one go.
 - The devicegroups can have schedules just as normal devices. They can however not have watches connected to them.
 Also changed to that it now verifies if sqlite3 has been installed and if it can be used for session storage. Otherwise it will fall back on session-file-store.
 
 Version : 1.0.10
-Switched from using session-file-store to Connect-Session-Knex, a sqlite3 session storage.
+Switched from using session-file-store to Connect-Session-Knex that is a sqlite3 session storage.
 This should resolve the error that could occur when restarting.
 
 Version : 1.0.9
 Fully implemented Watchers.
-- This means you can set a watch on a device, so that when it changes state, it automatically changes back after x minutes.
+- This means you can set a watch on a device so that when it changes state it automatically changes back after x minutes.
 - There is also the option to have the automatic revert of the status to also trigger a AutoRemote message.
 Changed so that even direct-commands for turning a device on/off is done using doubletap function.
 
@@ -45,17 +53,17 @@ Version : 1.0.8
 Corrected an issue that caused Timers to turn on again after the off command if doubletap was configured.
 
 Version : 1.0.7
-Modified the view of schedule info, now showing correct info in a good way.
+Modified the view of schedule info. It is now showing correct info in a good way.
 Modified the 'View Log' page. You can now click on the refered scheduleid to see that scheduleinfo.
 The above is valid for example on: "Resetting "Example Device" to On as stated by schedule with id: 1432834253638"
-Added 'Green' theme, available to switch to in Options.
+Added 'Green' theme that is available to switch to in Options.
 
 Version : 1.0.6
 Added the ability to use sunrise/sundown as a controller even for the interval modifier.
-When clicking on a schedule on "Home" page in the Schedules/Timers list (Not schedules by day), a infobox shows about the schedule.
+When clicking on a schedule on "Home" page in the Schedules/Timers list (Not schedules by day) a infobox shows about the schedule.
 
 Version : 1.0.5
-Made another theme for the application, a blue more friendly theme.
+Made another theme for the application: a blue more friendly theme.
 Made the output of the log page a bit nicer to read.
 Sorted out some other graphical glitches.
 Added display of changelog in the log view.
@@ -68,14 +76,14 @@ Some minor GUI tweaks on the Home screen.
 
 Version : 1.0.3
 Corrected debug output
-Added option to control if dim button should be shown or not. (option not implemented, forced to false at this time)
+Added option to control if dim button should be shown or not. (option not implemented and forced to false at this time)
 
 Version : 1.0.2
 Implemented another try to fix the missed trigger. Think it was related to recalculates moving schedule to the past.
-Also implemented some color feedback for active status on the device. And started implementing for DIM. However, need feedback from users having DIM..
+Also implemented some color feedback for active status on the device. And started implementing for DIM. However need feedback from users having DIM..
 
 Version : 1.0.1
-Implemented a possible fix for the missed trigger. The clock was drifting, might solve it now that it dosn't.
+Implemented a possible fix for the missed trigger. The clock was drifting but this might solve it now that it dosn't.
 
 Version : 1.0.0
 This is the starting point. The application is fully functional.
@@ -83,7 +91,7 @@ So from hereon there will be a changelog update for each push.
 
 Working now:
 Creating/Removing/Editing schedules
-Controllers can be either specific time, sun dependent or as a timer.
+Controllers can be either specific time or sun dependent or as a timer.
 Modifiers can be random or based on weather or interval.
 Run-once can be enforced.
 Auto-Remote messages can be triggered on schedule event.
