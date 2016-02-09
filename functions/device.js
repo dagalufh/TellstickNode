@@ -411,7 +411,7 @@ function resetdevices(callback) {
 	variables.devices.forEach(function(device) {
 		// Reset device to the last known command that was sent.
 		// ONLY reset real devices, not device groups!
-		if (deviceid.indexOf('group') == -1) {
+		if (device.id.indexOf('group') == -1) {
 			var setstatus = device.lastcommand;
 			if (device.activescheduleid.toString().length > 0) {
 				// If there is an active schedule, reset it to that state instead.
