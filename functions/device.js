@@ -410,18 +410,22 @@ function getdevicestatus(manual, callback) {
 function resetdevices(callback) {
 	variables.devices.forEach(function(device) {
 		// Reset device to the last known command that was sent.
-		var setstatus = device.lastcommand;
-		if (device.activescheduleid.toString().length > 0) {
-			// If there is an active schedule, reset it to that state instead.
-			setstatus = device.currentstatus;
+		// ONLY reset real devices, not device groups!
+		if (deviceid.indexOf('group') == -1) {
+			var setstatus = device.lastcommand;
+			if (device.activescheduleid.toString().length > 0) {
+				// If there is an active schedule, reset it to that state instead.
+				setstatus = device.currentstatus;
+			}
+			sharedfunctions.logToFile('Reset,' + device.name + ',' + device.activescheduleid + ',' + device.lastcommand + ',Reset device to status: ' + setstatus, 'Device-' + device.id)
+			deviceaction(device.id, setstatus, 'Reset');
 		}
-		sharedfunctions.logToFile('Reset,' + device.name + ',' + device.activescheduleid + ',' + device.lastcommand + ',Reset device to status: ' + setstatus, 'Device-' + device.id)
-		deviceaction(device.id, setstatus, 'Reset');
 	});
 
 	if (typeof(callback) != 'undefined') {
 		callback();
 	}
+	
 }
 
 function getresetdevices(req, res) {

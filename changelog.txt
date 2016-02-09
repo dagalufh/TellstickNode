@@ -1,3 +1,6 @@
+Version : 2.0.1
+Removed DeviceGroups from reset, only real devices are reset to their last state.
+
 Version : 2.0.0
 Corrected bug on editschedule.js
 Fixed bug on save_schedules.js. Classes was not found.
