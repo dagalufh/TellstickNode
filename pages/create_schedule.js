@@ -1,4 +1,16 @@
 // Include the template view (Do all the presentation(?))
+
+
+/*
+
+Criteria creation:
+Controller
+Time
+ONLY
+
+Use the rest of modifiers from standard.
+
+*/
 function get(req, res) {
   var variables = require('../templates/variables');
   var template = require(variables.rootdir + 'templates/template-main').build;
@@ -42,6 +54,20 @@ function get(req, res) {
     '<option value="Off">Off',
     '</select>',
     '</div>',
+
+    '<div class="checkbox">',
+    '<label><input type="checkbox" id="runonce" Value="runonce">Run Once - Remove after execution</label>',
+    '</div>',
+    '<div class="checkbox">',
+    '<label><input type="checkbox" id="autoremote" Value="autoremote">AutoRemote - Send message when triggered</label>',
+    '</div>',
+    '</div>',
+
+    // Criterias
+    '<div class="panel-heading">',
+    'Criterias',
+    '</div>',
+    '<div class="panel-body">',
     '<div class="form-group">',
     '<label for="Select_Controller">Controller</label>',
     '<select id="Select_Controller" class="form-control">',
@@ -55,14 +81,18 @@ function get(req, res) {
     '<div class="form-group">',
     '<label for="Time">Time</label>',
     '<input type="text" class="form-control" id="Time" placeholder="(HH:MM)24H" value="{initaltime}">',
+    '<br><button class="btn btn-default" onclick="schedule_add_criteria();">Add action to list</button>',
     '</div>',
-    '<div class="checkbox">',
-    '<label><input type="checkbox" id="runonce" Value="runonce">Run Once - Remove after execution</label>',
+    '<div class="form-group">',
+    '<div class="table-responsive">',
+    '<table id="schedule_criteria_table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+    '<tr><th>List of Criterias</th></tr>',
+    '<tr><td><button class="btn btn-default" onclick="schedule_remove_criteria();">Remove selected actions</button></td></tr>',
+    '</table>',
     '</div>',
-    '<div class="checkbox">',
-    '<label><input type="checkbox" id="autoremote" Value="autoremote">AutoRemote - Send message when triggered</label>',
     '</div>',
     '</div>',
+    // Modifications
     '<div class="panel-heading">',
     'Modifications',
     '</div>',
@@ -148,6 +178,7 @@ function get(req, res) {
     '<input type="text" class="form-control" id="IntervalNotAfterTime" placeholder="(HH:MM)24H" value="">',
     '</div>',
     '</div>',
+
     '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:createschedule();">Create Schedule</button></div>',
     '</div>'
   ];

@@ -1,10 +1,11 @@
 var variables = require('../templates/variables');
 // Define the get function that will return the content..?
 function get(request, response) {
-// Include the template view (Do all the presentation(?))
+  // Include the template view (Do all the presentation(?))
   var template = require(variables.rootdir + 'templates/template-main');
   var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
   var schedulefunctions = require(variables.rootdir + 'functions/schedulefunctions');
+  var classes = require(variables.rootdir + 'templates/classes');
   // Define the different parts of the page.
   var headline = 'Home';
   var body = ['<div class="panel panel-default">',
@@ -47,44 +48,39 @@ function get(request, response) {
   var available_devices = '';
   var available_devicegroups = '';
 
-  var sortedbyday = schedulefunctions.getschedulesbyday();
+  //var sortedbyday = schedulefunctions.getschedulesbyday();
 
   variables.devices.forEach(function(device, index) {
     var status_on = '';
     var status_off = '';
     var status_dim = '';
     var dimbutton = '';
-    var schedule = {
-      time: '',
-      action: '',
-      uniqueid: ''
-    };
+    var schedule_uniqueid = '';
+    var schedule_time = '';
+    var schedule_action = '';
 
 
     // -- Start of getting next schedule --
-
+    /*
     var allschedules = [];
-    var activeschedule = {
-      uniqueid: ''
-    };
     var activescheduleIndex = -1;
     var nextscheduleIndex = -1;
-    for (var key in sortedbyday) {
-      if (sortedbyday.hasOwnProperty(key)) {
-        var day = sortedbyday[key];
+    for (var key in variables.schedulesbyday) {
+      if (variables.schedulesbyday[key].hasOwnProperty(key)) {
+        var day = variables.schedulesbyday[key];
         if (day.length > 0) {
-          day.sort(sharedfunctions.dynamicSortMultiple('time'));
+          for (var d = 0; d < day.length; d++) {
+            if (schedulefunctions.getscheduleproperty(day[d].uniqueid, 'enabled') == 'true') {
+              if (device.id == day[d].deviceid) {
 
-          day.forEach(function(singleschedule) {
-            if (singleschedule.enabled == 'true') {
-              if (device.id == singleschedule.deviceid) {
-                allschedules.push(singleschedule);
-                if ((device.activescheduleid == singleschedule.uniqueid) && (device.activeday == key)) {
+                allschedules.push(day[d]);
+                if ((device.activescheduleid == day[d].uniqueid) && (device.activeday == key) && (day[d].criteriaid == device.activecriteriaid)) {
                   activescheduleIndex = allschedules.length - 1;
                 }
+
               }
             }
-          });
+          }
         }
       }
     }
@@ -99,9 +95,25 @@ function get(request, response) {
       }
     }
 
+
     if (nextscheduleIndex != -1) {
-      schedule = allschedules[nextscheduleIndex];
+      schedule.time = allschedules[nextscheduleIndex].time;
+      schedule.action = schedulefunctions.getscheduleproperty(allschedules[nextscheduleIndex].uniqueid, 'action');
+      schedule.uniqueid = allschedules[nextscheduleIndex].uniqueid;
+      schedule.criteriaid = allschedules[nextscheduleIndex].criteriaid;
     }
+    
+    */
+
+    if (device.nextscheduleid.toString().length > 0) {
+        
+      
+      var schedule = schedulefunctions.getscheduleproperty(device.nextscheduleid, '*');
+      schedule_time = schedule.criterias[device.nextcriteriaid].time;
+      schedule_action = schedule.action;
+      schedule_uniqueid = schedule.uniqueid;
+    }
+  
 
     // -- END of getting next schedule
 
@@ -119,9 +131,9 @@ function get(request, response) {
       dimbutton = '<button disabled class="btn btn-default ' + status_dim + '" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button>';
     }
     if (device.type == 'group') {
-      available_devicegroups += '<tr><td class="devicestatus"><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>' + dimbutton + '</td><td class="devicestatus"><span onclick="showscheduleinfo(\'' + schedule.uniqueid + '\')">' + schedule.time + ' ' + schedule.action + '</span></td><td>' + device.name + '</td></tr>';
+      available_devicegroups += '<tr><td class="devicestatus"><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>' + dimbutton + '</td><td class="devicestatus"><span data-toggle="tooltip" data-placement="top" title="Criteria: ' + device.nextcriteriaid + '" onclick="showscheduleinfo(\'' + schedule_uniqueid + '\')">' + schedule_time + ' ' + schedule_action + '</span></td><td>' + device.name + '</td></tr>';
     } else {
-      available_devices += '<tr><td class="devicestatus"><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>' + dimbutton + '</td><td class="devicestatus"><span onclick="showscheduleinfo(\'' + schedule.uniqueid + '\')">' + schedule.time + ' ' + schedule.action + '</span></td><td>' + device.name + '</td></tr>';
+      available_devices += '<tr><td class="devicestatus"><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>' + dimbutton + '</td><td class="devicestatus"><span data-toggle="tooltip" data-placement="top" title="Criteria: ' + device.nextcriteriaid + '" onclick="showscheduleinfo(\'' + schedule_uniqueid + '\')">' + schedule_time + ' ' + schedule_action + '</span></td><td>' + device.name + '</td></tr>';
     }
 
   });

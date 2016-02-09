@@ -64,7 +64,7 @@ function get(request, response) {
   // This function will be supplied to be used as a callback for when tdtool listing is done and fetching from 'database' is done.
   function display_devices() {
     var device_options = '';
-    var schedules = '<tr><th>Device</th><th>Action</th><th>Controller</th><th>Day of Week</th><th>Time</th><th></th></tr>';
+    var schedules = '<tr><th>Device</th><th>Action</th><th>Day of Week</th><th>Criteria</th><th></th></tr>';
     var timers = '<tr><th>Device</th><th>Duration</th><th>Day of Week</th><th>Time</th><th></th></tr>';
     var dayofweektranslate = {
       0: 'Sunday',
@@ -124,13 +124,22 @@ function get(request, response) {
           if (singleschedule.enabled == 'false') {
             activeschedule = 'class="bg-danger"';
           }
-
-
+          
+          var criterias = '';
+          singleschedule.criterias.forEach(function (criteria) {
+            criterias += criteria.controller + '(' + criteria.time + '), ';
+          })
+          criterias = criterias.substring(0,criterias.length-2);
+  
           if ((device.id == selected_deviceid) || (selected_deviceid === -1)) {
             if ((selected_scheduletype === '') || (selected_scheduletype == singleschedule.enabled)) {
               if (singleschedule.controller != 'Timer') {
                 schedulesfound = true;
-                schedules += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + singleschedule.action + '</td><td ' + activeschedule + '>' + singleschedule.controller + '</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + singleschedule.time + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '">Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
+                var editable = '';
+                if (singleschedule.uniqueid.toString().indexOf('watcher') != -1) {
+                  editable = 'disabled';
+                }
+                schedules += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + sharedfunctions.firstUpperCase(singleschedule.action) + '</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + criterias + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '" ' + editable + '>Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
               } else {
                 timersfound = true;
                 timers += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + singleschedule.duration + ' minutes</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + singleschedule.time + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '">Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
@@ -142,37 +151,38 @@ function get(request, response) {
 
     });
     // Testing new shcedulethingy
-    var sortedbyday = schedulefunctions.getschedulesbyday();
+    
     var schedulesbyday = '';
     var schedulesbydayfound = false;
-    for (var key in sortedbyday) {
-      if (sortedbyday.hasOwnProperty(key)) {
+    for (var key in variables.schedulesbyday) {
+      if (variables.schedulesbyday[key].hasOwnProperty(key)) {
 
-        var day = sortedbyday[key];
+        var day = variables.schedulesbyday[key];
 
-
-
-        schedulesbyday += '<tr><th colspan="4">' + dayofweektranslate[key] + '</th></tr><tr><th>Name</th><th>Action</th><th>Controller</th><th>Time</th></tr>';
+        schedulesbyday += '<tr><th colspan="5">' + dayofweektranslate[key] + '</th></tr><tr><th>Name</th><th>Action</th><th>Controller</th><th>Time</th><th>Identifier</th></tr>';
         if (day.length > 0) {
           day.sort(sharedfunctions.dynamicSortMultiple('time'));
 
-          day.forEach(function(singleschedule) {
+          day.forEach(function(criteria) {
             var devicename = '';
             var activeschedule = '';
             variables.devices.forEach(function(device) {
-              if (device.id == singleschedule.deviceid) {
+              if (device.id == criteria.deviceid) {
                 devicename = device.name;
               }
 
-              if ((device.activescheduleid == singleschedule.uniqueid) && (device.activeday == key)) {
-                activeschedule = 'class="bg-success"';
+              if ((device.activescheduleid == criteria.uniqueid) && (device.activeday == key)) {
+                activeschedule = 'bg-success';
 
               }
             });
-            if ((singleschedule.deviceid == selected_deviceid) || (selected_deviceid === -1)) {
-              if (singleschedule.controller != 'Timer') {
+            if ((criteria.deviceid == selected_deviceid) || (selected_deviceid === -1)) {
+              if (criteria.controller != 'Timer') {
                 schedulesbydayfound = true;
-                schedulesbyday += '<tr><td ' + activeschedule + '>' + devicename + '</td><td ' + activeschedule + '>' + singleschedule.action + '</td><td ' + activeschedule + '>' + singleschedule.controller + '</td><td ' + activeschedule + '>' + singleschedule.time + '</td></tr>';
+                var schedule = schedulefunctions.getscheduleproperty(criteria.uniqueid,'*');
+                var controller = schedule.criterias[criteria.criteriaid].controller;
+                var identifier = criteria.uniqueid + ':' + criteria.criteriaid;
+                schedulesbyday += '<tr><td class="' + activeschedule + '">' + devicename + '</td><td class="' + activeschedule + '">' + sharedfunctions.firstUpperCase(schedule.action) + '</td><td class="' + activeschedule + '">' + controller + '</td><td class="' + activeschedule + '">' + criteria.time + '</td><td class="td-middle ' + activeschedule + '">' + identifier + '</td></tr>';
               }
             }
           });
@@ -187,9 +197,6 @@ function get(request, response) {
       timers = '<tr><td><p class="text-info">No timers found.</p></td></tr>';
     }
 
-    if (watchersfound === false) {
-      watchers = '<tr><td><p class="text-info">No watchers found.</p></td></tr>';
-    }
     if (schedulesbydayfound === false) {
       schedulesbyday = '<tr><td><p class="text-info">No schedules found.</p></td></tr>';
     }

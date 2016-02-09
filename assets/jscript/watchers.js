@@ -58,7 +58,7 @@ function createwatcher(uniqueid) {
 
 function watcher_remove_action() {
   $('input[id^="target_action_"]:checked').each(function() {
-    $(this).parent().parent().remove();
+    $(this).parent().parent().parent().remove();
   });
 }
 

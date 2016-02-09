@@ -2,8 +2,8 @@ module.exports = {
     devices : [],
     options : {city:'',
                port:8888,
-               doubletapcount:3,
-               doubletapseconds:5,
+               doubletapcount:0,
+               doubletapseconds:0,
                weathercodes:[300,301,600,701,800,801,802,803,804],
                autoremote_key: '',
                autoremote_password: '',
@@ -19,7 +19,7 @@ module.exports = {
     tdtoolversionlimit : '2.1.2',
     debug : true,
     pauseschedules : false,
-    currentversion: '1.0.17',
+    currentversion: '2.0.0',
     doubletap: [],
     rootdir: '',
     tdtool: function () {
@@ -41,5 +41,8 @@ module.exports = {
         }
         return tdtoolpath;
     },
-    restoreInProgress: false
+    restoreInProgress: false,
+  schedulesbyday: [[],[],[],[],[],[],[]],
+  refreshdevicestatustimer: 10 // seconds
+  
 }

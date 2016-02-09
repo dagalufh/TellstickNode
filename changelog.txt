@@ -1,3 +1,13 @@
+Version : 2.0.0
+Corrected bug on editschedule.js
+Fixed bug on save_schedules.js. Classes was not found.
+Removed console output in Remote.js
+Schedules can now handle multiple criterias for fallback trigger times.
+Old schedules are easily converted to this new way automatically at launch.
+Corrected a bug that caused an error when non-valid information was received from openweathermap.
+Further minimized code weight and complexity by moving functions to centralized calls and having things in one place.
+Corrected a bug with devicegroups that caused it to store wrong lastcommand.
+
 Version : 1.0.17
 Corrected bug that caused the application to be stuck in a loop if no devices were found.
 Restructured entire application. Moving everything into functions/pages/templates folders.

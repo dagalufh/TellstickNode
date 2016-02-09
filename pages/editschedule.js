@@ -53,17 +53,6 @@ function get(req, res) {
     '{selectaction}',
     '</select>',
     '</div>',
-    '<div class="form-group">',
-    '<label for="Select_Controller">Controller</label>',
-    '<select id="Select_Controller" class="form-control">',
-    '{selectcontroller}',
-    '</select>',
-    '<p class="text-info">{ControllerMessage}</p>',
-    '</div>',
-    '<div class="form-group">',
-    '<label for="Time">Time</label>',
-    '<input type="text" class="form-control" id="Time" placeholder="(HH:MM)24H" value="{initaltime}">',
-    '</div>',
     '<div class="checkbox">',
     '<label><input type="checkbox" id="runonce" Value="runonce" {runonce_selected}>Run Once - Remove after execution</label>',
     '</div>',
@@ -71,6 +60,37 @@ function get(req, res) {
     '<label><input type="checkbox" id="autoremote" Value="autoremote" {autoremote_selected}>AutoRemote - Send message when triggered</label>',
     '</div>',
     '</div>',
+              // Criterias
+    '<div class="panel-heading">',
+    'Criterias',
+    '</div>',
+    '<div class="panel-body">',
+    '<div class="form-group">',
+    '<label for="Select_Controller">Controller</label>',
+    '<select id="Select_Controller" class="form-control">',
+    '<option value="Time">Specific Time',
+    '<option value="Sundown" title="Adjust to sundown time" {Sundown}>Sundown',
+    '<option value="Sunrise" title="Adjust to the time of sunrise" {Sunrise}>Sunrise',
+    '<option value="Timer">Timer',
+    '</select>',
+    '<p class="text-info">{ControllerMessage}</p>',
+    '</div>',
+    '<div class="form-group">',
+    '<label for="Time">Time</label>',
+    '<input type="text" class="form-control" id="Time" placeholder="(HH:MM)24H" value="">',
+    '<br><button class="btn btn-default" onclick="schedule_add_criteria();">Add action to list</button>',
+    '</div>',
+    '<div class="form-group">',
+    '<div class="table-responsive">',
+    '<table id="schedule_criteria_table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+    '<tr><th>List of Criterias</th></tr>',
+              '{criterialist}',
+    '<tr><td><button class="btn btn-default" onclick="schedule_remove_criteria();">Remove selected actions</button></td></tr>',
+    '</table>',
+    '</div>',
+    '</div>',
+    '</div>',
+              // MODIFICATIONS
     '<div class="panel-heading">',
     'Modifications',
     '</div>',
@@ -151,13 +171,14 @@ function get(req, res) {
     '<input type="text" class="form-control" id="IntervalNotAfterTime" placeholder="(HH:MM)24H" value="{IntervalNotAfterTime}">',
     '</div>',
     '</div>',
-    '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:createschedule(' + selected_schedule.uniqueid + ');">Save Edits</button></div>',
+    '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:createschedule(\'' + selected_schedule.uniqueid + '\');">Save Edits</button></div>',
     '</div>'
   ];
   body = body.join("\n");
 
   var device_options = '';
   var controllermessage = '';
+  var criterialist = '';
   variables.devices.forEach(function(device, index) {
     var selected_device = '';
     if (device.id == selected_schedule.deviceid) {
@@ -185,7 +206,7 @@ function get(req, res) {
     ['Sundown'],
     ['Sunrise'],
     ['Timer']
-  ], selected_schedule.controller));
+  ], ''));
 
   if (typeof(variables.weather.sys) != 'undefined') {
     // body = body.replace(/{sunrise}/g,variables.weather.sys.sunrise);
@@ -204,35 +225,34 @@ function get(req, res) {
   }
 
   body = body.replace(/{ControllerMessage}/g, controllermessage);
-
-  body = body.replace(/{initaltime}/g, selected_schedule.originaltime);
+  
   body = body.replace(/{IntervalNotBeforeTime}/g, selected_schedule.intervalnotbefore);
   body = body.replace(/{IntervalNotAfterTime}/g, selected_schedule.intervalnotafter);
 
-  body = body.replace(/{weathergoodtime}/g, createdropdown(90, 10, selected_schedule.weathergoodtime));
-  body = body.replace(/{weatherbadtime}/g, createdropdown(90, 10, selected_schedule.weatherbadtime));
-  body = body.replace(/{randomizertime}/g, createdropdown(40, 5, selected_schedule.randomiser));
+  body = body.replace(/{weathergoodtime}/g, sharedfunctions.createdropdown(90, 10, selected_schedule.weathergoodtime));
+  body = body.replace(/{weatherbadtime}/g, sharedfunctions.createdropdown(90, 10, selected_schedule.weatherbadtime));
+  body = body.replace(/{randomizertime}/g, sharedfunctions.createdropdown(40, 5, selected_schedule.randomiser));
 
-  body = body.replace(/{selectaction}/g, createdropdown_alphanumeric([
+  body = body.replace(/{selectaction}/g, sharedfunctions.createdropdown_alphanumeric([
     ['On'],
     ['Off']
   ], selected_schedule.action));
 
-  body = body.replace(/{selectrandomizer}/g, createdropdown_alphanumeric([
+  body = body.replace(/{selectrandomizer}/g, sharedfunctions.createdropdown_alphanumeric([
     ['+'],
     ['-'],
     ['both', '+/-']
   ], selected_schedule.randomizerfunction));
-  body = body.replace(/{selectweathergood}/g, createdropdown_alphanumeric([
+  body = body.replace(/{selectweathergood}/g, sharedfunctions.createdropdown_alphanumeric([
     ['+'],
     ['-']
   ], selected_schedule.weathergoodfunction));
-  body = body.replace(/{selectweatherbad}/g, createdropdown_alphanumeric([
+  body = body.replace(/{selectweatherbad}/g, sharedfunctions.createdropdown_alphanumeric([
     ['+'],
     ['-']
   ], selected_schedule.weatherbadfunction));
 
-  body = body.replace(/{selectenabled}/g, createdropdown_alphanumeric([
+  body = body.replace(/{selectenabled}/g, sharedfunctions.createdropdown_alphanumeric([
     ['true', 'Yes'],
     ['false', 'No']
   ], selected_schedule.enabled));
@@ -257,7 +277,11 @@ function get(req, res) {
   } else {
     body = body.replace(/{autoremote_selected}/g, '');
   }
-
+  
+  selected_schedule.criterias.forEach(function(criteria) {
+    criterialist += '<tr><td><span class="checkbox"><label><input type="checkbox" name="criteria_" value="' + criteria.controller + ',' + criteria.originaltime + '">' + criteria.controller + ' (' + criteria.originaltime + ')</label></span></td></tr>'
+  })
+  body = body.replace(/{criterialist}/g,criterialist);
   body = body.replace(/{duration}/g, selected_schedule.duration);
 
   res.send(template(headline, body, true));

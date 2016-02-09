@@ -127,9 +127,9 @@ function logToFile(message, targetfile) {
 		totallength += 8;
 	}
 
-	if (targetfile.indexOf('Core') != -1) {
+	//if (targetfile.indexOf('Core') != -1) {
 		console.log("[" + targetfile + "]" + tabs + filemessage);
-	}
+	//}
 	fs.appendFileSync(logdir + year.toString() + month.toString() + day.toString() + '/' + targetfile, filemessage + os.EOL);
 
 }
@@ -210,7 +210,10 @@ function createdropdown_alphanumeric(options, selecteditem) {
 	return dropdown;
 }
 
-
+function firstUpperCase(string) {
+	return (string.substring(0,1).toString().toUpperCase() + string.substring(1).toString());
+}
+exports.firstUpperCase = firstUpperCase;
 exports.autoremote = autoremote;
 exports.DateAdd = DateAdd;
 exports.dynamicSortMultiple = dynamicSortMultiple;

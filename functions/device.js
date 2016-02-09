@@ -94,15 +94,19 @@ function deviceaction(deviceid, action, source) {
 			getdevicestatus(true);
 		});
 	} else {
+		
 		variables.devices.forEach(function(device) {
-
+		
 			if (device.id == deviceid) {
-				device.lastcommand = actiontotrigger.toLowerCase();
+				
+				device.lastcommand = action.toLowerCase();
 				device.devices.forEach(function(device_in_group) {
-					exec('"' + variables.tdtool() + '" ' + actiontotrigger.toLowerCase() + ' ' + device_in_group, ' + source + ', function(error, stdout, stderr) {
+					
+					exec('"' + variables.tdtool() + '" ' + actiontotrigger.toLowerCase() + ' ' + device_in_group, function(error, stdout, stderr) {
 						if (typeof(res) !== 'undefined') {
 							//res.send(stdout);
 						}
+							console.log(stdout);
 
 						var currentdevice = '';
 						variables.devices.forEach(function(device) {
@@ -115,16 +119,17 @@ function deviceaction(deviceid, action, source) {
 						if (stderr) {
 							sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid, 'name') + ',' + source + ',' + action.toLowerCase() + ',tdtool responded on stderr with: ' + stderr.trim(), 'Device-' + deviceid);
 						}
-						// Request an update of the status of devices.
-						getdevicestatus(true);
+						
 					});
 				});
+				// Request an update of the status of devices.
+				getdevicestatus(true);
 			}
 		});
 	}
 }
 
-function getdevicestatus(manual) {
+function getdevicestatus(manual, callback) {
 	var timestamp_start = new Date();
 
 	if (variables.restoreInProgress === true) {
@@ -179,7 +184,7 @@ function getdevicestatus(manual) {
 								if ((device.lastcommand != currentdevice.lastcommand) && (device.watchers.length > 0)) {
 									sharedfunctions.logToFile('Watcher,' + device.name + ',NULL,INFO,This device has watchers.', 'Device-' + device.id);
 									device.watchers.forEach(function(watcher) {
-										
+
 										if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true')) {
 
 											watcher.actions.forEach(function(action) {
@@ -198,14 +203,31 @@ function getdevicestatus(manual) {
 													var watcherschedule = new classes.schedule();
 													watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
 													watcherschedule.deviceid = action.id;
-													watcherschedule.time = triggertime;
-													watcherschedule.originaltime = triggertime;
 													watcherschedule.enabled = watcher.enabled;
 													watcherschedule.action = action.status;
 													watcherschedule.dayofweek = [currenttime.getUTCDay()];
 													watcherschedule.controller = 'Time';
 													watcherschedule.runonce = 'true';
 													watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+
+													var newcriteria = new classes.schedule_criteria();
+													newcriteria.controller = 'Time';
+													newcriteria.time = triggertime;
+													newcriteria.originaltime = triggertime;
+													newcriteria.criteriaid = watcherschedule.criterias.length;
+													watcherschedule.criterias.push(newcriteria);
+
+													watcherschedule.dayofweek.forEach(function(day) {
+
+														watcherschedule.criterias.forEach(function(criteria) {
+															var tempday = new classes.day();
+															tempday.criteriaid = criteria.criteriaid;
+															tempday.uniqueid = watcherschedule.uniqueid;
+															tempday.time = criteria.time;
+															tempday.deviceid = watcherschedule.deviceid;
+															variables.schedulesbyday[day].push(tempday);
+														})
+													})
 													variables.devices.forEach(function(targetdevice) {
 														if (targetdevice.id == watcherschedule.deviceid) {
 															targetdevice.schedule.push(watcherschedule);
@@ -233,7 +255,7 @@ function getdevicestatus(manual) {
 					}
 				});
 				variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
-				schedulefunctions.highlightactiveschedule();
+
 				var devicejson = [];
 				for (var i = 0; i < variables.devices.length; i++) {
 					var deviceid = variables.devices[i].id;
@@ -243,8 +265,12 @@ function getdevicestatus(manual) {
 					});
 				}
 				TellstickNode.sendtoclient(devicejson);
-				if (typeof(manual) == 'undefined') {
-					setTimeout(getdevicestatus, (15000 + (timestamp_start - new Date().getTime())));
+				if ((typeof(manual) == 'undefined') || (manual === false)) {
+					schedulefunctions.highlightactiveschedule();
+					setTimeout(getdevicestatus, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+				}
+				if (callback) {
+					callback();
 				}
 			});
 		} else {
@@ -309,6 +335,25 @@ function getdevicestatus(manual) {
 														watcherschedule.runonce = 'true';
 														watcherschedule.sendautoremote = watcher.autoremoteonschedule;
 
+														var newcriteria = new classes.schedule_criteria();
+														newcriteria.controller = 'Time';
+														newcriteria.time = triggertime;
+														newcriteria.originaltime = triggertime;
+														newcriteria.criteriaid = watcherschedule.criterias.length;
+														watcherschedule.criterias.push(newcriteria);
+
+														watcherschedule.dayofweek.forEach(function(day) {
+
+															watcherschedule.criterias.forEach(function(criteria) {
+																var tempday = new classes.day();
+																tempday.criteriaid = criteria.criteriaid;
+																tempday.uniqueid = watcherschedule.uniqueid;
+																tempday.time = criteria.time;
+																tempday.deviceid = watcherschedule.deviceid;
+																variables.schedulesbyday[day].push(tempday);
+															})
+														})
+
 														variables.savetofile = true;
 														variables.devices.forEach(function(targetdevice) {
 															if (targetdevice.id == watcherschedule.deviceid) {
@@ -339,7 +384,7 @@ function getdevicestatus(manual) {
 					}
 				});
 				variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
-				schedulefunctions.highlightactiveschedule();
+
 				var devicejson = [];
 				for (var i = 0; i < variables.devices.length; i++) {
 					var deviceid = variables.devices[i].id;
@@ -349,9 +394,14 @@ function getdevicestatus(manual) {
 					});
 				}
 				TellstickNode.sendtoclient(devicejson);
-				if (typeof(manual) == 'undefined') {
-					setTimeout(getdevicestatus, (15000 + (timestamp_start - new Date().getTime())));
+				if ((typeof(manual) == 'undefined') || (manual === false)) {
+					schedulefunctions.highlightactiveschedule();
+					setTimeout(getdevicestatus, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 				}
+				if (callback) {
+					callback();
+				}
+
 			});
 		}
 	});
@@ -359,14 +409,14 @@ function getdevicestatus(manual) {
 
 function resetdevices(callback) {
 	variables.devices.forEach(function(device) {
-
+		// Reset device to the last known command that was sent.
+		var setstatus = device.lastcommand;
 		if (device.activescheduleid.toString().length > 0) {
-			sharedfunctions.logToFile('Reset,' + device.name + ',' + device.activescheduleid + ',' + device.currentstatus + ',Reset device to status: ' + device.currentstatus, 'Device-' + device.id)
-			deviceaction(device.id, device.currentstatus, 'Reset');
-		} else {
-			//console.log('Found no schedules for ' + device.id + ":" +  device.name);
+			// If there is an active schedule, reset it to that state instead.
+			setstatus = device.currentstatus;
 		}
-
+		sharedfunctions.logToFile('Reset,' + device.name + ',' + device.activescheduleid + ',' + device.lastcommand + ',Reset device to status: ' + setstatus, 'Device-' + device.id)
+		deviceaction(device.id, setstatus, 'Reset');
 	});
 
 	if (typeof(callback) != 'undefined') {
@@ -383,7 +433,11 @@ function getdeviceproperty(deviceid, property) {
 	var returnvalue = '';
 	variables.devices.forEach(function(device) {
 		if (device.id == deviceid) {
-			returnvalue = device[property];
+			if (property == '*') {
+				returnvalue = device;
+			} else {
+				returnvalue = device[property];
+			}
 		}
 	});
 

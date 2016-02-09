@@ -4,44 +4,12 @@ function createschedule(uniqueid) {
     validdayofweek = $('#DayOfWeek:checked').map(function() {
         return this.value;
     }).get();
-    var validcontroller = $('#Select_Controller').val();
+
     var validaction = $('#Select_Action').val();
-    
-    var validtime = formatTime($('#Time').val());
-    if (validtime === false) {
-        // Invalid time provided
-        $('#Time').parent().addClass('has-error');
-        $('#respons-modal-body').html('Incorrect time provided.');
-        $('#myModal').modal('show');
-        return false;
-    }
     
     var validnotbefore = '';
     var validnotafter = '';
-    if (validcontroller != 'Timer') {
-        if ($('#IntervalNotBeforeTime').val().length > 0) {
-            validnotbefore = formatTime($('#IntervalNotBeforeTime').val());
-            if (validnotbefore === false) {
-                // Invalid time provided
-                $('#IntervalNotBeforeTime').parent().addClass('has-error');
-                $('#respons-modal-body').html('Incorrect time provided for trigger time before.');
-                $('#myModal').modal('show');
-                return false;
-            }
-        }
-        
-        if ($('#IntervalNotAfterTime').val().length > 0) {
-            validnotafter = formatTime($('#IntervalNotAfterTime').val());
-            if (validnotafter === false) {
-                // Invalid time provided
-                $('#IntervalNotAfterTime').parent().addClass('has-error');
-                $('#respons-modal-body').html('Incorrect time provided for trigger time after.');
-                $('#myModal').modal('show');
-                return false;
-            }
-        }
-    }
-    
+    var criteriaarray = [];
     
     if (validdayofweek.length < 1) {
         $('#respons-modal-body').html('Select atleast one day of the week.');
@@ -58,45 +26,51 @@ function createschedule(uniqueid) {
     var validrunonce = false;
     var validautoremote = false;
     var validduration = $('#Duration').val();
-    if($("#runonce").prop('checked') == true){
+    if($("#runonce").prop('checked') === true){
         validrunonce = true;
     }
     
-    if($("#autoremote").prop('checked') == true){
+    if($("#autoremote").prop('checked') === true){
         validautoremote = true;
     }
-    
-    
-    
-    // Check for a nuemrical value in duration for Timers
-    if ( ($.isNumeric(validduration) === false) && (validcontroller == 'Timer') ) {
-        $('#Duration').parent().addClass('has-error');
-        $('#respons-modal-body').html('Incorrect value in duration. Needs to be numbers only.');
-        $('#myModal').modal('show');
-        return false;
-    }
+   $('input[name^="criteria_"]').each(function() {
+  var action = $(this).val().split(',');
+    criteriaarray.push({
+      'criteriaid': criteriaarray.length,
+      'time': action[1],
+      'controller': action[0],
+      //'randomizerfunction': validrandomizerfunction,
+      //'randomiser': validrandomizer,
+      //'weathergoodfunction': validweathergoodfunction,
+      //'weathergoodtime': validweathergood,
+      //'weatherbadfunction': validweatherbadfunction,
+      //'weatherbadtime': validweatherbad,
+      'originaltime': action[1]
+    })
+   })
     
     if (typeof(uniqueid) == 'undefined') {
         $.post('/newschedule',{
             deviceid:validdeviceid,
             dayofweek:validdayofweek,
-            controller:validcontroller,
             action:validaction,
-            time:validtime,
+            runonce:validrunonce,
+            duration:validduration,
+            enabled:$('#Select_Enabled').val(),
+            // This section can be removed if information needs to be stored on a per-criteria basis.
             randomizerfunction:validrandomizerfunction,
             randomiser:validrandomizer,
             weathergoodfunction:validweathergoodfunction,
             weathergoodtime:validweathergood,
             weatherbadfunction:validweatherbadfunction,
             weatherbadtime:validweatherbad,
-            runonce:validrunonce,
-            duration:validduration,
-            enabled:$('#Select_Enabled').val(),
+            // End of section
             intervalnotbefore:validnotbefore,
             intervalnotafter:validnotafter,
             intervalnotbeforecontroller:$('#Select_Controller_ModifierBefore').val(),
             intervalnotaftercontroller:$('#Select_Controller_ModifierAfter').val(),
-            sendautoremote:validautoremote}, function (data) {
+            sendautoremote:validautoremote,
+            criterias: criteriaarray}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/newschedule';
@@ -108,24 +82,25 @@ function createschedule(uniqueid) {
         $.post('/editschedule',{
             deviceid:validdeviceid,
             dayofweek:validdayofweek,
-            controller:validcontroller,
             action:validaction,
-            time:validtime,
+            runonce:validrunonce,
+            duration:validduration,
+            uniqueid:uniqueid,
+            enabled:$('#Select_Enabled').val(),
+            // This section can be removed if information needs to be stored on a per-criteria basis.
             randomizerfunction:validrandomizerfunction,
             randomiser:validrandomizer,
             weathergoodfunction:validweathergoodfunction,
             weathergoodtime:validweathergood,
             weatherbadfunction:validweatherbadfunction,
             weatherbadtime:validweatherbad,
-            runonce:validrunonce,
-            duration:validduration,
-            uniqueid:uniqueid,
-            enabled:$('#Select_Enabled').val(),
+            // End of section
             intervalnotbefore:validnotbefore,
             intervalnotafter:validnotafter,
             intervalnotbeforecontroller:$('#Select_Controller_ModifierBefore').val(),
             intervalnotaftercontroller:$('#Select_Controller_ModifierAfter').val(),
-            sendautoremote:validautoremote}, function (data) {
+            sendautoremote:validautoremote,
+            criterias: criteriaarray}, function (data) {
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
             //window.location.href = '/';
@@ -134,4 +109,23 @@ function createschedule(uniqueid) {
             });
         }); 
     }
+}
+
+function schedule_remove_criteria() {
+  $('input[name^="criteria_"]:checked').each(function() {
+    $(this).parent().parent().parent().remove();
+  });
+}
+
+function schedule_add_criteria() {
+  var validtime = formatTime($('#Time').val());
+    if (validtime === false) {
+        // Invalid time provided
+        $('#Time').parent().addClass('has-error');
+        $('#respons-modal-body').html('Incorrect time provided.');
+        $('#myModal').modal('show');
+        return false;
+    }
+  
+  $('#schedule_criteria_table TR').last().before('<tr><td><span class="checkbox"><label><input type="checkbox" name="criteria_" value="' + $('#Select_Controller').val() + ',' + validtime + '">' + $("#Select_Controller option:selected").html() + ' (' + validtime + ')</label></span></td></tr>')
 }

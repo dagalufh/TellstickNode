@@ -72,7 +72,7 @@ function get(request, response) {
       var activescheduleIndex = -1;
       var nextscheduleIndex = -1;
       for (var i = 0; i < allschedules.length; i++) {
-        console.log("allschedules[" + i + "]" + allschedules[i].uniqueid);
+        //console.log("allschedules[" + i + "]" + allschedules[i].uniqueid);
         if (allschedules[i].uniqueid == device.activescheduleid) {
           activescheduleIndex = i;
         }

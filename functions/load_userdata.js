@@ -37,15 +37,15 @@ module.exports = function(external_callback) {
 			},
 			function(callback) {
 				// Load groups
-				
+
 				fs.exists(variables.rootdir + 'userdata/groups.db.js', function(exists) {
 					if (exists) {
-						
+
 						var groupsarray = [];
 						fs.readFile(variables.rootdir + 'userdata/groups.db.js', {
 							'encoding': 'utf8'
 						}, function(err, data) {
-							
+
 							if (data.length > 1) {
 								var rows = data.split('\n');
 								for (var i = 0; i < rows.length; i++) {
@@ -57,6 +57,11 @@ module.exports = function(external_callback) {
 									var newgroup = new classes.device();
 
 									for (var key in group) {
+										
+										if(key == 'lastcommand' ) {
+											console.log('key:' + key + ' value: ' + group[key] );
+											group[key] = group[key].replace(/-/g,'');
+										}
 										newgroup[key] = group[key];
 									}
 
@@ -64,12 +69,12 @@ module.exports = function(external_callback) {
 										if (variables.devices.length === 0) {
 											break;
 										}
-										
+
 										var validmemberid = false;
 										variables.devices.forEach(function(searchid) {
-										
+
 											if (searchid.id == newgroup.devices[i]) {
-													
+
 												validmemberid = true;
 											}
 										});
@@ -78,10 +83,13 @@ module.exports = function(external_callback) {
 											i = 0;
 										}
 									};
-									
+
 									variables.savetofile = true;
+									newgroup.activescheduleid = '';
+									newgroup.activeday = '';
+									newgroup.currentstatus = '';
 									variables.devices.push(newgroup);
-									
+
 								});
 
 							}
@@ -122,11 +130,52 @@ module.exports = function(external_callback) {
 												newschedule[key] = currentschedule[key];
 											}
 
+											// Use a foreach so that the schedule stores it's criterias in a array that is used to build below for each day of the schedule.
+
+											if (typeof(newschedule.time) !== 'undefined') {
+												var newcriteria = new classes.schedule_criteria();
+												newcriteria.controller = newschedule.controller;
+												newcriteria.time = newschedule.time;
+												//newcriteria.randomizerfunction = newschedule.randomizerfunction;
+												//newcriteria.randomiser = newschedule.randomiser;
+												//newcriteria.weathergoodfunction = newschedule.weathergoodfunction;
+												//newcriteria.weathergoodtime = newschedule.weathergoodtime;
+												//newcriteria.weatherbadfunction = newschedule.weatherbadfunction;
+												//newcriteria.weatherbadtime = newschedule.weatherbadtime;
+												newcriteria.originaltime = newschedule.originaltime;
+												newcriteria.criteriaid = newschedule.criterias.length;
+												newschedule.criterias.push(newcriteria);
+												delete newschedule.time;
+												//delete newschedule.randomizerfunction;
+												//delete newschedule.randomiser;
+												//delete newschedule.weathergoodfunction;
+												//delete newschedule.weathergoodtime;
+												//delete newschedule.weatherbadfunction;
+												//delete newschedule.weatherbadtime;
+												delete newschedule.originaltime;
+												delete newschedule.controller;
+											}
+											
+											newschedule.dayofweek.forEach(function(day) {
+												
+												newschedule.criterias.forEach(function(criteria) {
+													var tempday = new classes.day();
+													tempday.criteriaid = criteria.criteriaid;
+													tempday.uniqueid = newschedule.uniqueid;
+													tempday.time = criteria.time;
+													tempday.deviceid = newschedule.deviceid;
+													variables.schedulesbyday[day].push(tempday);
+												})
+											})
+
 											device.schedule.push(newschedule);
 										}
 									});
 								});
 							}
+							variables.schedulesbyday.forEach(function(schedulearray) {
+								schedulearray.sort(sharedfunctions.dynamicSortMultiple('deviceid', 'time'));
+							})
 							callback();
 						});
 					} else {
@@ -135,7 +184,6 @@ module.exports = function(external_callback) {
 				});
 			},
 			function(callback) {
-				
 				// Load watchers
 				// Fetch the watchers and apply them to the correct device  
 				var watchersarray = [];
@@ -174,7 +222,7 @@ module.exports = function(external_callback) {
 												delete newwatcher.delay;
 											}
 
-											
+
 											device.watchers.push(newwatcher);
 										}
 									});
@@ -190,6 +238,7 @@ module.exports = function(external_callback) {
 			}
 		],
 		function() {
+			
 			external_callback();
 		});
 }
