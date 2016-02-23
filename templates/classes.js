@@ -22,11 +22,7 @@ function schedule() {
   this.stage = 0;
   this.enabled = 'true';
   this.lightpercentage = 100;
-  this.intervalnotbefore = '';
-  this.intervalnotafter = '';
   this.sendautoremote = 'false';
-  this.intervalnotbeforecontroller = 'None';
-  this.intervalnotaftercontroller = 'None';
   this.criterias = [];
   this.randomizerfunction = '+';
   this.randomiser = 0;
@@ -40,8 +36,11 @@ function schedule_criteria() {
   this.criteriaid = -1;
   this.time = '';
   this.controller = '';
-
   this.originaltime = '';
+  this.intervalnotbeforecontroller = 'None';
+  this.intervalnotaftercontroller = 'None';  
+  this.intervalnotbefore = '';
+  this.intervalnotafter = '';
 }
 
 function devicegroup() {

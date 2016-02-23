@@ -1,3 +1,15 @@
+Version : 2.1.0
+Added IP-address to Manual calls logging to show who made the manual call.
+Fixed so doubletap does not stack calls for same device.
+Implemented a method for not spamming getdevicestatus. Deadzone on 3 seconds between each call.
+Added a logging of devices status before reset. This is stored in a devices.log file
+Added limit to route "Send" to allow only logged in or local ip
+Moved allowed intervall definitions to be on a per criteria basis.
+Added select all/none to days selection in schedules.
+Added check so that atleast one criteria exists before being allowed to save a schedule.
+Re-worked schedulecreation to support handling of Timers and Standard schedules.
+DeviceIDs are removed from devicegroups if the deviceid no longer exists upon loading.
+
 Version : 2.0.1
 Removed DeviceGroups from reset, only real devices are reset to their last state.
 

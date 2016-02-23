@@ -37,7 +37,7 @@ module.exports = function(external_callback) {
 			},
 			function(callback) {
 				// Load groups
-
+sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 				fs.exists(variables.rootdir + 'userdata/groups.db.js', function(exists) {
 					if (exists) {
 
@@ -45,7 +45,7 @@ module.exports = function(external_callback) {
 						fs.readFile(variables.rootdir + 'userdata/groups.db.js', {
 							'encoding': 'utf8'
 						}, function(err, data) {
-
+							
 							if (data.length > 1) {
 								var rows = data.split('\n');
 								for (var i = 0; i < rows.length; i++) {
@@ -59,7 +59,6 @@ module.exports = function(external_callback) {
 									for (var key in group) {
 										
 										if(key == 'lastcommand' ) {
-											console.log('key:' + key + ' value: ' + group[key] );
 											group[key] = group[key].replace(/-/g,'');
 										}
 										newgroup[key] = group[key];
@@ -80,7 +79,8 @@ module.exports = function(external_callback) {
 										});
 
 										if (validmemberid === false) {
-											i = 0;
+											newgroup.devices.splice(i, 1);
+											i = -1;
 										}
 									};
 
@@ -102,7 +102,7 @@ module.exports = function(external_callback) {
 				});
 			},
 			function(callback) {
-				
+				sharedfunctions.logToFile('Bootprocess,Loading Schedules.', 'Core');
 				// Load schedules
 				var schedulesarray = [];
 				// Perhaps limit this to start of application. Then work with schedules stored in memory. Only work with files when removing or adding new schedules.
@@ -155,6 +155,18 @@ module.exports = function(external_callback) {
 												delete newschedule.originaltime;
 												delete newschedule.controller;
 											}
+											if (typeof(newschedule.intervalnotbeforecontroller) !== 'undefined') {
+												newschedule.criterias.forEach(function(criteria) {
+													criteria.intervalnotbeforecontroller = newschedule.intervalnotbeforecontroller;
+													criteria.intervalnotaftercontroller = newschedule.intervalnotaftercontroller;
+													criteria.intervalnotbefore = newschedule.intervalnotbefore;
+													criteria.intervalnotafter = newschedule.intervalnotafter;
+												})
+												delete newschedule.intervalnotbeforecontroller;
+												delete newschedule.intervalnotaftercontroller;
+												delete newschedule.intervalnotbefore;
+												delete newschedule.intervalnotafter;
+											}
 											
 											newschedule.dayofweek.forEach(function(day) {
 												
@@ -184,6 +196,7 @@ module.exports = function(external_callback) {
 				});
 			},
 			function(callback) {
+				sharedfunctions.logToFile('Bootprocess,Loading Watchers.', 'Core');
 				// Load watchers
 				// Fetch the watchers and apply them to the correct device  
 				var watchersarray = [];

@@ -31,6 +31,7 @@ module.exports = function(app) {
       if (req.connection.remoteAddress.indexOf('.') != -1) {
         remoteIP = req.connection.remoteAddress.substr(req.connection.remoteAddress.lastIndexOf(':') + 1);
       }
+      console.log('IP Trygin to access REMOTE: ' + remoteIP)
       if (ip.isPrivate(remoteIP)) {
         require(variables.rootdir + 'pages/remote').get(req, res);
       } else {
@@ -113,13 +114,18 @@ module.exports = function(app) {
         require(variables.rootdir + 'pages/view_schedules').get(req, res);
       }
     })
- app.route('/showscheduleinfo')
+  app.route('/showscheduleinfo')
     .get(function(req, res) {
       if (checklogin(req, res)) {
         require(variables.rootdir + 'functions/schedulefunctions').getschedule(req, res);
       }
     })
-
+  app.route('/gettime')
+    .get(function(req, res) {
+      if (checklogin(req, res)) {
+        require(variables.rootdir + 'functions/gettime').get(req, res);
+      }
+    })
   /* ***** WATCHER PAGES AND FUNCTIONS ***** */
   app.route('/newwatcher')
     .get(function(req, res) {
@@ -166,9 +172,14 @@ module.exports = function(app) {
   /* ***** DEVICE MANAGEMENT ***** */
   app.route('/device')
     .get(function(req, res) {
-      //if (checklogin(req, res)) {
-      require(variables.rootdir + 'functions/device').send(req, res);
-      //}
+      var remoteIP = req.connection.remoteAddress;
+      if (req.connection.remoteAddress.indexOf('.') != -1) {
+        remoteIP = req.connection.remoteAddress.substr(req.connection.remoteAddress.lastIndexOf(':') + 1);
+      }
+             
+      if ( (checklogin(req, res)) || (ip.isPrivate(remoteIP)) ) {
+        require(variables.rootdir + 'functions/device').send(req, res);
+      }
     })
 
 

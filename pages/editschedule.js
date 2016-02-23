@@ -40,6 +40,7 @@ function get(req, res) {
     '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="5">Friday</label>',
     '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="6">Saturday</label>',
     '<label class="checkbox-inline"><input type="checkbox" id="DayOfWeek" Value="0">Sunday</label>',
+    '<button class="btn btn-default" onclick="select_all_days();">Select All/None</button>',
     '</div>',
     '<div class="form-group">',
     '<label for="Select_Enabled">Schedule enabled</label>',
@@ -53,6 +54,13 @@ function get(req, res) {
     '{selectaction}',
     '</select>',
     '</div>',
+    '<div class="form-group">',
+    '<label for="ScheduleType">Scheduletype</label>',
+    '<select id="ScheduleType" class="form-control" disabled>',
+    '<option value="Standard" {standardschedule}>Standard',
+    '<option value="Timer" {timerschedule}>Timer',
+    '</select>',
+    '</div>',
     '<div class="checkbox">',
     '<label><input type="checkbox" id="runonce" Value="runonce" {runonce_selected}>Run Once - Remove after execution</label>',
     '</div>',
@@ -60,116 +68,119 @@ function get(req, res) {
     '<label><input type="checkbox" id="autoremote" Value="autoremote" {autoremote_selected}>AutoRemote - Send message when triggered</label>',
     '</div>',
     '</div>',
-              // Criterias
     '<div class="panel-heading">',
     'Criterias',
     '</div>',
-    '<div class="panel-body">',
+    // Criterias for TIMERS
+
+    '<div class="panel-body for_timer">',
+    '<div class="form-group">',
+    '<label for="Time">Time</label>',
+    '<input type="text" class="form-control" id="Time_Timer" placeholder="(HH:MM)24H" value="{time_timer}">',
+    '</div>',
+    '</div>',
+    '<div class="panel-body for_timer">',
+    '<div class="form-group">',
+    '<label for="Duration">Duration (Minutes)</label>',
+    '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="{duration}">',
+    '</div>',
+    '</div>',
+    // Criterias for STANDARD SCHEDULES
+
+    '<div class="panel-body non_timer">',
     '<div class="form-group">',
     '<label for="Select_Controller">Controller</label>',
     '<select id="Select_Controller" class="form-control">',
     '<option value="Time">Specific Time',
     '<option value="Sundown" title="Adjust to sundown time" {Sundown}>Sundown',
     '<option value="Sunrise" title="Adjust to the time of sunrise" {Sunrise}>Sunrise',
-    '<option value="Timer">Timer',
     '</select>',
     '<p class="text-info">{ControllerMessage}</p>',
     '</div>',
     '<div class="form-group">',
     '<label for="Time">Time</label>',
-    '<input type="text" class="form-control" id="Time" placeholder="(HH:MM)24H" value="">',
+    '<input type="text" class="form-control" id="Time" placeholder="(HH:MM)24H" value="{initaltime}">',
+    '</div>',
+    // INTERVALLS BEGIN       
+
+    '<div class="form-group non_timer">',
+    '<label for="Select_Controller_ModifierBefore">Do not trigger before</label>',
+    '<select id="Select_Controller_ModifierBefore" class="form-control">',
+    '{selectmodifiercontroller}',
+    '</select><input type="text" class="form-control" id="IntervalNotBeforeTime" placeholder="(HH:MM)24H" value="">',
+    '<p class="text-info">{ControllerMessage}</p>',
+    '</div>',
+
+    '<div class="form-group non_timer">',
+    '<label for="Select_Controller_ModifierAfter">Do not trigger after</label>',
+    '<select id="Select_Controller_ModifierAfter" class="form-control">',
+    '{selectmodifiercontroller}',
+    '</select><input type="text" class="form-control" id="IntervalNotAfterTime" placeholder="(HH:MM)24H" value="">',
+    '<p class="text-info">{ControllerMessage}</p>',
+    '</div>',
+    // INTERVALLS END       
+    '<div class="form-group">',
     '<br><button class="btn btn-default" onclick="schedule_add_criteria();">Add action to list</button>',
     '</div>',
     '<div class="form-group">',
     '<div class="table-responsive">',
     '<table id="schedule_criteria_table" cellpadding="0" cellspacing="0" class="table table-bordered">',
     '<tr><th>List of Criterias</th></tr>',
-              '{criterialist}',
+    '{criterialist}',
     '<tr><td><button class="btn btn-default" onclick="schedule_remove_criteria();">Remove selected actions</button></td></tr>',
     '</table>',
     '</div>',
     '</div>',
     '</div>',
-              // MODIFICATIONS
-    '<div class="panel-heading">',
+    // Modifications
+    '<div class="panel-heading non_timer">',
     'Modifications',
     '</div>',
-    '<div class="panel-body" id="Modificationsdiv">',
-    '<div class="form-group">',
+    '<div class="panel-body" id="Modificationsdiv non_timer">',
+    '<div class="form-group non_timer">',
     '<label for="Select_Randomizer">Randomizer function</label>',
     '<select id="Select_Randomizer" class="form-control">',
-    '{selectrandomizer}',
+    '<option value="+">+',
+    '<option value="-">-',
+    '<option value="both">+/-',
     '</select>',
     '</div>',
-    '<div class="form-group">',
+    '<div class="form-group non_timer">',
     '<label for="Select_Randomizer_Value">Randomizer max value (Minutes)</label>',
     '<select id="Select_Randomizer_Value" class="form-control">',
     '{randomizertime}',
     '</select>',
     '</div>',
-    '<div class="form-group">',
+    '<div class="form-group non_timer">',
     '<label for="Select_Weather_Good">Weather Impact Function - Good Weather</label>',
     '<select id="Select_Weather_Good" class="form-control">',
-    '{selectweathergood}',
+    '<option value="+">+',
+    '<option value="-">-',
     '</select>',
     '</div>',
-    '<div class="form-group">',
+    '<div class="form-group non_timer">',
     '<label for="Select_Weather_Good_Time">Weather Impact Minutes - Good Weather </label>',
     '<select id="Select_Weather_Good_Time" class="form-control">',
-    '{weathergoodtime}',
+    '{weathertime}',
     '</select>',
     '</div>',
-    '<div class="form-group">',
+    '<div class="form-group non_timer">',
     '<label for="Select_Weather_Bad">Weather Impact Function - Bad Weather</label>',
     '<select id="Select_Weather_Bad" class="form-control">',
-    '{selectweatherbad}',
+    '<option value="+">+',
+    '<option value="-">-',
     '</select>',
     '</div>',
-    '<div class="form-group">',
+    '<div class="form-group non_timer">',
     '<label for="Select_Weather_Bad_Time">Weather Impact Minutes - Bad Weather </label>',
     '<select id="Select_Weather_Bad_Time" class="form-control">',
-    '{weatherbadtime}',
+    '{weathertime}',
     '</select>',
     '</div>',
-    '</div>',
-    '<div class="panel-body" id="Timerdiv" style="display: none">',
-    '<div class="form-group">',
-    '<label for="Duration">Duration (Minutes)</label>',
-    '<input type="text" class="form-control" id="Duration" placeholder="Minutes" value="{duration}">',
-    '</div>',
-    '</div>',
-    '<div class="panel-heading" id="ModifcationBeforeHeadline">',
-    'Do not trigger if schedule trigger time is before',
-    '</div>',
-    '<div class="panel-body" id="ModifcationBeforeBody">',
-    '<div class="form-group">',
-    '<label for="Select_Controller_ModifierBefore">Controller</label>',
-    '<select id="Select_Controller_ModifierBefore" class="form-control">',
-    '{selectmodifierbeforecontroller}',
-    '</select>',
-    '<p class="text-info">{ControllerMessage}</p>',
-    '</div>',
-    '<div class="form-group">',
-    '<label for="IntervalNotBeforeTime">Time</label>',
-    '<input type="text" class="form-control" id="IntervalNotBeforeTime" placeholder="(HH:MM)24H" value="{IntervalNotBeforeTime}">',
     '</div>',
 
-    '</div>',
-    '<div class="panel-heading" id="ModifcationAfterHeadline">',
-    'Do not trigger if schedule trigger time is after',
-    '</div>',
-    '<div class="panel-body" id="ModifcationAfterBody">',
-    '<div class="form-group">',
-    '<label for="Select_Controller_ModifierAfter">Controller</label>',
-    '<select id="Select_Controller_ModifierAfter" class="form-control">',
-    '{selectmodifieraftercontroller}',
-    '</select>',
-    '<p class="text-info">{ControllerMessage}</p>',
-    '</div>',
-    '<div class="form-group">',
-    '<label for="IntervalNotAfterTime">Time</label>',
-    '<input type="text" class="form-control" id="IntervalNotAfterTime" placeholder="(HH:MM)24H" value="{IntervalNotAfterTime}">',
-    '</div>',
+
+
     '</div>',
     '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:createschedule(\'' + selected_schedule.uniqueid + '\');">Save Edits</button></div>',
     '</div>'
@@ -189,24 +200,12 @@ function get(req, res) {
 
   body = body.replace(/{select_device}/g, device_options);
 
-  body = body.replace(/{selectmodifierbeforecontroller}/g, sharedfunctions.createdropdown_alphanumeric([
+  body = body.replace(/{selectmodifiercontroller}/g, sharedfunctions.createdropdown_alphanumeric([
     ['None'],
     ['Time', 'Specific Time'],
     ['Sundown'],
     ['Sunrise']
-  ], selected_schedule.intervalnotbeforecontroller));
-  body = body.replace(/{selectmodifieraftercontroller}/g, sharedfunctions.createdropdown_alphanumeric([
-    ['None'],
-    ['Time', 'Specific Time'],
-    ['Sundown'],
-    ['Sunrise']
-  ], selected_schedule.intervalnotaftercontroller));
-  body = body.replace(/{selectcontroller}/g, sharedfunctions.createdropdown_alphanumeric([
-    ['Time', 'Specific Time'],
-    ['Sundown'],
-    ['Sunrise'],
-    ['Timer']
-  ], ''));
+  ], 'None'));
 
   if (typeof(variables.weather.sys) != 'undefined') {
     // body = body.replace(/{sunrise}/g,variables.weather.sys.sunrise);
@@ -225,9 +224,6 @@ function get(req, res) {
   }
 
   body = body.replace(/{ControllerMessage}/g, controllermessage);
-  
-  body = body.replace(/{IntervalNotBeforeTime}/g, selected_schedule.intervalnotbefore);
-  body = body.replace(/{IntervalNotAfterTime}/g, selected_schedule.intervalnotafter);
 
   body = body.replace(/{weathergoodtime}/g, sharedfunctions.createdropdown(90, 10, selected_schedule.weathergoodtime));
   body = body.replace(/{weatherbadtime}/g, sharedfunctions.createdropdown(90, 10, selected_schedule.weatherbadtime));
@@ -257,9 +253,6 @@ function get(req, res) {
     ['false', 'No']
   ], selected_schedule.enabled));
 
-  body = body.replace(/{notafter}/g, selected_schedule.intervalnotafter);
-  body = body.replace(/{notbefore}/g, selected_schedule.intervalnotbefore);
-
 
   selected_schedule.dayofweek.forEach(function(day) {
     var searchstring = new RegExp('id="DayOfWeek" Value="' + day + '"', "g");
@@ -278,11 +271,30 @@ function get(req, res) {
     body = body.replace(/{autoremote_selected}/g, '');
   }
   
+  if (selected_schedule.criterias[0].controller == 'Timer') {
+    body = body.replace(/{timerschedule}/g, 'selected');
+    body = body.replace(/{standardschedule}/g, '');
+    body = body.replace(/{time_timer}/g, selected_schedule.criterias[0].time);
+    body = body.replace(/{duration}/g, selected_schedule.duration);
+  } else {
+    body = body.replace(/{standardschedule}/g, 'selected');
+    body = body.replace(/{timerschedule}/g, '');
+  }
+
   selected_schedule.criterias.forEach(function(criteria) {
-    criterialist += '<tr><td><span class="checkbox"><label><input type="checkbox" name="criteria_" value="' + criteria.controller + ',' + criteria.originaltime + '">' + criteria.controller + ' (' + criteria.originaltime + ')</label></span></td></tr>'
+    var intervalshow = ''
+    var interval = criteria.intervalnotbeforecontroller + ',' + criteria.intervalnotbefore + ',' + criteria.intervalnotaftercontroller + ',' + criteria.intervalnotafter;
+    intervalshow = ' if time is within the interval of ' + criteria.intervalnotbeforecontroller + '(' + criteria.intervalnotbefore + ') and ' + criteria.intervalnotaftercontroller + '(' + criteria.intervalnotafter + ')';
+
+
+    criterialist += '<tr><td><span class="checkbox"><label><input type="checkbox" name="criteria_" value="' + criteria.controller + ',' + criteria.originaltime + ',' + interval + '">' + criteria.controller + ' (' + criteria.originaltime + ')' + intervalshow + '</label></span></td></tr>'
   })
-  body = body.replace(/{criterialist}/g,criterialist);
-  body = body.replace(/{duration}/g, selected_schedule.duration);
+
+  var currentdate = new Date();
+  body = body.replace(/{initaltime}/g, sharedfunctions.gettwodigit(currentdate.getHours()) + ":" + sharedfunctions.gettwodigit(currentdate.getMinutes()));
+
+  body = body.replace(/{weathertime}/g, sharedfunctions.createdropdown(90, 10));
+  body = body.replace(/{criterialist}/g, criterialist);
 
   res.send(template(headline, body, true));
 }

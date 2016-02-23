@@ -12,31 +12,33 @@ function getremove(req, res) {
 }
 
 function removeschedule(schedulesidarray) {
-  variables.devices.forEach(function(device) {
-    for (var i = 0; i < device.schedule.length; i++) {
-      schedulesidarray.forEach(function(scheduletoremove) {
-        if (scheduletoremove == device.schedule[i].uniqueid) {
-          sharedfunctions.logToFile('Schedule,' + device.name + ',' + device.schedule[i].uniqueid + ',REMOVED,Schedule was removed. Info that was removed: ' + JSON.stringify(device.schedule[i]), 'Device-' + device.schedule[i].deviceid);
-          device.schedule.splice(i, 1);
-          i = 0;
-        }
-      });
-    }
-
-  });
-  
   variables.schedulesbyday.forEach(function(day) {
     for (var i = 0; i < day.length; i++) {
       schedulesidarray.forEach(function(scheduletoremove) {
         if (scheduletoremove == day[i].uniqueid) {
           sharedfunctions.logToFile('Schedule,' + devicecontrol.getdeviceproperty(day[i].deviceid,'name') + ',' + day[i].uniqueid + ',REMOVED,Schedule was removed. Info that was removed: ' + JSON.stringify(day[i]), 'Device-' + day[i].deviceid);
           day.splice(i, 1);
-          i = 0;
+          i = -1;
         }
       });
     }
 
   });
+  
+  variables.devices.forEach(function(device) {
+    for (var i = 0; i < device.schedule.length; i++) {
+      schedulesidarray.forEach(function(scheduletoremove) {
+        if (scheduletoremove == device.schedule[i].uniqueid) {
+          sharedfunctions.logToFile('Schedule,' + device.name + ',' + device.schedule[i].uniqueid + ',REMOVED,Schedule was removed. Info that was removed: ' + JSON.stringify(device.schedule[i]), 'Device-' + device.schedule[i].deviceid);
+          device.schedule.splice(i, 1);
+          i = -1;
+        }
+      });
+    }
+
+  });
+  
+  
   
   
   variables.savetofile = true;
@@ -86,15 +88,15 @@ function getschedule(req, res) {
     autoremote = 'Yes';
   }
 
-  if (requestedschedule.controller == 'Timer') {
+  if (requestedschedule.criterias[0].controller == 'Timer') {
     display = ['<table class="table table-bordered table-condensed">',
       '<tr><td class="td-middle">Scheduleid:</td><td>' + requestedschedule.uniqueid + '</td></tr>',
       '<tr><td>Status of Schedule:</td><td>' + status + '</td></tr>',
       '<tr><td>Device:</td><td>' + requesteddevice.name + '</td></tr>',
-      '<tr><td>Start Time:</td><td>' + requestedschedule.originaltime + '</td></tr>',
+      '<tr><td>Start Time:</td><td>' + requestedschedule.criterias[0].originaltime + '</td></tr>',
       '<tr><td>Days of the week:</td><td>' + dayname + '</td></tr>',
       '<tr><td>Duration:</td><td>' + requestedschedule.duration + ' Minutes</td></tr>',
-      '<tr><td>Controller:</td><td>' + requestedschedule.controller + '</td></tr>',
+      '<tr><td>Controller:</td><td>' + requestedschedule.criterias[0].controller + '</td></tr>',
       '<tr><td>Action:</td><td>' + requestedschedule.action + '</td></tr>',
       '<tr><td>RunOnce:</td><td>' + runonce + '</td></tr>',
       '<tr><td>Send AutoRemote messages on trigger:</td><td>' + autoremote + '</td></tr>',
@@ -106,8 +108,7 @@ function getschedule(req, res) {
       '<tr><td>Status of Schedule:</td><td>' + status + '</td></tr>',
       '<tr><td>Device:</td><td>' + requesteddevice.name + '</td></tr>',
       '<tr><td>RunOnce:</td><td>' + runonce + '</td></tr>',
-      '<tr><td>Do not run if current time is before:</td><td>' + requestedschedule.intervalnotbeforecontroller + '(' + requestedschedule.intervalnotbefore + ')' + '</td></tr>',
-      '<tr><td>Do not run if current time is after:</td><td>' + requestedschedule.intervalnotaftercontroller + '(' + requestedschedule.intervalnotafter + ')' + '</td></tr>',
+      
       '<tr><td>Randomizer function:</td><td>' + requestedschedule.randomizerfunction + requestedschedule.randomiser + ' Minutes' + '</td></tr>',
       '<tr><td>Good Weather:</td><td>' + requestedschedule.weathergoodfunction + requestedschedule.weathergoodtime + ' Minutes' + '</td></tr>',
       '<tr><td>Bad Weather:</td><td>' + requestedschedule.weatherbadfunction + requestedschedule.weatherbadtime + ' Minutes' + '</td></tr>',
@@ -123,6 +124,8 @@ function getschedule(req, res) {
       display.push('<tr><td>Original Time:</td><td>' + requestedschedule.criterias[c].originaltime + '</td></tr>');
       display.push('<tr><td>Next trigger time:</td><td>' + requestedschedule.criterias[c].time + '</td></tr>');
       display.push('<tr><td>Controller:</td><td>' + requestedschedule.criterias[c].controller + '</td></tr>');
+      display.push('<tr><td>Do not run if current time is before:</td><td>' + requestedschedule.criterias[c].intervalnotbeforecontroller + '(' + requestedschedule.criterias[c].intervalnotbefore + ')' + '</td></tr>');
+      display.push('<tr><td>Do not run if current time is after:</td><td>' + requestedschedule.criterias[c].intervalnotaftercontroller + '(' + requestedschedule.criterias[c].intervalnotafter + ')' + '</td></tr>');
       //display.push('<tr><td>Randomizer function:</td><td>' + requestedschedule.criterias[c].randomizerfunction + requestedschedule.criterias[c].randomiser + ' Minutes' + '</td></tr>');
       //display.push('<tr><td>Good Weather:</td><td>' + requestedschedule.criterias[c].weathergoodfunction + requestedschedule.criterias[c].weathergoodtime + ' Minutes' + '</td></tr>');
       //display.push('<tr><td>Bad Weather:</td><td>' + requestedschedule.criterias[c].weatherbadfunction + requestedschedule.criterias[c].weatherbadtime + ' Minutes' + '</td></tr>');

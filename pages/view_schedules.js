@@ -84,7 +84,7 @@ function get(request, response) {
 
 
     if (typeof(request.query.deviceid) != 'undefined') {
-      selected_deviceid = request.query.deviceid;
+      selected_deviceid = Number(request.query.deviceid);
     }
 
     if (typeof(request.query.scheduletype) != 'undefined') {
@@ -133,17 +133,17 @@ function get(request, response) {
   
           if ((device.id == selected_deviceid) || (selected_deviceid === -1)) {
             if ((selected_scheduletype === '') || (selected_scheduletype == singleschedule.enabled)) {
-              if (singleschedule.controller != 'Timer') {
+             if (criterias.indexOf('Timer') === -1) {
                 schedulesfound = true;
                 var editable = '';
                 if (singleschedule.uniqueid.toString().indexOf('watcher') != -1) {
                   editable = 'disabled';
                 }
                 schedules += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + sharedfunctions.firstUpperCase(singleschedule.action) + '</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + criterias + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '" ' + editable + '>Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
-              } else {
-                timersfound = true;
-                timers += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + singleschedule.duration + ' minutes</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + singleschedule.time + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '">Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
-              }
+             } else {
+               timersfound = true;
+               timers += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + singleschedule.duration + ' minutes</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + singleschedule.criterias[0].time + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '">Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
+             }
             }
           }
         });
@@ -180,9 +180,13 @@ function get(request, response) {
               if (criteria.controller != 'Timer') {
                 schedulesbydayfound = true;
                 var schedule = schedulefunctions.getscheduleproperty(criteria.uniqueid,'*');
-                var controller = schedule.criterias[criteria.criteriaid].controller;
-                var identifier = criteria.uniqueid + ':' + criteria.criteriaid;
-                schedulesbyday += '<tr><td class="' + activeschedule + '">' + devicename + '</td><td class="' + activeschedule + '">' + sharedfunctions.firstUpperCase(schedule.action) + '</td><td class="' + activeschedule + '">' + controller + '</td><td class="' + activeschedule + '">' + criteria.time + '</td><td class="td-middle ' + activeschedule + '">' + identifier + '</td></tr>';
+                if (typeof(schedule) == 'undefined') {
+                  console.log(criteria);
+                }
+                  var controller = schedule.criterias[criteria.criteriaid].controller;
+                  var identifier = criteria.uniqueid + ':' + criteria.criteriaid;
+                  schedulesbyday += '<tr><td class="' + activeschedule + '">' + devicename + '</td><td class="' + activeschedule + '">' + sharedfunctions.firstUpperCase(schedule.action) + '</td><td class="' + activeschedule + '">' + controller + '</td><td class="' + activeschedule + '">' + criteria.time + '</td><td class="td-middle ' + activeschedule + '">' + identifier + '</td></tr>';
+             
               }
             }
           });

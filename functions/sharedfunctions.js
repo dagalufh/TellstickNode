@@ -213,6 +213,13 @@ function createdropdown_alphanumeric(options, selecteditem) {
 function firstUpperCase(string) {
 	return (string.substring(0,1).toString().toUpperCase() + string.substring(1).toString());
 }
+
+function gettwodigit(number) {
+	number = '0' + number;
+	return number.substr(number.length - 2);
+}
+
+
 exports.firstUpperCase = firstUpperCase;
 exports.autoremote = autoremote;
 exports.DateAdd = DateAdd;
@@ -221,3 +228,4 @@ exports.dynamicSort = dynamicSort;
 exports.createdropdown = createdropdown;
 exports.createdropdown_alphanumeric = createdropdown_alphanumeric;
 exports.logToFile = logToFile;
+exports.gettwodigit = gettwodigit;

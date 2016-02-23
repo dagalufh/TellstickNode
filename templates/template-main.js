@@ -2,9 +2,14 @@ var variables = require('./variables');
 var fs = require('fs');
 
 function build(pagetitle, content, loggedin) {
-
+var dev = '';
   // Defaults
-  var title = 'TellstickNode ' + variables.currentversion;
+  if (process.argv[2] == '--dev') {
+    dev = 'DEVMODE - ';
+    
+  } 
+  
+  var title = dev + 'TellstickNode ' + variables.currentversion;
   // Build the body layout
   var body = ['<!doctype html>',
     '<html lang="en">\n\n<meta charset="utf-8">\n',
@@ -31,7 +36,7 @@ function build(pagetitle, content, loggedin) {
     '<span class="icon-bar"></span>',
     '<span class="icon-bar"></span>',
     '</button>',
-    '<a class="navbar-brand" href="/">TellstickNode</a>',
+    '<a class="navbar-brand" href="/">' + dev + 'TellstickNode</a>',
     '</div>',
     '<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">',
     '<ul class="nav navbar-nav">',

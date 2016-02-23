@@ -19,8 +19,9 @@ module.exports = {
     tdtoolversionlimit : '2.1.2',
     debug : true,
     pauseschedules : false,
-    currentversion: '2.0.0',
+    currentversion: '2.1.0',
     doubletap: [],
+    disabledoubletap: false,
     rootdir: '',
     tdtool: function () {
         var os = require('os');
@@ -43,6 +44,8 @@ module.exports = {
     },
     restoreInProgress: false,
   schedulesbyday: [[],[],[],[],[],[],[]],
-  refreshdevicestatustimer: 10 // seconds
-  
+  refreshdevicestatustimer: 10, // seconds
+  getdevicestatusdeadzone: -2, // seconds
+  getdevicestatuslastcall: '',
+  getdevicestatustimeoutobject: ''  
 }

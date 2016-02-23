@@ -62,7 +62,7 @@ function get(request, response) {
     }
     if (device.type == 'group') {
       devicegroupsfound = true;
-      devicegroups += '<tr onclick="showdevicegroup(\'' + device.id + '\')"><td class="devicestatus"><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>' + dimbutton + '</td><td>' + device.name + '</td><td>' + device.devices.length + '</td><td><a class="btn btn-default" href="/new_devicegroup?id=' + device.id + '">Edit</a><button class="btn btn-default" onclick="removedevicegroup(\'' + device.id + '\')">Remove</button></td></tr>';
+      devicegroups += '<tr><td class="devicestatus" ><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>' + dimbutton + '</td><td onclick="showdevicegroup(\'' + device.id + '\')">' + device.name + '</td><td>' + device.devices.length + '</td><td><a class="btn btn-default" href="/new_devicegroup?id=' + device.id + '">Edit</a><button class="btn btn-default" onclick="removedevicegroup(\'' + device.id + '\')">Remove</button></td></tr>';
     }
 
   });

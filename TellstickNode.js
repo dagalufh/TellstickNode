@@ -158,7 +158,7 @@ async.series([
 
 
 	var timerstart = new Date();
-	setTimeout(devicefunctions.getdevicestatus, 1000 * variables.refreshdevicestatustimer);
+	variables.getdevicestatustimeoutobject = setTimeout(devicefunctions.getdevicestatus, 1000 * variables.refreshdevicestatustimer);
 	setTimeout(devicefunctions.doubletapcheck, 1000 * variables.options.doubletapseconds);
 	setTimeout(minutecheck, 60000, timerstart);
 });
@@ -193,10 +193,9 @@ function minutecheck(timestamp_start) {
 				} else {
 					if (schedule.enabled == 'true') {
 						var runschedule = true;
-
-						if (schedule.intervalnotbefore.indexOf(':') != -1) {
+						if (schedule.criterias[criteria.criteriaid].intervalnotbefore.indexOf(':') != -1) {
 							var notbefore = new Date();
-							var notbeforearray = schedule.intervalnotbefore.split(':');
+							var notbeforearray = schedule.criterias[criteria.criteriaid].intervalnotbefore.split(':');
 							notbefore.setHours(notbeforearray[0]);
 							notbefore.setMinutes(notbeforearray[1]);
 							var minutedifference_notbefore = Math.floor(((timestamp_start - notbefore) / 1000) / 60);
@@ -206,9 +205,9 @@ function minutecheck(timestamp_start) {
 							}
 						}
 
-						if (schedule.intervalnotafter.indexOf(':') != -1) {
+						if (schedule.criterias[criteria.criteriaid].intervalnotafter.indexOf(':') != -1) {
 							var notafter = new Date();
-							var notafterearray = schedule.intervalnotafter.split(':');
+							var notafterearray = schedule.criterias[criteria.criteriaid].intervalnotafter.split(':');
 							notafter.setHours(notafterearray[0]);
 							notafter.setMinutes(notafterearray[1]);
 							var minutedifference_notafter = Math.floor(((timestamp_start - notafter) / 1000) / 60);
@@ -232,16 +231,17 @@ function minutecheck(timestamp_start) {
 								device: device.id + ':' + schedule.uniqueid
 							}])
 							schedule.stage = 1;
-							// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+							// Check if doubletap is configured. If so, add this schedule to the array
 							if (variables.options.doubletapcount > 0) {
-								variables.doubletap.push({
-									schedule: schedule,
-									count: variables.options.doubletapcount,
-									action: schedule.action
-								});
+								devicefunctions.addtodoubletap(schedule,schedule.action);
+								//variables.doubletap.push({
+								//	schedule: schedule,
+								//	count: variables.options.doubletapcount,
+								//	action: schedule.action
+								//});
 							}
 						} else {
-							sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',Trigger,Schedule was out of allowed interval. Not triggered. Allowed interval was: ' + schedule.intervalnotbefore + ' - ' + schedule.intervalnotafter, 'Device-' + schedule.deviceid);
+							sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',Trigger,Schedule was out of allowed interval. Not triggered. Allowed interval was: ' + schedule.criterias[criteria.criteriaid].intervalnotbefore + ' - ' + schedule.criterias[criteria.criteriaid].intervalnotafter, 'Device-' + schedule.deviceid);
 						}
 					} else {
 						sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',Trigger,Schedule did not trigger because it was disabled.', 'Device-' + schedule.deviceid);
@@ -282,13 +282,9 @@ function minutecheck(timestamp_start) {
 							device: device.id + ':' + schedule.uniqueid
 						}])
 
-						// Check if doubletap is configured. If so, add this schedule to the doubletap array with a counter
+						// Check if doubletap is configured. If so, add this schedule to the array
 						if (variables.options.doubletapcount > 0) {
-							variables.doubletap.push({
-								schedule: schedule,
-								count: variables.options.doubletapcount,
-								action: 'off'
-							});
+							devicefunctions.addtodoubletap(schedule,'off');
 						}
 					}
 				}
@@ -501,30 +497,30 @@ function minutecheck(timestamp_start) {
 							}
 						}
 
-						if (schedule.intervalnotbeforecontroller == 'Sundown') {
+						if (criteria.intervalnotbeforecontroller == 'Sundown') {
 							if (typeof(variables.weather.weather) != 'undefined') {
-								schedule.intervalnotbefore = sunset;
+								criteria.intervalnotbefore = sunset;
 								variables.savetofile = true;
 							}
 						}
 
-						if (schedule.intervalnotbeforecontroller == 'Sunrise') {
+						if (criteria.intervalnotbeforecontroller == 'Sunrise') {
 							if (typeof(variables.weather.weather) != 'undefined') {
-								schedule.intervalnotbefore = sunrise;
+								criteria.intervalnotbefore = sunrise;
 								variables.savetofile = true;
 							}
 						}
 
-						if (schedule.intervalnotaftercontroller == 'Sundown') {
+						if (criteria.intervalnotaftercontroller == 'Sundown') {
 							if (typeof(variables.weather.weather) != 'undefined') {
-								schedule.intervalnotafter = sunset;
+								criteria.intervalnotafter = sunset;
 								variables.savetofile = true;
 							}
 						}
 
-						if (schedule.intervalnotaftercontroller == 'Sunrise') {
+						if (criteria.intervalnotaftercontroller == 'Sunrise') {
 							if (typeof(variables.weather.weather) != 'undefined') {
-								schedule.intervalnotafter = sunrise;
+								criteria.intervalnotafter = sunrise;
 								variables.savetofile = true;
 							}
 						}
