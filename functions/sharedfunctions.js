@@ -127,11 +127,10 @@ function logToFile(message, targetfile) {
 		totallength += 8;
 	}
 
-	//if (targetfile.indexOf('Core') != -1) {
+	if (targetfile.indexOf('Core') != -1) {
 		console.log("[" + targetfile + "]" + tabs + filemessage);
-	//}
+	}
 	fs.appendFileSync(logdir + year.toString() + month.toString() + day.toString() + '/' + targetfile, filemessage + os.EOL);
-
 }
 
 function autoremote(devicename, action) {

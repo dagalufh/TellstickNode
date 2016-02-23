@@ -1,3 +1,6 @@
+Version : 2.1.1
+Corrected console output to minimize it.
+
 Version : 2.1.0
 Added IP-address to Manual calls logging to show who made the manual call.
 Fixed so doubletap does not stack calls for same device.

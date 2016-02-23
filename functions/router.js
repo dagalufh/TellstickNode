@@ -31,7 +31,7 @@ module.exports = function(app) {
       if (req.connection.remoteAddress.indexOf('.') != -1) {
         remoteIP = req.connection.remoteAddress.substr(req.connection.remoteAddress.lastIndexOf(':') + 1);
       }
-      console.log('IP Trygin to access REMOTE: ' + remoteIP)
+      
       if (ip.isPrivate(remoteIP)) {
         require(variables.rootdir + 'pages/remote').get(req, res);
       } else {
