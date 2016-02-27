@@ -145,7 +145,8 @@ function highlightactiveschedule(callback) {
   hour = hour.substr(hour.length - 2);
   minutes = minutes.substr(minutes.length - 2);
   var currenttime = hour + ":" + minutes;
-
+  
+  //console.log('day: ' + today);
   variables.devices.forEach(function(device) {
     device.nextscheduleid = '';
     device.nextcriteriaid = '';
@@ -154,6 +155,7 @@ function highlightactiveschedule(callback) {
     if (today == 6) {
       startday = 0;
     }
+     
 
     var schedulefound = false;
 
@@ -165,8 +167,9 @@ function highlightactiveschedule(callback) {
 
       var day = variables.schedulesbyday[startday];
       for (var i = 0; i < day.length; i++) {
+        //console.log('TopOfFor:' + device.id + ':' + i + ':' + JSON.stringify(day[i]));
         if (todayreached) {
-          if (currenttime < day[i].time) {
+          if ( (currenttime < day[i].time) && (device.id == day[i].deviceid) ) {
             break;
           }
         }
@@ -190,7 +193,7 @@ function highlightactiveschedule(callback) {
       }
 
     } while (todayreached === false);
-
+    
     // -- Start of getting next schedule --
 
     var allschedules = [];

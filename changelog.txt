@@ -1,3 +1,6 @@
+Version : 2.1.2
+Corrected a bug causing it to not show the right schedule as last triggered and next to come.
+
 Version : 2.1.1
 Corrected console output to minimize it.
 
