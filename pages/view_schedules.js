@@ -104,7 +104,7 @@ function get(request, response) {
 
 
       if (device.schedule.length > 0) {
-        device.schedule.sort(sharedfunctions.dynamicSortMultiple('dayofweek', 'time'));
+        device.schedule.sort(sharedfunctions.dynamicSortMultiple('dayofweek', 'earliest'));
         device.schedule.forEach(function(singleschedule) {
           
           var dayname = '';
@@ -114,8 +114,6 @@ function get(request, response) {
             dayname += dayofweektranslate[day] + ', ';
           });
           dayname = dayname.substring(0, (dayname.length - 2));
-
-
 
           if (device.activescheduleid == singleschedule.uniqueid) {
             activeschedule = 'class="bg-success"';

@@ -30,6 +30,7 @@ function schedule() {
   this.weathergoodtime = 0;
   this.weatherbadfunction = '+';
   this.weatherbadtime = 0;
+  this.earliest = '23:59'; // Defined the last minute of the day, making it easy to find a criteria earlier
 }
 
 function schedule_criteria() {

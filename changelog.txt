@@ -1,3 +1,7 @@
+Version : 2.1.3
+Found a bug with highlighting of active schedules that caused different results depending on Node.JS version
+Adding a earliest parameter to schedules for ordering on View Schedules etc.
+
 Version : 2.1.2
 Corrected a bug causing it to not show the right schedule as last triggered and next to come.
 

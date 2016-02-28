@@ -153,8 +153,8 @@ function getdevicestatus(manual, callback) {
 	
 	if (variables.restoreInProgress === true) {
 		if (typeof(manual) == 'undefined') {
-			if (variables.getdevicestatustimeoutobject._called === true) {				
-				variables.getdevicestatustimeoutobject = setTimeout(getdevicestatus, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+			if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
+				variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 			}
 		}
 		return;
@@ -163,8 +163,8 @@ function getdevicestatus(manual, callback) {
 		// Less than 2 seconds since last call.
 		//console.log('Less than ' + variables.getdevicestatusdeadzone + ' seconds since last call');
 		variables.getdevicestatuslastcall = timestamp_start;
-		if (variables.getdevicestatustimeoutobject._called === true) {				
-						variables.getdevicestatustimeoutobject = setTimeout(getdevicestatus, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+		if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
+						variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 		}
 		
 		return;
@@ -305,8 +305,8 @@ function getdevicestatus(manual, callback) {
 				TellstickNode.sendtoclient(devicejson);
 				if ((typeof(manual) == 'undefined') || (manual === false)) {
 					schedulefunctions.highlightactiveschedule();
-					if (variables.getdevicestatustimeoutobject._called === true) {				
-						variables.getdevicestatustimeoutobject = setTimeout(getdevicestatus, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+					if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
+						variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 					}
 				}
 				if (callback) {
@@ -436,8 +436,8 @@ function getdevicestatus(manual, callback) {
 				TellstickNode.sendtoclient(devicejson);
 				if ((typeof(manual) == 'undefined') || (manual === false)) {
 					schedulefunctions.highlightactiveschedule();
-					if (variables.getdevicestatustimeoutobject._called === true) {				
-						variables.getdevicestatustimeoutobject = setTimeout(getdevicestatus, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+					if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
+						variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 					}
 				}
 				if (callback) {

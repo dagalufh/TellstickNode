@@ -59,52 +59,6 @@ function get(request, response) {
     var schedule_time = '';
     var schedule_action = '';
 
-
-    // -- Start of getting next schedule --
-    /*
-    var allschedules = [];
-    var activescheduleIndex = -1;
-    var nextscheduleIndex = -1;
-    for (var key in variables.schedulesbyday) {
-      if (variables.schedulesbyday[key].hasOwnProperty(key)) {
-        var day = variables.schedulesbyday[key];
-        if (day.length > 0) {
-          for (var d = 0; d < day.length; d++) {
-            if (schedulefunctions.getscheduleproperty(day[d].uniqueid, 'enabled') == 'true') {
-              if (device.id == day[d].deviceid) {
-
-                allschedules.push(day[d]);
-                if ((device.activescheduleid == day[d].uniqueid) && (device.activeday == key) && (day[d].criteriaid == device.activecriteriaid)) {
-                  activescheduleIndex = allschedules.length - 1;
-                }
-
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (activescheduleIndex != -1) {
-      if (activescheduleIndex < allschedules.length) {
-        nextscheduleIndex = activescheduleIndex + 1;
-      }
-
-      if (activescheduleIndex == (allschedules.length - 1)) {
-        nextscheduleIndex = 0;
-      }
-    }
-
-
-    if (nextscheduleIndex != -1) {
-      schedule.time = allschedules[nextscheduleIndex].time;
-      schedule.action = schedulefunctions.getscheduleproperty(allschedules[nextscheduleIndex].uniqueid, 'action');
-      schedule.uniqueid = allschedules[nextscheduleIndex].uniqueid;
-      schedule.criteriaid = allschedules[nextscheduleIndex].criteriaid;
-    }
-    
-    */
-
     if (device.nextscheduleid.toString().length > 0) {
         
       

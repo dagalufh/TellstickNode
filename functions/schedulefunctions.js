@@ -156,6 +156,18 @@ function highlightactiveschedule(callback) {
       startday = 0;
     }
      
+    device.schedule.forEach(function (schedule) {
+      schedule.earliest = '23:59';
+      //console.log(schedule.earliest);
+      schedule.criterias.forEach(function (criteria) {
+        //console.log(schedule.earliest + ' > ' + criteria.time);
+        if (schedule.earliest > criteria.time) {
+          
+          schedule.earliest = criteria.time;
+          //console.log(schedule.earliest);
+        }
+      })
+    })
 
     var schedulefound = false;
 
@@ -170,6 +182,8 @@ function highlightactiveschedule(callback) {
         //console.log('TopOfFor:' + device.id + ':' + i + ':' + JSON.stringify(day[i]));
         if (todayreached) {
           if ( (currenttime < day[i].time) && (device.id == day[i].deviceid) ) {
+            //console.log('(currenttime(' + currenttime + ') < day[i].time(' + day[i].time + ') && (device.id(' + device.id + ') == day[i].deviceid(' + day[i].deviceid + ')');
+            //console.log(device.id + ':BREAKING')
             break;
           }
         }
@@ -181,6 +195,7 @@ function highlightactiveschedule(callback) {
             device.currentstatus = getscheduleproperty(day[i].uniqueid, 'action');
             device.activeday = startday;
             device.activecriteriaid = day[i].criteriaid;
+            //console.log(device.id + ':' + JSON.stringify(day[i]));
           }
         }
 
