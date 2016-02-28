@@ -60,14 +60,16 @@ function get(request, response) {
     var schedule_action = '';
 
     if (device.nextscheduleid.toString().length > 0) {
-        
-      
       var schedule = schedulefunctions.getscheduleproperty(device.nextscheduleid, '*');
-      schedule_time = schedule.criterias[device.nextcriteriaid].time;
-      schedule_action = schedule.action;
-      schedule_uniqueid = schedule.uniqueid;
+      try {
+        schedule_time = schedule.criterias[device.nextcriteriaid].time;
+        schedule_action = schedule.action;
+        schedule_uniqueid = schedule.uniqueid;
+      } catch (e) {
+        sharedfunctions.logToFile('Error,Attempted to get information about scheduleid: ' + device.nextscheduleid + ' for Device-' + device.id, 'Core');
+      }
     }
-  
+
 
     // -- END of getting next schedule
 

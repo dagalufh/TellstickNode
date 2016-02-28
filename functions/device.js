@@ -22,12 +22,12 @@ function doubletapcheck() {
 	var timestamp_start = new Date();
 
 	// Do not run if restore is in progress.
-	if ( (variables.restoreInProgress === true) || (variables.disabledoubletap === true) ) {
+	if ((variables.restoreInProgress === true) || (variables.disabledoubletap === true)) {
 		setTimeout(doubletapcheck, ((1000 * variables.options.doubletapseconds) + (timestamp_start - new Date().getTime())));
 		return;
 	}
-	
-	
+
+
 	variables.doubletap.forEach(function(repeatschedule) {
 		if (repeatschedule.count > 0) {
 			var debugtimestamp = new Date();
@@ -35,14 +35,14 @@ function doubletapcheck() {
 			repeatschedule.count = repeatschedule.count - 1;
 		}
 	});
-	
+
 	for (var i = 0; i < variables.doubletap.length; i++) {
 		if (variables.doubletap[i].count < 1) {
 			variables.doubletap.splice(i, 1);
 			i = -1;
 		}
 	}
-	
+
 	if (variables.options.doubletapseconds < 1) {
 		variables.options.doubletapseconds = 1;
 	}
@@ -52,9 +52,11 @@ function doubletapcheck() {
 
 // Send a command to a device.
 function send(req, res) {
-	
+
 	deviceaction(req.query.deviceid, req.query.switchto, 'Manual(' + req.connection.remoteAddress + ')');
-	addtodoubletap({deviceid: req.query.deviceid},req.query.switchto);
+	addtodoubletap({
+		deviceid: req.query.deviceid
+	}, req.query.switchto);
 	res.send('Send command to device.');
 
 }
@@ -62,20 +64,20 @@ function send(req, res) {
 function addtodoubletap(targetdeviceid, targetaction) {
 
 	variables.disabledoubletap = true;
-	for(var i=0;i<variables.doubletap.length;i++) {
+	for (var i = 0; i < variables.doubletap.length; i++) {
 		if (variables.doubletap[i].schedule.deviceid == targetdeviceid.deviceid) {
-			variables.doubletap.splice(i,1);
-			i=-1;
+			variables.doubletap.splice(i, 1);
+			i = -1;
 		}
-		
+
 	}
-	
+
 	variables.doubletap.push({
 		schedule: targetdeviceid,
 		count: variables.options.doubletapcount,
 		action: targetaction
 	});
-	
+
 	variables.disabledoubletap = false;
 }
 
@@ -107,24 +109,24 @@ function deviceaction(deviceid, action, source) {
 			if (stderr) {
 				sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid, 'name') + ',' + source + ',' + action.toLowerCase() + ',tdtool responded on stderr with: ' + stderr.trim(), 'Device-' + deviceid);
 			}
-		
+
 		});
 		// Request an update of the status of devices.
 		getdevicestatus(true);
 	} else {
-		
+
 		variables.devices.forEach(function(device) {
-		
+
 			if (device.id == deviceid) {
-				
+
 				device.lastcommand = action.toLowerCase();
 				device.devices.forEach(function(device_in_group) {
-					
+
 					exec('"' + variables.tdtool() + '" ' + actiontotrigger.toLowerCase() + ' ' + device_in_group, function(error, stdout, stderr) {
 						if (typeof(res) !== 'undefined') {
 							//res.send(stdout);
 						}
-							console.log(stdout);
+						console.log(stdout);
 
 						var currentdevice = '';
 						variables.devices.forEach(function(device) {
@@ -137,10 +139,10 @@ function deviceaction(deviceid, action, source) {
 						if (stderr) {
 							sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid, 'name') + ',' + source + ',' + action.toLowerCase() + ',tdtool responded on stderr with: ' + stderr.trim(), 'Device-' + deviceid);
 						}
-						
+
 					});
 				});
-			
+
 			}
 		});
 		// Request an update of the status of devices.
@@ -150,11 +152,14 @@ function deviceaction(deviceid, action, source) {
 
 function getdevicestatus(manual, callback) {
 	var timestamp_start = new Date();
-	
+
 	if (variables.restoreInProgress === true) {
 		if (typeof(manual) == 'undefined') {
 			if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
-				variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+				variables.getdevicestatustimeoutobject = setTimeout(function() {
+					variables.getdevicestatustimeoutobject = undefined;
+					getdevicestatus();
+				}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 			}
 		}
 		return;
@@ -164,9 +169,12 @@ function getdevicestatus(manual, callback) {
 		//console.log('Less than ' + variables.getdevicestatusdeadzone + ' seconds since last call');
 		variables.getdevicestatuslastcall = timestamp_start;
 		if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
-						variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+			variables.getdevicestatustimeoutobject = setTimeout(function() {
+				variables.getdevicestatustimeoutobject = undefined;
+				getdevicestatus();
+			}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 		}
-		
+
 		return;
 	} else {
 		variables.getdevicestatuslastcall = timestamp_start;
@@ -174,8 +182,8 @@ function getdevicestatus(manual, callback) {
 	//if( (typeof(variables.getdevicestatuslastcall) == 'object') && () ) {
 	//	console.log('Seconds since last call: ' + Math.floor((variables.getdevicestatuslastcall - timestamp_start) / 1000));
 	//}
-	
-	
+
+
 
 	exec('"' + variables.tdtool() + '" --version', null, function(error, stdout, stderr) {
 		var lines = stdout.toString().split('\n');
@@ -306,7 +314,10 @@ function getdevicestatus(manual, callback) {
 				if ((typeof(manual) == 'undefined') || (manual === false)) {
 					schedulefunctions.highlightactiveschedule();
 					if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
-						variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+						variables.getdevicestatustimeoutobject = setTimeout(function() {
+							variables.getdevicestatustimeoutobject = undefined;
+							getdevicestatus();
+						}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 					}
 				}
 				if (callback) {
@@ -437,7 +448,10 @@ function getdevicestatus(manual, callback) {
 				if ((typeof(manual) == 'undefined') || (manual === false)) {
 					schedulefunctions.highlightactiveschedule();
 					if (typeof(variables.getdevicestatustimeoutobject) == 'undefined') {
-						variables.getdevicestatustimeoutobject = setTimeout(function () {getdevicestatus(); variables.getdevicestatustimeoutobject = undefined}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
+						variables.getdevicestatustimeoutobject = setTimeout(function() {
+							variables.getdevicestatustimeoutobject = undefined;
+							getdevicestatus();
+						}, ((1000 * variables.refreshdevicestatustimer) + (timestamp_start - new Date().getTime())));
 					}
 				}
 				if (callback) {
@@ -451,19 +465,19 @@ function getdevicestatus(manual, callback) {
 
 function resetdevices(callback) {
 	variables.devices.forEach(function(device) {
-		sharedfunctions.logToFile('Reset,'+JSON.stringify(device), 'Core');
+		sharedfunctions.logToFile('Reset,' + JSON.stringify(device), 'Core');
 		// Reset device to the last known command that was sent.
 		// ONLY reset real devices, not device groups!
 		if (device.id.indexOf('group') == -1) {
 			var setstatus = device.lastcommand;
 			var activescedule = device.activescheduleid;
-			if ( (device.activescheduleid.toString().length > 0) && (device.activescheduleid.toString().indexOf('watcher') == -1) ) {
+			if ((device.activescheduleid.toString().length > 0) && (device.activescheduleid.toString().indexOf('watcher') == -1)) {
 				// If there is an active schedule, reset it to that state instead.
 				setstatus = device.currentstatus;
 			} else {
 				activescedule = '';
 			}
-			
+
 			sharedfunctions.logToFile('Reset,' + device.name + ',' + activescedule + ',' + device.lastcommand + ',Reset device to status: ' + setstatus, 'Devices')
 			deviceaction(device.id, setstatus, 'Reset');
 		}
@@ -472,7 +486,7 @@ function resetdevices(callback) {
 	if (typeof(callback) != 'undefined') {
 		callback();
 	}
-	
+
 }
 
 function getresetdevices(req, res) {

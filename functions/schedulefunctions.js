@@ -16,7 +16,7 @@ function removeschedule(schedulesidarray) {
     for (var i = 0; i < day.length; i++) {
       schedulesidarray.forEach(function(scheduletoremove) {
         if (scheduletoremove == day[i].uniqueid) {
-          sharedfunctions.logToFile('Schedule,' + devicecontrol.getdeviceproperty(day[i].deviceid,'name') + ',' + day[i].uniqueid + ',REMOVED,Schedule was removed. Info that was removed: ' + JSON.stringify(day[i]), 'Device-' + day[i].deviceid);
+          sharedfunctions.logToFile('Schedule,' + devicecontrol.getdeviceproperty(day[i].deviceid, 'name') + ',' + day[i].uniqueid + ',REMOVED,Schedule was removed. Info that was removed: ' + JSON.stringify(day[i]), 'Device-' + day[i].deviceid);
           day.splice(i, 1);
           i = -1;
         }
@@ -24,7 +24,7 @@ function removeschedule(schedulesidarray) {
     }
 
   });
-  
+
   variables.devices.forEach(function(device) {
     for (var i = 0; i < device.schedule.length; i++) {
       schedulesidarray.forEach(function(scheduletoremove) {
@@ -37,10 +37,10 @@ function removeschedule(schedulesidarray) {
     }
 
   });
-  
-  
-  
-  
+
+
+
+
   variables.savetofile = true;
 }
 
@@ -108,7 +108,7 @@ function getschedule(req, res) {
       '<tr><td>Status of Schedule:</td><td>' + status + '</td></tr>',
       '<tr><td>Device:</td><td>' + requesteddevice.name + '</td></tr>',
       '<tr><td>RunOnce:</td><td>' + runonce + '</td></tr>',
-      
+
       '<tr><td>Randomizer function:</td><td>' + requestedschedule.randomizerfunction + requestedschedule.randomiser + ' Minutes' + '</td></tr>',
       '<tr><td>Good Weather:</td><td>' + requestedschedule.weathergoodfunction + requestedschedule.weathergoodtime + ' Minutes' + '</td></tr>',
       '<tr><td>Bad Weather:</td><td>' + requestedschedule.weatherbadfunction + requestedschedule.weatherbadtime + ' Minutes' + '</td></tr>',
@@ -145,7 +145,7 @@ function highlightactiveschedule(callback) {
   hour = hour.substr(hour.length - 2);
   minutes = minutes.substr(minutes.length - 2);
   var currenttime = hour + ":" + minutes;
-  
+
   //console.log('day: ' + today);
   variables.devices.forEach(function(device) {
     device.nextscheduleid = '';
@@ -155,14 +155,14 @@ function highlightactiveschedule(callback) {
     if (today == 6) {
       startday = 0;
     }
-     
-    device.schedule.forEach(function (schedule) {
+
+    device.schedule.forEach(function(schedule) {
       schedule.earliest = '23:59';
       //console.log(schedule.earliest);
-      schedule.criterias.forEach(function (criteria) {
+      schedule.criterias.forEach(function(criteria) {
         //console.log(schedule.earliest + ' > ' + criteria.time);
         if (schedule.earliest > criteria.time) {
-          
+
           schedule.earliest = criteria.time;
           //console.log(schedule.earliest);
         }
@@ -181,8 +181,8 @@ function highlightactiveschedule(callback) {
       for (var i = 0; i < day.length; i++) {
         //console.log('TopOfFor:' + device.id + ':' + i + ':' + JSON.stringify(day[i]));
         if (todayreached) {
-          if ( (currenttime < day[i].time) && (device.id == day[i].deviceid) ) {
-            //console.log('(currenttime(' + currenttime + ') < day[i].time(' + day[i].time + ') && (device.id(' + device.id + ') == day[i].deviceid(' + day[i].deviceid + ')');
+          if ((currenttime < day[i].time) && (device.id == day[i].deviceid)) {
+           // console.log('(currenttime(' + currenttime + ') < day[i].time(' + day[i].time + ') && (device.id(' + device.id + ') == day[i].deviceid(' + day[i].deviceid + ')');
             //console.log(device.id + ':BREAKING')
             break;
           }
@@ -195,7 +195,7 @@ function highlightactiveschedule(callback) {
             device.currentstatus = getscheduleproperty(day[i].uniqueid, 'action');
             device.activeday = startday;
             device.activecriteriaid = day[i].criteriaid;
-            //console.log(device.id + ':' + JSON.stringify(day[i]));
+           // console.log(device.id + ':' + JSON.stringify(day[i]));
           }
         }
 
@@ -208,7 +208,7 @@ function highlightactiveschedule(callback) {
       }
 
     } while (todayreached === false);
-    
+
     // -- Start of getting next schedule --
 
     var allschedules = [];

@@ -158,7 +158,7 @@ async.series([
 
 
 	var timerstart = new Date();
-	variables.getdevicestatustimeoutobject = setTimeout(devicefunctions.getdevicestatus, 1000 * variables.refreshdevicestatustimer);
+	variables.getdevicestatustimeoutobject = setTimeout(function () {variables.getdevicestatustimeoutobject = undefined; devicefunctions.getdevicestatus();}, 1000 * variables.refreshdevicestatustimer);
 	setTimeout(devicefunctions.doubletapcheck, 1000 * variables.options.doubletapseconds);
 	setTimeout(minutecheck, 60000, timerstart);
 });
