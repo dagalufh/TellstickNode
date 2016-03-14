@@ -1,3 +1,7 @@
+Version : 2.1.5
+Buggfix for catching timeout events when checking for weatherdata.
+Implemented a new option for Watcher schedules. Watcher events can occure on device status CHANGE (On to Off or Off to On) or device command sent.
+
 Version : 2.1.4
 Fixed a bug that caused getdevicestatus to not be called correctly.
 Added a try-catch to try to catch a error that occurs on Home

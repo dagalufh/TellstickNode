@@ -19,6 +19,16 @@ function check_weather(callback) {
 
 				var reg = http.get(options, function(res) {
 					res.setEncoding('utf-8');
+					
+					// Hope to catch timeout errors.
+					res.on('error', function() {
+						if (err.message.code === 'ETIMEDOUT') {
+							
+							if (callback) {
+								callback();
+							}
+						}
+					})
 
 					if (res.statusCode == 200) {
 						res.on('data', function(chunk) {

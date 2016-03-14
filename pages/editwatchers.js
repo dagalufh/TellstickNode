@@ -30,6 +30,12 @@ function get(req, res) {
     '<div class="checkbox">',
     '<label><input type="checkbox" id="autoremote" Value="autoremote" {autoremote_selected}>AutoRemote - Send message when created schedule is triggered</label>',
     '</div>',
+    '<div class="checkbox">',
+    '<label><input type="checkbox" id="onstatechanged" Value="onstatechanged" {onstatechanged_selected}>Check watcher on device status change (When device changes from On to Off or vise versa)</label>',
+    '</div>',
+    '<div class="checkbox">',
+    '<label><input type="checkbox" id="oncommandsent" Value="oncommandsent" {oncommandsent_selected}>Check watcher when a command is sent to the device</label>',
+    '</div>',
     '</div>',
     '</div>',
     '</div>',
@@ -132,6 +138,16 @@ function get(req, res) {
     body = body.replace(/{autoremote_selected}/g, 'checked=checked');
   } else {
     body = body.replace(/{autoremote_selected}/g, '');
+  }
+  if (selected_watcher.onstatechanged == 'true') {
+    body = body.replace(/{onstatechanged_selected}/g, 'checked=checked');
+  } else {
+    body = body.replace(/{onstatechanged_selected}/g, '');
+  }
+  if (selected_watcher.oncommandsent == 'true') {
+    body = body.replace(/{oncommandsent_selected}/g, 'checked=checked');
+  } else {
+    body = body.replace(/{oncommandsent_selected}/g, '');
   }
 
   res.send(template(headline, body, true));

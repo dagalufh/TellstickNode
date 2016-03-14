@@ -177,7 +177,7 @@ module.exports = function(app) {
         remoteIP = req.connection.remoteAddress.substr(req.connection.remoteAddress.lastIndexOf(':') + 1);
       }
              
-      if ( (checklogin(req, res)) || (ip.isPrivate(remoteIP)) ) {
+      if ((ip.isPrivate(remoteIP)) || (checklogin(req, res)) ) {
         require(variables.rootdir + 'functions/device').send(req, res);
       }
     })

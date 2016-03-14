@@ -57,7 +57,6 @@ function switchdevicestatus(deviceid, switchto) {
   //if ($('#commandbutton_'+deviceid).html() == 'ON') {
   //    switchto = 'off';
   //}
-
   $.ajax({
     url: '/device',
     data: {
@@ -67,6 +66,7 @@ function switchdevicestatus(deviceid, switchto) {
     success: function(data) {
       //$('#respons-modal-body').html(data);
       //$('#myModal').modal('show');
+      console.log(data);      
     },
     error: function(data) {
       alert('error occured when setting new status: ' + data);

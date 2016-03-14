@@ -110,6 +110,68 @@ function deviceaction(deviceid, action, source) {
 				sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid, 'name') + ',' + source + ',' + action.toLowerCase() + ',tdtool responded on stderr with: ' + stderr.trim(), 'Device-' + deviceid);
 			}
 
+			if (currentdevice.watchers.length > 0) {
+				sharedfunctions.logToFile('Watcher,' + currentdevice.name + ',NULL,INFO,This device has watchers.', 'Device-' + currentdevice.id);
+				currentdevice.watchers.forEach(function(watcher) {
+
+					if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') && (watcher.oncommandsent == 'true')) {
+
+						watcher.actions.forEach(function(action) {
+
+							if (action.delay > 0) {
+								// Create a schedule, runonce.
+								var currenttime = new Date();
+
+								// Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
+								sharedfunctions.DateAdd('n', currenttime, Number(action.delay));
+
+								var currenthour = '0' + currenttime.getHours();
+								var currentminutes = '0' + currenttime.getMinutes();
+								var triggertime = currenthour.substr(currenthour.length - 2) + ":" + currentminutes.substr(currentminutes.length - 2);
+
+								var watcherschedule = new classes.schedule();
+								watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
+								watcherschedule.deviceid = action.id;
+								watcherschedule.enabled = watcher.enabled;
+								watcherschedule.action = action.status;
+								watcherschedule.dayofweek = [currenttime.getUTCDay()];
+								watcherschedule.controller = 'Time';
+								watcherschedule.runonce = 'true';
+								watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+
+								var newcriteria = new classes.schedule_criteria();
+								newcriteria.controller = 'Time';
+								newcriteria.time = triggertime;
+								newcriteria.originaltime = triggertime;
+								newcriteria.criteriaid = watcherschedule.criterias.length;
+								watcherschedule.criterias.push(newcriteria);
+
+								watcherschedule.dayofweek.forEach(function(day) {
+
+									watcherschedule.criterias.forEach(function(criteria) {
+										var tempday = new classes.day();
+										tempday.criteriaid = criteria.criteriaid;
+										tempday.uniqueid = watcherschedule.uniqueid;
+										tempday.time = criteria.time;
+										tempday.deviceid = watcherschedule.deviceid;
+										variables.schedulesbyday[day].push(tempday);
+									})
+								})
+								variables.devices.forEach(function(targetdevice) {
+									if (targetdevice.id == watcherschedule.deviceid) {
+										targetdevice.schedule.push(watcherschedule);
+									}
+								})
+								sharedfunctions.logToFile('Schedule,' + currentdevice.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule), 'Device-' + watcherschedule.deviceid);
+								variables.savetofile = true;
+							} else {
+								deviceaction(action.id, action.status, 'WatcherInstantTrigger');
+							}
+						});
+					}
+				});
+			}
+
 		});
 		// Request an update of the status of devices.
 		getdevicestatus(true);
@@ -138,6 +200,68 @@ function deviceaction(deviceid, action, source) {
 						sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid, 'name') + ',' + source + ',' + action.toLowerCase() + ',tdtool responded on stdout with: ' + stdout.trim(), 'Device-' + deviceid);
 						if (stderr) {
 							sharedfunctions.logToFile('Action,' + getdeviceproperty(deviceid, 'name') + ',' + source + ',' + action.toLowerCase() + ',tdtool responded on stderr with: ' + stderr.trim(), 'Device-' + deviceid);
+						}
+
+						if (currentdevice.watchers.length > 0) {
+							sharedfunctions.logToFile('Watcher,' + currentdevice.name + ',NULL,INFO,This device has watchers.', 'Device-' + currentdevice.id);
+							currentdevice.watchers.forEach(function(watcher) {
+
+								if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') && (watcher.oncommandsent == 'true')) {
+
+									watcher.actions.forEach(function(action) {
+
+										if (action.delay > 0) {
+											// Create a schedule, runonce.
+											var currenttime = new Date();
+
+											// Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
+											sharedfunctions.DateAdd('n', currenttime, Number(action.delay));
+
+											var currenthour = '0' + currenttime.getHours();
+											var currentminutes = '0' + currenttime.getMinutes();
+											var triggertime = currenthour.substr(currenthour.length - 2) + ":" + currentminutes.substr(currentminutes.length - 2);
+
+											var watcherschedule = new classes.schedule();
+											watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
+											watcherschedule.deviceid = action.id;
+											watcherschedule.enabled = watcher.enabled;
+											watcherschedule.action = action.status;
+											watcherschedule.dayofweek = [currenttime.getUTCDay()];
+											watcherschedule.controller = 'Time';
+											watcherschedule.runonce = 'true';
+											watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+
+											var newcriteria = new classes.schedule_criteria();
+											newcriteria.controller = 'Time';
+											newcriteria.time = triggertime;
+											newcriteria.originaltime = triggertime;
+											newcriteria.criteriaid = watcherschedule.criterias.length;
+											watcherschedule.criterias.push(newcriteria);
+
+											watcherschedule.dayofweek.forEach(function(day) {
+
+												watcherschedule.criterias.forEach(function(criteria) {
+													var tempday = new classes.day();
+													tempday.criteriaid = criteria.criteriaid;
+													tempday.uniqueid = watcherschedule.uniqueid;
+													tempday.time = criteria.time;
+													tempday.deviceid = watcherschedule.deviceid;
+													variables.schedulesbyday[day].push(tempday);
+												})
+											})
+											variables.devices.forEach(function(targetdevice) {
+												if (targetdevice.id == watcherschedule.deviceid) {
+													targetdevice.schedule.push(watcherschedule);
+												}
+											})
+											sharedfunctions.logToFile('Schedule,' + currentdevice.name + ',' + watcherschedule.uniqueid + ',Create,Watcher Event triggered creation of Run-Once schedule: ' + JSON.stringify(watcherschedule), 'Device-' + watcherschedule.deviceid);
+											variables.savetofile = true;
+										} else {
+											deviceaction(action.id, action.status, 'WatcherInstantTrigger');
+										}
+									});
+								}
+							});
 						}
 
 					});
@@ -231,7 +355,7 @@ function getdevicestatus(manual, callback) {
 									sharedfunctions.logToFile('Watcher,' + device.name + ',NULL,INFO,This device has watchers.', 'Device-' + device.id);
 									device.watchers.forEach(function(watcher) {
 
-										if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true')) {
+										if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') && (watcher.onstatechanged == 'true')) {
 
 											watcher.actions.forEach(function(action) {
 
@@ -360,7 +484,7 @@ function getdevicestatus(manual, callback) {
 										sharedfunctions.logToFile('Watcher,' + device.name + ',NULL,INFO,This device has watchers.', 'Device-' + device.id);
 										device.watchers.forEach(function(watcher) {
 
-											if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true')) {
+											if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') && (watcher.onstatechanged == 'true')) {
 
 												watcher.actions.forEach(function(action) {
 													if (action.delay > 0) {

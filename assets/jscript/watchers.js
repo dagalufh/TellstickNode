@@ -3,6 +3,8 @@ function createwatcher(uniqueid) {
   var validaction = $('#Select_Action').val();
   //var validsetstatus = $('#Select_Action_After').val();
   var validautoremote = $("#autoremote").prop('checked');
+  var validonstatechanged = $("#onstatechanged").prop('checked');
+  var validoncommandsent = $("#oncommandsent").prop('checked');
   // Check for a nuemrical value in duration for Timers
   var targetactions = [];
   $('input[id^="target_action_"]').each(function() {
@@ -19,6 +21,18 @@ function createwatcher(uniqueid) {
     $('#myModal').modal('show');
     return false;
   }
+  
+  if ( (validoncommandsent === false) && (validonstatechanged === false) ) {
+    $("#onstatechanged").parent().parent().addClass('bg-danger');
+    $("#oncommandsent").parent().parent().addClass('bg-danger');
+    
+    $('#respons-modal-body').html('You need to select atleast one of the watcher checking events.');
+    $('#myModal').modal('show');
+    return false;
+  } else {
+    $("#onstatechanged").parent().parent().removeClass('bg-danger');
+    $("#oncommandsent").parent().parent().removeClass('bg-danger');
+  }
 
   if (typeof(uniqueid) == 'undefined') {
     $.post('/newwatcher', {
@@ -26,7 +40,9 @@ function createwatcher(uniqueid) {
       triggerstatus: validaction,
       actions: targetactions,
       enabled: $('#Select_Enabled').val(),
-      autoremoteonschedule: validautoremote
+      autoremoteonschedule: validautoremote,
+      onstatechanged: validonstatechanged,
+      oncommandsent: validoncommandsent
     }, function(data) {
       $('#respons-modal-body').html(data.message);
       $('#myModal').modal('show');
@@ -44,7 +60,9 @@ function createwatcher(uniqueid) {
       actions: targetactions,
       enabled: $('#Select_Enabled').val(),
       uniqueid: uniqueid,
-      autoremoteonschedule: validautoremote
+      autoremoteonschedule: validautoremote,
+      onstatechanged: validonstatechanged,
+      oncommandsent: validoncommandsent
     }, function(data) {
       $('#respons-modal-body').html(data);
       $('#myModal').modal('show');
