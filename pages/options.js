@@ -135,7 +135,7 @@ function get(req, res) {
   }
   body = body.replace(/{weatherinfo}/g, weatherinfo);
   
- var systeminfo = ['Tellstick booted: ' + variables.weather.name
+ var systeminfo = ['Tellstick booted: ' + variables.lastbootup
     ];
     systeminfo = systeminfo.join('<br>');
   body = body.replace(/{systeminfo}/g, systeminfo);
