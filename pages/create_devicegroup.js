@@ -1,7 +1,8 @@
+exports.get = get;
+
 function get(req, res) {
   var variables = require('../templates/variables');
   var template = require(variables.rootdir + 'templates/template-main');
-  var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
 
   var requestedgroup = '';
   var requestedid = '';
@@ -51,7 +52,7 @@ function get(req, res) {
     '</div>',
     '<div class="panel-body">',
     '<div class="form-group">',
-    '<input type="text" id="devicegroupname" value="{editname}">',
+    '<input type="text" class="form-control input-sm" id="devicegroupname" value="{editname}">',
     '</div>',
     '</div>',
     '<div class="panel-heading">',
@@ -59,12 +60,12 @@ function get(req, res) {
     '</div>',
     '<div class="panel-body">',
     'Included Devices<br>',
-    '<select style="width: 200px;" id="includeddevices" size="10" multiple>{includeddevices}</select><br>',
-    '<button onClick="javascript:moveup()">&#x25B2;</button> <button onClick="javascript:movedown()">&#x25BC;</button><br>',
+    '<select style="width: 200px;" class="form-control input-sm" id="includeddevices" size="10" multiple>{includeddevices}</select>',
+    '<button onClick="javascript:moveup()" class="btn btn-default btn-sm">&#x25B2;</button> <button class="btn btn-default btn-sm" onClick="javascript:movedown()">&#x25BC;</button><br>',
     'Available Devices<br>',
-    '<select style="width: 200px;" id="availabledevices" size="10" multiple>{availabledevices}</select>',
+    '<select style="width: 200px;" class="form-control input-sm" id="availabledevices" size="10" multiple>{availabledevices}</select>',
     '</div>',
-    '<div class="panel-footer"><button class="btn btn-default" onClick="Javascript:newdevicegroup(\'' + requestedid + '\');">Save Devicegroup</button></div>',
+    '<div class="panel-footer"><button class="btn btn-default btn-sm" onClick="Javascript:newdevicegroup(\'' + requestedid + '\');">Save Devicegroup</button></div>',
     '</div>'
   ];
 
@@ -76,4 +77,3 @@ function get(req, res) {
 
   res.send(template.build(headline, body, true));
 }
-exports.get = get;

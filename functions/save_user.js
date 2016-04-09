@@ -4,6 +4,7 @@ function post(req, res) {
 	var saltedpasswords = require(variables.rootdir + 'functions/saltedpasswords.js').saltedpasswords;
 	var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
 	var template = require(variables.rootdir + 'templates/template-main');
+	var fs = require('fs');
 	//res.send('Create a new user.');
 	var postdata = req.body;
 	currentSession = req.session;

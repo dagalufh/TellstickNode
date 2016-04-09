@@ -1,3 +1,66 @@
+Todo: Move Watchers to Device view/config. Create a seperate deviceconf.js under "userdata" folder. 
+- Pros: Allows to set autoremote for specific device
+Todo: Add button to reboot computer if desired (linux only at this time)
+Todo: Add Device menu option - for managing devices, removal, renaming - Pushed to the future
+
+
+
+Version : 3.0.2
+Devicelistner now shows what status the device had before change
+Probably fixed watcher not triggering/triggering on everything issue.
+Implementing criteria as a intervalnotbefore/after controller. 
+- If a criteria is removed, it must set those intervalls to false that was refering to it: DONE
+- Add a onchange check for value beginning with criteriaid: DONE
+- set the interval time to same as criteria selected and set it to disabled: DONE
+- Implement updating of times on recalculations: DONE
+- Verify so that controller for intervals are not used anywhere else where not needed.
+Added a new function, getcriteria, that accepts schedule and a criteriaid. It returns the criteria object.
+Fixed a bug where disabling modifiers for a criteria, caused it to not update interval times.
+Criterias for schedules are now added/edited via a modal window instead.
+Shows last bootup time in options view
+
+Version : 3.0.1
+Fixed a bug that caused recalucations to not be saved in schedulesbyday. 
+
+Version : 3.0.0
+Now using a tellduswrapper function that listens to the driver for events on the tellstick device.
+Removed Requirements folder as tdtool is no longer needed.
+Removed tdtool from variables
+Added a new dev logfile
+Added a new inactivetellduscommands logfile to use when developing
+Fixed a missing requirement on router when starting from fresh without any user previously.
+Fixed missing fs module on save_user.js
+Removed showdimoptions
+Home.js: changed to send command numbers instead of words. Now showing on/off to the user.
+Device.js: has a new function, sendcommandtodevice that will replace deviceaction
+Device.js: Started creating a executewatcher function that can be called from the deviceeventscallback in tellduswrapper.
+Load_user.js: Modified loading of schedules to alter on / off actions to 1 / 2 instead.
+assets/function.js: Socket received messages now look for _1 and _2 commandbuttons instead of on and off
+create_schedule.js: Changed to 1 and 2 instead of on and off
+create_watcher.js: Changed to 1 and 2 instead of on and off
+editwatchers.js: Changed to 1 and 2 instead of on and off
+editschedule.js: Changed to 1 and 2 instead of on and off
+editschedule.js: Corrected some display for editing schedules
+view_schedule.js: Now showing correct values for On/Off to the user
+schedulefunctions.js: Changed highlightschedule to check if schedulesbyday.length > 0 instead of hasownproperty
+sharedfunctions.js: Fixed create_options_alphanumeric so it always works with strings when comparing
+remote.js: Corrected to handle new values for on/off
+TellstickNode.js: Removed require('compareversion') - Unused
+TellstickNode.js: Removed saving devicegroups to file since they are gone now.
+Tellduswrapper.js: Added a listener for sensors in preperation for those.
+Watchers: Devices that where virtual (devicegroups) are now correctly replaced by it's counterpart in TelldusCore
+Schedules: Devices that where virtual (devicegroups) are now correctly replaced by it's counterpart in TelldusCore
+DeviceGroups: They are now migrated upon launch to the new way and the old files removed from userdata.
+DeviceGroups: Adding/Removing child devices works. And event is created that is catched and updates local database.
+Removal of Devices: Removed from schedulesbyday and from internal database. This is done on an event from TelldusCore, so if the device is removed from there they will be removed.
+Options: New checkboxes that allows sending of autoremote messages when TellstickNode boots up and/of if a device changes it's state.
+check_weather.js: Previous attempts to catch the ETIMEDOUT error failed, new attempt seems to be working.
+All: Error displays are now more clear to not confuse user.
+All: Improvements to mobile view
+Schedules: Criterias now has a option to disable modifiers.
+Improved logging for Developer
+Added call to highlightactiveschedule after recalculate
+
 Version : 2.1.5
 Buggfix for catching timeout events when checking for weatherdata.
 Implemented a new option for Watcher schedules. Watcher events can occure on device status CHANGE (On to Off or Off to On) or device command sent.

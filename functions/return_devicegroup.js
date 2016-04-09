@@ -5,10 +5,10 @@ function get(req, res) {
 
   variables.devices.forEach(function(device) {
     if (device.id == req.query.id) {
-      requestedgroup = device
+      requestedgroup = device;
     }
   });
-
+	console.log(requestedgroup);
   requestedgroup.devices.forEach(function(memberdeviceid) {
     variables.devices.forEach(function(device) {
       if (device.id == memberdeviceid) {

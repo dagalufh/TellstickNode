@@ -34,12 +34,21 @@ td {vertical-align: top;}
 
 */
 
-.devicestatus {width: 180px;}
+.devicestatus {width: 120px;}
 .td-middle {width: 180px;}
+.td-140 {width: 140px;}
 .td-small {width: 70px;}
+
 .color-primary-0 { color: #7B7E8D }	/* Main Primary color */
 .color-primary-1 { color: #CECED2 }
 .color-primary-2 { color: #9D9EA8 }
 .color-primary-3 { color: #5F6276 }
 .color-primary-4 { color: #444860 }	
+.vertical-middle {align-items: center;}
 
+
+@media screen and (max-width:678px) {
+  .devicestatus {width: 95px;}
+  .hideonsmallscreen {display: hidden;}
+  .btn-mobile {font-size: 8pt;}
+}

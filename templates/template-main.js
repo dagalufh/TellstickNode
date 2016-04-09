@@ -1,15 +1,14 @@
-var variables = require('./variables');
-var fs = require('fs');
 
 function build(pagetitle, content, loggedin) {
-var dev = '';
+var variables = require('./variables');
+  var dev = '';
   // Defaults
   if (process.argv[2] == '--dev') {
     dev = 'DEVMODE - ';
     
   } 
   
-  var title = dev + 'TellstickNode ' + variables.currentversion;
+  var title = dev + 'TellstickNode ' + variables.currentversion + ' Booted: ' + variables.lastbootup;
   // Build the body layout
   var body = ['<!doctype html>',
     '<html lang="en">\n\n<meta charset="utf-8">\n',
@@ -17,6 +16,7 @@ var dev = '';
     '<title>{title}</title>',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<link rel="stylesheet" href="css/bootstrap.min.css" />',
+    '<link rel="stylesheet" href="css/style.css" />\n',
     '<link rel="stylesheet" href="css/{activestylesheet}" />\n',
     '<script src="/socket.io/socket.io.js"></script>',
     '<script src="jscript/jquery-2.1.1.min.js"></script>',
@@ -61,7 +61,7 @@ var dev = '';
     '<span id="respons-modal-body"></span>',
     '</div>',
     '<div class="modal-footer">',
-    '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>',
+    '<span id="respons-modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></span>',
     '</div>',
     '</div>',
     '</div>',
@@ -165,14 +165,14 @@ var dev = '';
 
   }
 
-  navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
+  var navigationbar = ['<li ' + activehome + '><a href="/">Home</a></li>',
     '<li ' + activeremote + '><a href="/remote">Remote</a></li>'
   ];
 
   if (loggedin) {
     navigationbar = ['<li class="' + activehome + '"><a href="/">Home</a></li>',
       '<li class="dropdown ' + activeschedule + '">',
-      '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Schedules/Timers <span class="caret"></span></a>',
+      '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Schedules & Timers <span class="caret"></span></a>',
       '<ul class="dropdown-menu">',
       '<li><a href="/newschedule">New</a></li>',
       '<li><a href="/view_schedules">View All</a></li>',
@@ -186,10 +186,10 @@ var dev = '';
       '</ul>',
       '</li>',
       '<li class="dropdown ' + activedevicegroup + '">',
-      '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devicegroups <span class="caret"></span></a>',
+      '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devicegroups<span class="caret"></span></a>',
       '<ul class="dropdown-menu">',
       '<li><a href="/new_devicegroup">New</a></li>',
-      '<li><a href="/view_devicegroups">View All</a></li>',
+      '<li><a href="/view_devices">View All</a></li>',
       '</ul>',
       '</li>',
       '<li class="dropdown ' + activeoptions + '">',
@@ -213,17 +213,6 @@ var dev = '';
     ];
   }
   navigationbar = navigationbar.join('\n');
-
-  '<li class="dropdown">',
-  '<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Schedules <span class="caret"></span></a>',
-  '<ul class="dropdown-menu">',
-  '<li><a href="#">New</a></li>',
-  '<li><a href="#">View All</a></li>',
-  '</ul>',
-  '</li>',
-
-
-
   body = body.replace(/{navbar}/g, navigationbar);
   body = body.replace(/{PageSpecificJS}/g, PageSpecificJS);
 

@@ -33,8 +33,6 @@ function removeschedule(scheduleid) {
   });
 }
 
-
-
 function removewatcher(watcherid) {
   $.ajax({
     url: '/removewatcher',
@@ -93,24 +91,18 @@ socket.on('message', function(data) {
         $('#pausebutton').html('Pause schedules');
       }
     } else {
-      $('#commandbutton_' + device[0] + '_on').removeClass('btn-success');
-      $('#commandbutton_' + device[0] + '_off').removeClass('btn-success');
-      $('#commandbutton_' + device[0] + '_dim').removeClass('btn-success');
+      $('#commandbutton_' + device[0] + '_1').removeClass('btn-success');
+      $('#commandbutton_' + device[0] + '_2').removeClass('btn-success');
 
-      if (device[1].toLowerCase() == 'on') {
-        $('#commandbutton_' + device[0] + '_on').addClass('btn-success');
+      if (device[1] == '1') {
+        $('#commandbutton_' + device[0] + '_1').addClass('btn-success');
       }
-      if (device[1].toLowerCase() == 'off') {
-        $('#commandbutton_' + device[0] + '_off').addClass('btn-success');
+      if (device[1] == '2') {
+        $('#commandbutton_' + device[0] + '_2').addClass('btn-success');
       }
-      if (device[1].toLowerCase() == 'dim') {
-        $('#commandbutton_' + device[0] + '_dim').addClass('btn-success');
-      }
-
 
     }
     console.log('Recevied: ' + device[0] + ":" + device[1]);
-
   }
 });
 
@@ -152,13 +144,13 @@ $(function(ready) {
         $('.non_timer').show();
         $('.for_timer').hide();
       }
-    })
+    });
 
     // Fix so the time is correct to begin with
     //$('#Time').val(formatTime($('#Time').val()));
 
     // If the user changes the controller, the time should change.
-    $('#Select_Controller').change(function() {
+    $(document).on('change','#Select_Controller',function() {
 
       if ($(this).val() == 'Time') {
         var currentdate = new Date();
@@ -180,7 +172,6 @@ $(function(ready) {
         //socket.emit('request_sun_time', {
         //  'controller': 'sunset'
         //});
-        
         getTimeFromServer('sunset',$('#Time'));
         
         $('#Modificationsdiv').show();
@@ -236,7 +227,9 @@ $(function(ready) {
       }
     });
 
-    $('#Select_Controller_ModifierBefore').change(function() {
+    $(document).on('change','#Select_Controller_ModifierBefore',function() {
+    //$('#Select_Controller_ModifierBefore').change(function() {
+      
       if ($(this).val() == 'None') {
         $('#IntervalNotBeforeTime').val('');
         $('#IntervalNotBeforeTime').attr('disabled', true);
@@ -260,9 +253,16 @@ $(function(ready) {
         $('#IntervalNotBeforeTime').attr('disabled', false);
         getTimeFromServer('sunrise',$('#IntervalNotBeforeTime'));
       }
+      
+      if ($(this).val().indexOf('criteria') != -1) {
+        var criteriatime = $("#Select_Controller_ModifierBefore option[value='"+ $(this).val() +"']").text();
+        $('#IntervalNotBeforeTime').attr('disabled', true);
+        $('#IntervalNotBeforeTime').val(criteriatime.substring(criteriatime.lastIndexOf('(')+1, criteriatime.lastIndexOf(')')));
+      }
     });
-
-    $('#Select_Controller_ModifierAfter').change(function() {
+    
+    $(document).on('change','#Select_Controller_ModifierAfter',function() {
+   // $('#Select_Controller_ModifierAfter').change(function() {
       if ($(this).val() == 'None') {
         $('#IntervalNotAfterTime').val('');
         $('#IntervalNotAfterTime').attr('disabled', true);
@@ -286,10 +286,17 @@ $(function(ready) {
         $('#IntervalNotAfterTime').attr('disabled', false);
         getTimeFromServer('sunrise',$('#IntervalNotAfterTime'));
       }
+      
+      if ($(this).val().indexOf('criteria') != -1) {
+        var criteriatime = $("#Select_Controller_ModifierAfter option[value='"+ $(this).val() +"']").text();
+        $('#IntervalNotAfterTime').attr('disabled', true);
+        $('#IntervalNotAfterTime').val(criteriatime.substring(criteriatime.lastIndexOf('(')+1, criteriatime.lastIndexOf(')')));
+      }
     });
 
     // When the user switches focus from the time input, make sure it was a correct value.
-    $('#Time').focusout(function() {
+    $(document).on('focusout','#Time',function() {
+    //$('#Time').focusout(function() {
       var correctTime = formatTime($(this).val());
       if (correctTime !== false) {
         $(this).val(correctTime);
@@ -298,7 +305,9 @@ $(function(ready) {
         $('#Time').parent().addClass('has-error');
       }
     });
-    $('#Time_Timer').focusout(function() {
+    
+    $(document).on('focusout','#Time_Timer',function() {
+    //$('#Time_Timer').focusout(function() {
       var correctTime = formatTime($(this).val());
       if (correctTime !== false) {
         $(this).val(correctTime);
@@ -307,7 +316,9 @@ $(function(ready) {
         $('#Time_Timer').parent().addClass('has-error');
       }
     });
-    $('#IntervalNotBeforeTime').focusout(function() {
+    
+    $(document).on('focusout','#IntervalNotBeforeTime',function() {
+    //$('#IntervalNotBeforeTime').focusout(function() {
       if ($(this).val().length > 0) {
         var correctTime = formatTime($(this).val());
         if (correctTime !== false) {
@@ -320,7 +331,8 @@ $(function(ready) {
         $(this).parent().removeClass('has-error');
       }
     });
-    $('#IntervalNotAfterTime').focusout(function() {
+    $(document).on('focusout','#IntervalNotAfterTime',function() {
+    //$('#IntervalNotAfterTime').focusout(function() {
       if ($(this).val().length > 0) {
         var correctTime = formatTime($(this).val());
         if (correctTime !== false) {
@@ -419,5 +431,25 @@ function getTimeFromServer(controller, target) {
       console.log('error');
       console.log(data);
     }
-  })
+  });
+}
+
+function modal_error() {
+  $('#myModalLabel').html('Error Occured');
+  $('#myModalLabel').parent().addClass('error');
+  $('#respons-modal-body').html('');
+  //$('#myModalLabel').parent().removeClass('modal-header');
+  $('#respons-modal-footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+}
+
+function modal_notification() {
+  $('#myModalLabel').parent().removeClass('error');
+  //$('#myModalLabel').parent().addClass('modal-header');
+  $('#myModalLabel').html('Notification');
+  $('#respons-modal-body').html('');
+  $('#respons-modal-footer').html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>');
+}
+
+function sortNumber(a,b) {
+    return a - b;
 }

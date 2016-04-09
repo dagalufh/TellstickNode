@@ -1,22 +1,22 @@
 process.chdir(__dirname);
 
+var fs = require('fs');
+
 if (process.argv[2] == '--dev') {
-	console.log('################ Running in DEV Mode ################')
+	console.log('################ Running in DEV Mode ################');
 }
 var os = require('os');
 var variables = require('./templates/variables');
 
 // Define the root directory path to be able to use it later easily.
 if (os.platform() === 'win32') {
-	variables.rootdir = __dirname.replace(/\\/g, "/") + '/'
+	variables.rootdir = __dirname.replace(/\\/g, "/") + '/';
 } else if (os.platform() == 'linux') {
-	variables.rootdir = __dirname + '/'
+	variables.rootdir = __dirname + '/';
 }
 
-var fs = require('fs');
+
 var async = require('async');
-var exec = require('child_process').exec;
-var classes = require('./templates/classes');
 var express = require('express');
 var session = require('express-session');
 var io = require('socket.io')(app);
@@ -24,8 +24,14 @@ var devicefunctions = require('./functions/device');
 var schedulefunctions = require('./functions/schedulefunctions');
 var app = express();
 
-var http = require('http');
-var compareversion = require('compare-version');
+//var http = require('http');
+
+// Wrapper for calls against tellstick
+var telldus = require('./functions/tellduswrapper');
+telldus.initiatetelldus();
+
+var currentdate = new Date();
+variables.lastbootup = currentdate.getFullYear() + '-' + gettwodigit(currentdate.getMonth() + 1) + '-' + gettwodigit(currentdate.getDate()) + ' ' + gettwodigit(currentdate.getHours()) + ':' + gettwodigit(currentdate.getMinutes()) + ':' + gettwodigit(currentdate.getSeconds());
 
 var sharedfunctions = require('./functions/sharedfunctions');
 
@@ -92,8 +98,6 @@ async.series([
 	function(callback) {
 		// Check if the optionsfile already exists or not. otherwise, create it.
 		fs.exists(__dirname + '/userdata/options.js', function(exists) {
-			var optionsobject = {};
-
 			if (!exists) {
 				// Define default options
 
@@ -113,7 +117,11 @@ async.series([
 	},
 	function(callback) {
 		sharedfunctions.logToFile('Bootprocess,Loading deviceinformation', 'Core');
-		devicefunctions.getdevicestatus(false, callback);
+		telldus.getalldevices();
+		telldus.initiatedevicelistener();
+		telldus.initiatesensorlistener();
+		telldus.initiatedevicechangeslistener();
+		callback();
 	},
 	function(callback) {
 		// CALL LOAD USERDATA    
@@ -132,16 +140,19 @@ async.series([
 		highlight(callback);
 	},
 	function(callback) {
+		
 		// Reset devices to correct status
 		sharedfunctions.logToFile('Bootprocess,Resetting devices to their correct status.', 'Core');
+		//sharedfunctions.logToFile('Bootprocess,RESET HAS BEEN DISABLED.', 'dev');
+		//callback();
 		devicefunctions.resetdevices(callback);
 	}
-], function(err) {
+], function() {
 	// Start the server here
 	variables.savetofile = true;
 	var server = app.listen(variables.options.port, function() {
-		var host = server.address().address
-		var port = server.address().port
+		var host = server.address().address;
+		var port = server.address().port;
 		sharedfunctions.logToFile('Bootprocess,Bootprocess Complete. TellstickNode is now listening on http://' + host + ':' + port, 'Core');
 	});
 
@@ -155,10 +166,11 @@ async.series([
 			}]);
 		});
 	});
-
+	if (variables.options.autoremote_onlaunch == 'true') {
+		sharedfunctions.autoremote('TellstickNode', 'Booted Up');
+	}
 
 	var timerstart = new Date();
-	variables.getdevicestatustimeoutobject = setTimeout(function () {variables.getdevicestatustimeoutobject = undefined; devicefunctions.getdevicestatus();}, 1000 * variables.refreshdevicestatustimer);
 	setTimeout(devicefunctions.doubletapcheck, 1000 * variables.options.doubletapseconds);
 	setTimeout(minutecheck, 60000, timerstart);
 });
@@ -166,7 +178,7 @@ async.series([
 // Implement locking device to not let this do anything if a restore is in progress.
 function minutecheck(timestamp_start) {
 	sharedfunctions.DateAdd('n', timestamp_start, 1);
-	var timestamp_end, hour, minutes, seconds, enddifference;
+	var timestamp_end, hour, minutes, enddifference;
 
 	if (variables.restoreInProgress === true) {
 		timestamp_end = new Date();
@@ -179,38 +191,51 @@ function minutecheck(timestamp_start) {
 	hour = gettwodigit(timestamp_start.getHours());
 	minutes = gettwodigit(timestamp_start.getMinutes());
 
-	var dayofweek = timestamp_start.getUTCDay();
 	var removeschedules = [];
 
-	variables.schedulesbyday[timestamp_start.getUTCDay()].forEach(function(criteria) { // Criteria BEGIN
+	variables.schedulesbyday[timestamp_start.getUTCDay()].forEach(function(current_criteria) { // Criteria BEGIN
 
-			var schedule = schedulefunctions.getscheduleproperty(criteria.uniqueid, '*');
-			var device = devicefunctions.getdeviceproperty(criteria.deviceid, '*');
+			var schedule = schedulefunctions.getscheduleproperty(current_criteria.uniqueid, '*');
+			var device = devicefunctions.getdeviceproperty(current_criteria.deviceid, '*');
+		
+			/*
+			 Replace all schedule.criterias[criteria.criteriaid] with criteria.criteriaid
+			 Replace all criteria.uniqueid with schedule.uniqueid
+			 Replace all criteria.deviceid with device.deviceid
+			*/
+			var criteria = schedulefunctions.getcriteria(schedule,current_criteria.criteriaid);
+			
+			sharedfunctions.logToFile('[' + schedule.uniqueid + '.'+ criteria.criteriaid +'] Criteria.time(' + criteria.time + ') == now(' + hour + ':' + minutes + ')', 'dev');
+		
 			if (criteria.time == hour + ':' + minutes) {
-
+				sharedfunctions.logToFile('Criteria Times matched with NOW', 'dev');
 				if (variables.pauseschedules) {
-					sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',PAUSED,Schedule was supposed to trigger. But has not since all schedules are paused by user.', 'Device-' + schedule.deviceid);
+					sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + '.' + criteria.criteriaid + ',PAUSED,Schedule was supposed to trigger. But has not since all schedules are paused by user.', 'Device-' + schedule.deviceid);
 				} else {
 					if (schedule.enabled == 'true') {
 						var runschedule = true;
-						if (schedule.criterias[criteria.criteriaid].intervalnotbefore.indexOf(':') != -1) {
+						if (criteria.intervalnotbefore.indexOf(':') != -1) {
 							var notbefore = new Date();
-							var notbeforearray = schedule.criterias[criteria.criteriaid].intervalnotbefore.split(':');
+							var notbeforearray = criteria.intervalnotbefore.split(':');
 							notbefore.setHours(notbeforearray[0]);
 							notbefore.setMinutes(notbeforearray[1]);
 							var minutedifference_notbefore = Math.floor(((timestamp_start - notbefore) / 1000) / 60);
-							if (minutedifference_notbefore < 0) {
+							sharedfunctions.logToFile('IntervalNotBefore timediff: ' + minutedifference_notbefore, 'dev');
+							
+							if (minutedifference_notbefore < 0) {	
 								// if less than 0, don't run the schedule! // This means that the before time has not yet been reached.
 								runschedule = false;
 							}
 						}
 
-						if (schedule.criterias[criteria.criteriaid].intervalnotafter.indexOf(':') != -1) {
+						if (criteria.intervalnotafter.indexOf(':') != -1) {
 							var notafter = new Date();
-							var notafterearray = schedule.criterias[criteria.criteriaid].intervalnotafter.split(':');
+							var notafterearray = criteria.intervalnotafter.split(':');
 							notafter.setHours(notafterearray[0]);
 							notafter.setMinutes(notafterearray[1]);
 							var minutedifference_notafter = Math.floor(((timestamp_start - notafter) / 1000) / 60);
+							sharedfunctions.logToFile('IntervalNotAfter timediff: ' + minutedifference_notafter, 'dev');
+							
 							if (minutedifference_notafter > 0) {
 								// if more than 0, don't run the schedule! | This means that the after time has already passes.
 								runschedule = false;
@@ -218,43 +243,38 @@ function minutecheck(timestamp_start) {
 						}
 
 						if (runschedule) {
-							sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',Trigger,Schedule has been triggered. Sending command ' + schedule.action, 'Device-' + schedule.deviceid);
-							devicefunctions.deviceaction(device.id, schedule.action, 'Schedule');
+							sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + '.' + criteria.criteriaid +  ',Trigger,Schedule has been triggered. Sending command ' + schedule.action, 'Device-' + schedule.deviceid);
+							devicefunctions.sendcommandtodevice(device.id, schedule.action, 'Schedule');
 
 							if (schedule.sendautoremote == 'true') {
 								sharedfunctions.autoremote(device.name, schedule.action);
 							}
-							if ((schedule.runonce == 'true') && (schedule.criterias[criteria.criteriaid].controller != 'Timer')) {
+							if ((schedule.runonce == 'true') && (criteria.controller != 'Timer')) {
 								removeschedules.push(schedule.uniqueid);
 							}
 							sendtoclient([{
 								device: device.id + ':' + schedule.uniqueid
-							}])
+							}]);
 							schedule.stage = 1;
 							// Check if doubletap is configured. If so, add this schedule to the array
 							if (variables.options.doubletapcount > 0) {
 								devicefunctions.addtodoubletap(schedule,schedule.action);
-								//variables.doubletap.push({
-								//	schedule: schedule,
-								//	count: variables.options.doubletapcount,
-								//	action: schedule.action
-								//});
 							}
 						} else {
-							sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',Trigger,Schedule was out of allowed interval. Not triggered. Allowed interval was: ' + schedule.criterias[criteria.criteriaid].intervalnotbefore + ' - ' + schedule.criterias[criteria.criteriaid].intervalnotafter, 'Device-' + schedule.deviceid);
+							sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Trigger,Schedule was out of allowed interval. Not triggered. Allowed interval was: ' + criteria.intervalnotbefore + ' - ' + criteria.intervalnotafter, 'Device-' + schedule.deviceid);
 						}
 					} else {
-						sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',Trigger,Schedule did not trigger because it was disabled.', 'Device-' + schedule.deviceid);
+						sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Trigger,Schedule did not trigger because it was disabled.', 'Device-' + schedule.deviceid);
 					}
 				}
 			}
 			
 			
-			if ( (typeof(schedule) != 'undefined') && (schedule.criterias[criteria.criteriaid].controller == 'Timer') ) {
+			if ( (typeof(schedule) != 'undefined') && (criteria.controller == 'Timer') ) {
 				// Not yet tested. newschedule are not sorted for this yet.
 				var timerdate = new Date();
 
-				var timearray = schedule.criterias[criteria.criteriaid].time.split(':');
+				var timearray = criteria.time.split(':');
 				timerdate.setHours(timearray[0]);
 				timerdate.setMinutes(timearray[1]);
 				//console.log(timerdate);
@@ -265,10 +285,10 @@ function minutecheck(timestamp_start) {
 				//console.log('id ' + schedule.uniqueid + ' [' + schedule.time + " ] " + timertime  +' == '+ hour + ':' + minutes + ' and schedule.stage == ' + schedule.stage);
 				if ((timertime == hour + ':' + minutes) && (schedule.stage == 1)) {
 					if (variables.pauseschedules) {
-						sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',PAUSED,Timer OFF event did not trigger because schedules are paused.', 'Device-' + schedule.deviceid);
+						sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',PAUSED,Timer OFF event did not trigger because schedules are paused.', 'Device-' + schedule.deviceid);
 					} else {
-						sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid + ',Trigger,Timer OFF event sent to device.', 'Device-' + schedule.deviceid);
-						devicefunctions.deviceaction(device.id, 'off', 'Timer');
+						sharedfunctions.logToFile('Schedule,' + device.name + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Trigger,Timer OFF event sent to device.', 'Device-' + schedule.deviceid);
+						devicefunctions.sendcommandtodevice(device.id, 2, 'Timer');
 
 						if (schedule.sendautoremote == 'true') {
 							sharedfunctions.autoremote(device.name, 'off');
@@ -280,7 +300,7 @@ function minutecheck(timestamp_start) {
 						}
 						sendtoclient([{
 							device: device.id + ':' + schedule.uniqueid
-						}])
+						}]);
 
 						// Check if doubletap is configured. If so, add this schedule to the array
 						if (variables.options.doubletapcount > 0) {
@@ -289,7 +309,7 @@ function minutecheck(timestamp_start) {
 					}
 				}
 			}
-		}) // Criteria END
+		}); // Criteria END
 
 	// Remove any runonce schedules that has been executed
 	//schedulefunctions.removeschedule(removeschedules); 
@@ -340,7 +360,7 @@ function minutecheck(timestamp_start) {
 		// Sort the directory of backups so we don't remove anything we shoudln't.
 		backupfoldercontents.sort(function(a, b) {
 			return a < b ? -1 : 1;
-		})
+		});
 
 		if (backupfoldercontents.indexOf(year.toString() + month.toString() + day.toString()) != -1) {
 			sharedfunctions.logToFile('Backup,Backup has already been done today.', 'Core');
@@ -358,7 +378,7 @@ function minutecheck(timestamp_start) {
 			}
 
 			sharedfunctions.logToFile('Backup,Available Backups:', 'Core');
-			backupfoldercontents.forEach(function(file, key) {
+			backupfoldercontents.forEach(function(file) {
 				sharedfunctions.logToFile('Backup,' + file, 'Core');
 			});
 			sharedfunctions.logToFile('Backup,Creating todays backupfolder: ' + rootbackupdir + year.toString() + month.toString() + day.toString(), 'Core');
@@ -373,7 +393,6 @@ function minutecheck(timestamp_start) {
 		var sourcefolder = __dirname.replace("\\", "/");
 		var device_schedules = '';
 		var device_watchers = '';
-		var device_groups = '';
 		variables.devices.forEach(function(device) {
 			device.schedule.forEach(function(schedule) {
 				device_schedules += JSON.stringify(schedule) + '\n';
@@ -382,17 +401,6 @@ function minutecheck(timestamp_start) {
 			device.watchers.forEach(function(watcher) {
 				device_watchers += JSON.stringify(watcher) + '\n';
 			});
-
-			if (device.type == 'group') {
-				var tempgroup = new classes.device();
-
-				for (var key in device) {
-					tempgroup[key] = device[key];
-				}
-				tempgroup.schedule = [];
-				tempgroup.watchers = [];
-				device_groups += JSON.stringify(tempgroup) + '\n';
-			}
 		});
 
 		fs.writeFileSync(sourcefolder + '/userdata/schedules.db.js', device_schedules);
@@ -414,22 +422,12 @@ function minutecheck(timestamp_start) {
 			}
 		});
 
-
-		fs.writeFileSync(sourcefolder + '/userdata/groups.db.js', device_groups);
-		device_groups = device_groups.split('\n');
-		device_groups.forEach(function(groups) {
-			if (groups.length > 0) {
-				groups = JSON.parse(groups);
-				sharedfunctions.logToFile('Configuration,' + groups.name + ',' + groups.id + ',Saved Group,' + JSON.stringify(groups), 'Device-' + groups.id);
-			}
-		});
-
 		variables.savetofile = false;
 	} // End of WriteToFile
 
-	var difference_milliseconds_recalculate = timestamp_start - lasttimestamp_recalculate;
-	var difference_minutes_recalculate = Math.floor((difference_milliseconds_recalculate / 1000) / 60);
-	var weatherfetched = false;
+	//var difference_milliseconds_recalculate = timestamp_start - lasttimestamp_recalculate;
+	//var difference_minutes_recalculate = Math.floor((difference_milliseconds_recalculate / 1000) / 60);
+	//var weatherfetched = false;
 
 	// If the minutes of the hour is either 30 or 0.. Then we do the recalculate.
 	var runRecalculate = false;
@@ -468,32 +466,33 @@ function minutecheck(timestamp_start) {
 				device.schedule.forEach(function(schedule) {
 
 					schedule.criterias.forEach(function(criteria) {
+						
 
-						sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',TriggerTime Before,' + criteria.time, 'Device-' + schedule.deviceid);
+						sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',TriggerTime Before,' + criteria.time, 'Device-' + schedule.deviceid);
 
 						// First we check if the controller is sun-based and define a new ORIGINAL TIME based on that.
 
 						if (criteria.controller == 'Sundown') {
 							if (typeof(variables.weather.weather) != 'undefined') {
 
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',OriginalTime Before,Sundown: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',OriginalTime Before,Sundown: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
 								criteria.originaltime = sunset;
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',OriginalTime After,Sundown: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',OriginalTime After,Sundown: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
 								variables.savetofile = true;
 
 							} else {
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Failure,Failed updating originaltime because there was no weatherinformation available.', 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Failure,Failed updating originaltime because there was no weatherinformation available.', 'Device-' + schedule.deviceid);
 							}
 						}
 
 						if (criteria.controller == 'Sunrise') {
 							if (typeof(variables.weather.weather) != 'undefined') {
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',OriginalTime Before,Sunrise: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',OriginalTime Before,Sunrise: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
 								criteria.originaltime = sunrise;
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',OriginalTime After,Sunrise: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',OriginalTime After,Sunrise: ' + criteria.originaltime, 'Device-' + schedule.deviceid);
 								variables.savetofile = true;
 							} else {
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Failure,Failed updating originaltime because there was no weatherinformation available.', 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Failure,Failed updating originaltime because there was no weatherinformation available.', 'Device-' + schedule.deviceid);
 							}
 						}
 
@@ -524,7 +523,25 @@ function minutecheck(timestamp_start) {
 								variables.savetofile = true;
 							}
 						}
-
+						
+						
+						if (criteria.intervalnotaftercontroller.indexOf('criteriaid') != -1) {
+							var intervalcriteria = schedulefunctions.getcriteria(schedule,criteria.intervalnotaftercontroller.substring(criteria.intervalnotaftercontroller.indexOf(':')+1))
+							criteria.intervalnotafter = intervalcriteria.time;
+							variables.savetofile = true;
+						}
+						
+						if (criteria.intervalnotbeforecontroller.indexOf('criteriaid') != -1) {
+							var intervalcriteria = schedulefunctions.getcriteria(schedule,criteria.intervalnotbeforecontroller.substring(criteria.intervalnotbeforecontroller.indexOf(':')+1))
+							criteria.intervalnotbefore = intervalcriteria.time;
+							variables.savetofile = true;
+						}
+						
+						if (criteria.disablemodifiers == 'true') {
+							sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Modifiers are disabled for this criteria with id: ' + criteria.criteriaid, 'Device-' + schedule.deviceid);
+						
+						} else {
+	
 						var original = new Date();
 						var timearray = criteria.originaltime.split(':');
 						original.setHours(timearray[0]);
@@ -563,11 +580,11 @@ function minutecheck(timestamp_start) {
 
 						var difference_minutes_recalculate_compare = Math.floor(((triggertime - timestamp_start) / 1000) / 60);
 						if (difference_minutes_recalculate_compare < 0) {
-							sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare + ' minutes ago.', 'Device-' + schedule.deviceid);
+							sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare + ' minutes ago.', 'Device-' + schedule.deviceid);
 						} else if (difference_minutes_recalculate_compare > 0) {
-							sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare + ' minutes.', 'Device-' + schedule.deviceid);
+							sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare + ' minutes.', 'Device-' + schedule.deviceid);
 						} else {
-							sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare, 'Device-' + schedule.deviceid);
+							sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare, 'Device-' + schedule.deviceid);
 						}
 
 						sharedfunctions.DateAdd('n', original, Number(randomfunction));
@@ -583,17 +600,17 @@ function minutecheck(timestamp_start) {
 								// Update
 
 								criteria.time = hour + ":" + minutes;
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',New,Schedule TriggerTime is now: ' + criteria.time, 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',New,Schedule TriggerTime is now: ' + criteria.time, 'Device-' + schedule.deviceid);
 								if (difference_minutes_recalculate_compare < 0) {
-									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago.', 'Device-' + schedule.deviceid);
+									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago.', 'Device-' + schedule.deviceid);
 								} else if (difference_minutes_recalculate_compare > 0) {
-									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes.', 'Device-' + schedule.deviceid);
+									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes.', 'Device-' + schedule.deviceid);
 								} else {
-									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare_new, 'Device-' + schedule.deviceid);
+									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare_new, 'Device-' + schedule.deviceid);
 								}
 								variables.savetofile = true;
 							} else {
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + hour + ":" + minutes + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago. [Not saved to schedule. Logged only for information.]', 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + hour + ":" + minutes + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago. [Not saved to schedule. Logged only for information.]', 'Device-' + schedule.deviceid);
 							}
 						} else if (difference_minutes_recalculate_compare < 0) {
 							// If the schedule is set to be in the past. Minute Compare to NOW is less then 0.
@@ -602,38 +619,40 @@ function minutecheck(timestamp_start) {
 							if (difference_minutes_recalculate_compare_new < 0) {
 								// Update
 								criteria.time = hour + ":" + minutes;
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',New,Schedule TriggerTime is now: ' + criteria.time, 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',New,Schedule TriggerTime is now: ' + criteria.time, 'Device-' + schedule.deviceid);
 								if (difference_minutes_recalculate_compare < 0) {
-									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago.', 'Device-' + schedule.deviceid);
+									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the past. It occured ' + difference_minutes_recalculate_compare_new + ' minutes ago.', 'Device-' + schedule.deviceid);
 								} else if (difference_minutes_recalculate_compare > 0) {
-									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes.', 'Device-' + schedule.deviceid);
+									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes.', 'Device-' + schedule.deviceid);
 								} else {
-									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare_new, 'Device-' + schedule.deviceid);
+									sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + criteria.time + ') is now. Difference between now and TriggerTime is ' + difference_minutes_recalculate_compare_new, 'Device-' + schedule.deviceid);
 								}
 								variables.savetofile = true;
 							} else {
-								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid + ',Compare,Schedule TriggerTime (' + hour + ":" + minutes + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes. [Not saved to schedule. Logged only for information.]', 'Device-' + schedule.deviceid);
+								sharedfunctions.logToFile('Recalculate,' + devicefunctions.getdeviceproperty(schedule.deviceid, 'name') + ',' + schedule.uniqueid +  '.' + criteria.criteriaid + ',Compare,Schedule TriggerTime (' + hour + ":" + minutes + ') is in the future. It occures in ' + difference_minutes_recalculate_compare_new + ' minutes. [Not saved to schedule. Logged only for information.]', 'Device-' + schedule.deviceid);
 							}
 						}
 
 						// Update criteria in variables.schedulesbyday
 						variables.schedulesbyday.forEach(function(day) {
 							day.forEach(function(single_criteria) {
-								if ( (single_criteria.criteriaid == criteria.criteriaid) && (single_criteria.uniqueid == criteria.uniqueid) ) {
+								if ( (single_criteria.criteriaid == criteria.criteriaid) && (single_criteria.uniqueid == schedule.uniqueid) ) {
 									single_criteria.time = criteria.time;
 								}
-							})
+							});
 						})
+						}
 
-					})
-				})
-			})
+					});
+				});
+			});
 
 			var timestamp_end = new Date();
 			enddifference = timestamp_end - timestamp_start;
 			timestamp_end.setMilliseconds(timestamp_end.getMilliseconds() - enddifference);
 			setTimeout(minutecheck, (60000 - enddifference), timestamp_end);
 			sharedfunctions.logToFile('Recalculate,Recalculation Complete', 'Core');
+			schedulefunctions.highlightactiveschedule();
 		});
 	} else {
 		timestamp_end = new Date();

@@ -23,20 +23,20 @@ function restore(req, res) {
           if (copycounter === 0) {
             callback(null, errors);
           }
-        })
+        });
       });
     },
     function(callback) {
       var load_userdata = require(variables.rootdir + 'functions/load_userdata');
       load_userdata(callback);
     }
-  ], function(err, result) {
+  ], function() {
     variables.restoreInProgress = false;
     res.send({
       'status': true,
       'message': 'Complete'
-    })
-  })
+    });
+  });
 }
 
 exports.restore = restore;

@@ -1,7 +1,6 @@
 function get(request, response) {
 	var variables = require('../templates/variables');
 	var template = require(variables.rootdir + 'templates/template-main');
-	var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
 	var fs = require('fs');
 
 	var backups = fs.readdirSync(variables.rootdir + 'backup/auto/');
@@ -9,7 +8,7 @@ function get(request, response) {
 
 	backups.sort(function(a, b) {
 		return a < b ? -1 : 1;
-	})
+	});
 
 
 	backups.forEach(function(backup) {
@@ -31,7 +30,7 @@ function get(request, response) {
 		'<table>',
 		'<tr><td>Installed version: </td><td>' + variables.currentversion + '</td></tr>',
 		'<tr><td>Github version: </td><td><span id="githubversion"></span></td></tr>',
-		'<tr><td><button class="btn btn-default" onclick="check_updates()">Check for updates</button></td></tr>',
+		'<tr><td><button class="btn btn-default btn-sm" onclick="check_updates()">Check for updates</button></td></tr>',
 		'</table>',
 		'</div>',
 		'</div>',
@@ -41,7 +40,7 @@ function get(request, response) {
 		'</div>',
 		'<div class="panel-body">',
 		backuplist,
-		'<button class="btn btn-default" id="restorebackup" onclick="restore()">Restore Backup</button>',
+		'<button class="btn btn-default btn-sm" id="restorebackup" onclick="restore()">Restore Backup</button>',
 		'</div>',
 		'</div>'
 	];

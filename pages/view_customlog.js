@@ -1,11 +1,12 @@
-// Include the template view (Do all the presentation(?))
-var variables = require('../templates/variables');
-// Include the functions for handling files
-var fs = require('fs');
+exports.get = get;
 
 function get(req, res) {
+	// Include the template view (Do all the presentation(?))
+	var variables = require('../templates/variables');
+	// Include the functions for handling files
+	var fs = require('fs');
 	var template = require(variables.rootdir + 'templates/template-main').build;
-	var devicefunctions = require(variables.rootdir + 'functions/device');
+
 	// Save via socket.io call, this means we can toss back a reply that it's done. Or not needed.. res.send('Complete') will suffice.
 	var headline = 'Customlogs';
 	var body = ['<div class="panel panel-default">',
@@ -13,8 +14,8 @@ function get(req, res) {
 		'<h5 class="panel-title">Select Logfile</h5>',
 		'</div>',
 		'<div class="panel-body">',
-		'<table class="table table-bordered">',
-		'<tr><td class="td-middle">Logfile:</td><td><select id="logtoview">{logtoview}</select></td></tr>',
+		'<table class="table table-bordered table-condensed">',
+		'<tr><td class="td-middle">Logfile:</td><td><select id="logtoview" class="input-sm">{logtoview}</select></td></tr>',
 		'</table>',
 		'</div>',
 		'</div>',
@@ -100,5 +101,3 @@ function get(req, res) {
 
 	res.send(template(headline, body, true));
 }
-
-exports.get = get;

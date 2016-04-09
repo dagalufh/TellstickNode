@@ -1,14 +1,13 @@
 // Functions for loading user data.
 // This is used on bootup of application and when restoring a backup
-
-
 module.exports = function(external_callback) {
 	var variables = require('../templates/variables');
 	var fs = require('fs');
 	var async = require('async');
 	var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
 	var classes = require(variables.rootdir + 'templates/classes');
-
+	var migrateddevicegroups = {}; // Holds the ID of the devicegroup that has been migrated and it's new ID. This is so that schedules and watchers can be moved to the new device.
+	
 	async.series([
 			function(callback) {
 				// Load options
@@ -37,7 +36,7 @@ module.exports = function(external_callback) {
 			},
 			function(callback) {
 				// Load groups
-sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
+				sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 				fs.exists(variables.rootdir + 'userdata/groups.db.js', function(exists) {
 					if (exists) {
 
@@ -55,7 +54,8 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 								}
 								groupsarray.forEach(function(group) {
 									var newgroup = new classes.device();
-
+									var currentdevicegroupfound = false;
+									
 									for (var key in group) {
 										
 										if(key == 'lastcommand' ) {
@@ -63,15 +63,15 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 										}
 										newgroup[key] = group[key];
 									}
-
+									
 									for (var i = 0; i < newgroup.devices.length; i++) {
 										if (variables.devices.length === 0) {
 											break;
 										}
 
 										var validmemberid = false;
-										variables.devices.forEach(function(searchid) {
-
+										
+										variables.devices.forEach(function(searchid) {										
 											if (searchid.id == newgroup.devices[i]) {
 
 												validmemberid = true;
@@ -82,18 +82,39 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 											newgroup.devices.splice(i, 1);
 											i = -1;
 										}
-									};
+									}
 
 									variables.savetofile = true;
 									newgroup.activescheduleid = '';
 									newgroup.activeday = '';
 									newgroup.currentstatus = '';
-									variables.devices.push(newgroup);
-
+									
+									variables.devices.forEach(function(device) {
+											//console.log(device.name + '==' + newgroup.name);
+											if (device.name == newgroup.name) {
+												currentdevicegroupfound = true;
+											}
+									});
+									
+									// Instead of this PUSH, create the devicegroup
+									//variables.devices.push(newgroup);
+									if (currentdevicegroupfound === true) {
+										sharedfunctions.logToFile('Bootprocess,Found a devicegroup in the files that already existed in telldus: ' + newgroup.name, 'Core');
+									} else {
+										sharedfunctions.logToFile('Bootprocess,Found a devicegroup in the files that will be added to telldus: ' + newgroup.name, 'Core');
+										var newdevicegroupid = variables.telldus.tdAddDevice();
+										variables.telldus.tdSetDeviceParameter(newdevicegroupid,'devices',newgroup.devices.join(','));
+										variables.telldus.tdSetName(newdevicegroupid, newgroup.name);
+										variables.telldus.tdSetProtocol(newdevicegroupid,'group');
+										
+										migrateddevicegroups[newgroup.id] = newdevicegroupid;
+									}
+																	
 								});
 
 							}
-							variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
+							
+							fs.unlink(variables.rootdir + 'userdata/groups.db.js');
 							callback();
 						});
 					} else {
@@ -123,11 +144,25 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 									//console.log('DeviceID : ' + device.id);
 									device.schedule.length = 0;
 									schedulesarray.forEach(function(currentschedule) {
-										if (device.id == currentschedule.deviceid) {
+
+										if ( (migrateddevicegroups[currentschedule.deviceid] == device.id ) || (currentschedule.deviceid == device.id) ){
 											var newschedule = new classes.schedule();
 
 											for (var key in currentschedule) {
 												newschedule[key] = currentschedule[key];
+											}
+											
+											newschedule.deviceid = device.id;
+											// Migrate to new handlig of action commands as numbers
+											if (isNaN(newschedule.action) === true)  {
+												switch(newschedule.action.toLowerCase()) {
+													case 'on':
+														newschedule.action = 1;
+														break;
+													case 'off':
+														newschedule.action = 2;
+														break;
+												}
 											}
 
 											// Use a foreach so that the schedule stores it's criterias in a array that is used to build below for each day of the schedule.
@@ -161,7 +196,7 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 													criteria.intervalnotaftercontroller = newschedule.intervalnotaftercontroller;
 													criteria.intervalnotbefore = newschedule.intervalnotbefore;
 													criteria.intervalnotafter = newschedule.intervalnotafter;
-												})
+												});
 												delete newschedule.intervalnotbeforecontroller;
 												delete newschedule.intervalnotaftercontroller;
 												delete newschedule.intervalnotbefore;
@@ -177,17 +212,18 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 													tempday.time = criteria.time;
 													tempday.deviceid = newschedule.deviceid;
 													variables.schedulesbyday[day].push(tempday);
-												})
-											})
+												});
+											});
 
 											device.schedule.push(newschedule);
+											//console.log(device);
 										}
 									});
 								});
 							}
 							variables.schedulesbyday.forEach(function(schedulearray) {
 								schedulearray.sort(sharedfunctions.dynamicSortMultiple('deviceid', 'time'));
-							})
+							});
 							callback();
 						});
 					} else {
@@ -213,17 +249,20 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 										watchersarray.push(JSON.parse(rows[i]));
 									}
 								}
-
+								
 								variables.devices.forEach(function(device) {
 
 									device.watchers.length = 0;
 									watchersarray.forEach(function(currentwatcher) {
-										if (device.id == currentwatcher.deviceid) {
+										if ( (migrateddevicegroups[currentwatcher.deviceid] == device.id ) || (device.id == currentwatcher.deviceid) ) {
 											var newwatcher = new classes.watcher();
 											//console.log('typeof;' + typeof(newwatcher.setstatus));
 											for (var key in currentwatcher) {
 												newwatcher[key] = currentwatcher[key];
 											}
+											
+											newwatcher.deviceid = device.id;
+											
 											//console.log('typeof;' + typeof(newwatcher.setstatus));
 											if (typeof(newwatcher.setstatus) !== 'undefined') {
 												newwatcher.actions.push({
@@ -234,7 +273,53 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 												delete newwatcher.setstatus;
 												delete newwatcher.delay;
 											}
+											if (isNaN(newwatcher.triggerstatus) === true)  {
+													switch(newwatcher.triggerstatus.toLowerCase()) {
+														case 'on':
+															newwatcher.triggerstatus = 1;
+															break;
+														case 'off':
+															newwatcher.triggerstatus = 2;
+															break;
+													}
+												}
+											// Check if any action contains an ID that has been migrated to the new handling of devicegroups
+											newwatcher.actions.forEach(function(action) {
+												if ( typeof(migrateddevicegroups[currentwatcher.deviceid]) != 'undefined' ) {
+													action.id = migrateddevicegroups[currentwatcher.deviceid];
+												}
+												if (isNaN(action.status) === true)  {
+													switch(action.status.toLowerCase()) {
+														case 'on':
+															action.status = 1;
+															break;
+														case 'off':
+															action.status = 2;
+															break;
+													}
+												}
+											});
+											
+											// Remove the actions that holds invalid devices
+											for (var i = 0; i < newwatcher.actions.length; i++) {
+												if (variables.devices.length === 0) {
+													break;
+												}
 
+												var validmemberid = false;
+
+												variables.devices.forEach(function(searchid) {										
+													if (searchid.id == newwatcher.actions[i].id) {
+
+														validmemberid = true;
+													}
+												});
+
+												if (validmemberid === false) {
+													newwatcher.actions.splice(i, 1);
+													i = -1;
+												}
+											}
 
 											device.watchers.push(newwatcher);
 										}
@@ -254,4 +339,4 @@ sharedfunctions.logToFile('Bootprocess,Loading Devicegroups.', 'Core');
 			
 			external_callback();
 		});
-}
+};

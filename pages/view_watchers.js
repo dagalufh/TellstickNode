@@ -1,7 +1,6 @@
 function get(request, response) {
   var variables = require('../templates/variables');
   var template = require(variables.rootdir + 'templates/template-main');
-  var schedulefunctions = require(variables.rootdir + 'functions/schedulefunctions');
   var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
 
   // Define the different parts of the page.
@@ -11,10 +10,10 @@ function get(request, response) {
     '<h5 class="panel-title">Filter view</h5>',
     '</div>',
     '<div class="panel-body">',
-    '<table class="table table-bordered">',
-    '<tr><td class="td-middle">By device:</td><td><select id="devicetoview">{devicetoview}</select></td></tr>',
-    '<tr><td class="td-middle">Watchers with status:</td><td><select id="schedulestoview">{schedulestoview}</select></td></tr>',
-    '<tr><td><button class="btn btn-default" onclick="filter();">Filter</button></td></tr>',
+    '<table class="table table-bordered table-condensed">',
+    '<tr><td class="td-middle">By device:</td><td><select id="devicetoview" class="input-sm">{devicetoview}</select></td></tr>',
+    '<tr><td class="td-middle">Watchers with status:</td><td><select id="schedulestoview" class="input-sm">{schedulestoview}</select></td></tr>',
+    '<tr><td><button class="btn btn-default btn-sm" onclick="filter();">Filter</button></td></tr>',
     '</table>',
     '</div>',
     '</div>',
@@ -24,7 +23,7 @@ function get(request, response) {
     '</div>',
     '<div class="panel-body">',
     '<div class="table-responsive">',
-    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered table-condensed">',
     '{Watchers}',
     '</table>',
     '</div>',
@@ -35,8 +34,6 @@ function get(request, response) {
   // Join each row of the body array to a continious string with proper row endings.
   body = body.join("\n");
   display_devices();
-
-
 
   // Define the function that enters devices into the device select box.
   // This function will be supplied to be used as a callback for when tdtool listing is done and fetching from 'database' is done.
@@ -58,7 +55,7 @@ function get(request, response) {
     }
 
 
-    variables.devices.forEach(function(device, index) {
+    variables.devices.forEach(function(device) {
       if (device.id == selected_deviceid) {
         devicetoview = devicetoview + '<option selected value="' + device.id + '">' + device.name;
       } else {
@@ -70,9 +67,9 @@ function get(request, response) {
       if (device.watchers.length > 0) {
         device.watchers.forEach(function(watcher) {
           if ((device.id == selected_deviceid) || (selected_deviceid === -1)) {
-            if ((selected_scheduletype === '') || (selected_scheduletype == singleschedule.enabled)) {
+            if ((selected_scheduletype === '') || (selected_scheduletype == watcher.enabled)) {
               watchersfound = true;
-              watchers += '<tr><td onclick="showwatcherinfo(\'' + watcher.uniqueid + '\')">' + device.name + '</td><td>' + watcher.triggerstatus + '</td><td>' + watcher.actions.length + '</td><td><a class="btn btn-default" href="/editwatcher?uniqueid=' + watcher.uniqueid + '">Edit</a><button class="btn btn-default" onclick="removewatcher(\'' + watcher.uniqueid + '\')">Remove</button></tr>';
+              watchers += '<tr><td onclick="showwatcherinfo(\'' + watcher.uniqueid + '\')">' + device.name + '</td><td>' + variables.telldusstatus[watcher.triggerstatus] + '</td><td>' + watcher.actions.length + '</td><td><a class="btn btn-default btn-sm" href="/editwatcher?uniqueid=' + watcher.uniqueid + '">Edit</a><button class="btn btn-default btn-sm" onclick="removewatcher(\'' + watcher.uniqueid + '\')">Remove</button></tr>';
             }
           }
         });

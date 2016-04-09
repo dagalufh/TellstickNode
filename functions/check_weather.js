@@ -1,3 +1,5 @@
+exports.check_weather = check_weather;
+
 function check_weather(callback) {
 	var dns = require('dns');
 	var http = require('http');
@@ -17,27 +19,23 @@ function check_weather(callback) {
 					path: '/data/2.5/weather?q=' + encodeURIComponent(variables.options.city) + '&units=metric&lang=en&appid=' + variables.options.openweatherappid
 				};
 
-				var reg = http.get(options, function(res) {
+				http.get(options, function(res) {
 					res.setEncoding('utf-8');
-					
+
 					// Hope to catch timeout errors.
 					res.on('error', function() {
-						if (err.message.code === 'ETIMEDOUT') {
-							
-							if (callback) {
-								callback();
-							}
+						if (callback) {
+							callback();
 						}
-					})
+
+					});
 
 					if (res.statusCode == 200) {
 						res.on('data', function(chunk) {
-							var parsed = {};
-
 							try {
 								sharedfunctions.logToFile('Weather,Weatherinformation fetched from api.openwathermap.org with appID: ' + variables.options.openweatherappid, 'Core');
-								var tempweather = JSON.parse(chunk)
-								if ( (typeof(tempweather) == 'undefined') || (tempweather == null) ) {
+								var tempweather = JSON.parse(chunk);
+								if ((typeof(tempweather) == 'undefined') || (tempweather === null)) {
 									sharedfunctions.logToFile('Weather,Error occured while fetching data, did not receive anything.', 'Core');
 								} else {
 									sharedfunctions.logToFile('Weather,Weatherinfo received was: ' + JSON.stringify(tempweather), 'Core');
@@ -47,12 +45,12 @@ function check_weather(callback) {
 								sharedfunctions.logToFile('Weather,Error fetching weatherinformation from api.openweathermap.org. Will try again within the recalculates.', 'Core');
 							}
 						});
-						res.on('end', function () {
+						res.on('end', function() {
 							if (callback) {
 								callback();
 							}
-						})
-						res.on('error', function(chunk) {
+						});
+						res.on('error', function() {
 							// Error
 						});
 					} else {
@@ -61,7 +59,14 @@ function check_weather(callback) {
 							callback();
 						}
 					}
-					
+
+				}).on('error', function(err) {
+					sharedfunctions.logToFile('Weather,Error occured with weather', 'Core');
+					sharedfunctions.logToFile('Weather,Error was: ' + err.message.code, 'Core');
+					if (callback) {
+						callback();
+					}
+
 				});
 
 			}
@@ -73,4 +78,3 @@ function check_weather(callback) {
 		}
 	}
 }
-exports.check_weather = check_weather;

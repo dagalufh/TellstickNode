@@ -7,21 +7,21 @@ function movedown () {
 }
 
 function newdevicegroup(deviceid) {
-    var devicearray = []
+    var devicearray = [];
     var error = false;
     
     $('#includeddevices option').each(function(thing) {
         devicearray.push($(this).val());
     });
     
-    if (devicearray.length == 0) {
+    if (devicearray.length === 0) {
         $('#includeddevices').addClass('bg-danger');
         error = true;
     } else {
         $('#includeddevices').removeClass('bg-danger');
     }
     
-    if ($('#devicegroupname').val().length == 0) {
+    if ($('#devicegroupname').val().length === 0) {
         $('#devicegroupname').addClass('bg-danger');
         error = true;   
     } else {
@@ -32,11 +32,12 @@ function newdevicegroup(deviceid) {
         return false;
     }
     
-    if (deviceid.length == 0) {
+    if (deviceid.length === 0) {
         $.post('/new_devicegroup',{
             devices:devicearray,
             name:$('#devicegroupname').val()
             }, function (data) {
+                    modal_notification();
                     $('#respons-modal-body').html(data.message);
                     $('#myModal').modal('show');
                     $('#myModal').on('hidden.bs.modal',function (e) {
@@ -51,6 +52,7 @@ function newdevicegroup(deviceid) {
             devices:devicearray,
             name:$('#devicegroupname').val()
             }, function (data) {
+                    modal_notification();
                     $('#respons-modal-body').html(data.message);
                     $('#myModal').modal('show');
                     $('#myModal').on('hidden.bs.modal',function (e) {
@@ -70,17 +72,19 @@ function removedevicegroup (deviceid) {
             if (data) {
                 window.location.href=window.location.href;
             }},
-        error: function (data) {alert('Error occured when removing devicegroup with id: ' + deviceid);}
+        error: function () {alert('Error occured when removing devicegroup with id: ' + deviceid);}
     }); 
 }
 
 function showdevicegroup(deviceid) {
+    modal_notification();
     $('#respons-modal-body').html('Fetching devicegroup data.');
     $('#myModal').modal('show');
     $.ajax({
         url: '/showdevicegroup',
         data: {'id':deviceid},
         success: function (data) {
+            modal_notification();
             $('#respons-modal-body').html(data);
             $('#myModal').modal('show');
         },

@@ -1,3 +1,5 @@
+exports.check_updates = check_updates;
+
 function check_updates(oldversion, callback, req, res) {
   var compareversion = require('compare-version');
   var http = require('https');
@@ -9,7 +11,7 @@ function check_updates(oldversion, callback, req, res) {
     headers: {
       'User-Agent': 'dagalufh'
     }
-  }
+  };
 
   var request = http.get(options, function(response) {
     response.setEncoding('utf-8');
@@ -47,7 +49,6 @@ function check_updates(oldversion, callback, req, res) {
 
   request.on('error', function(e) {
     console.log('Error:' + e);
-  })
+  });
 }
 
-exports.check_updates = check_updates;

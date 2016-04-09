@@ -14,6 +14,9 @@ function post(req, res) {
   variables.options.autoremote_key = req.body.autoremote_key;
   variables.options.autoremote_message = req.body.autoremote_message;
   variables.options.theme = req.body.theme;
+  variables.options.autoremote_onlaunch = req.body.autoremote_onlaunch;
+	variables.options.autoremote_onchange = req.body.autoremote_onchange;
+  
   if (typeof(req.body.customlogs) == 'undefined') {
     variables.options.customlogs = []
   } else {

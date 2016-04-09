@@ -1,8 +1,11 @@
+exports.post = post;
+
 function post(req, res) {
 	var variables = require('../templates/variables');
 	var devicefunctions = require(variables.rootdir + 'functions/device');
 	var classes = require(variables.rootdir + 'templates/classes');
 	var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
+	var schedulefunctions = require(variables.rootdir + 'functions/schedulefunctions');
 	req.body.uniqueid = new Date().getTime();
 	req.body.stage = 0;
 
@@ -21,8 +24,8 @@ function post(req, res) {
 			tempday.time = criteria.time;
 			tempday.deviceid = newschedule.deviceid;
 			variables.schedulesbyday[day].push(tempday);
-		})
-	})
+		});
+	});
 
 	sharedfunctions.logToFile('Schedule,' + devicefunctions.getdeviceproperty(newschedule.deviceid, 'name') + ',Created,Created schedule: ' + JSON.stringify(newschedule), 'Device-' + newschedule.deviceid);
 	variables.devices.forEach(function(device) {
@@ -30,13 +33,12 @@ function post(req, res) {
 			device.schedule.push(newschedule);
 		}
 	});
-	
+
 	variables.schedulesbyday.forEach(function(schedulearray) {
 		schedulearray.sort(sharedfunctions.dynamicSortMultiple('deviceid', 'time'));
-	})
-	
+	});
+
 	variables.savetofile = true;
+	schedulefunctions.highlightactiveschedule();
 	res.send('Schedule has been created.');
 }
-
-exports.post = post;

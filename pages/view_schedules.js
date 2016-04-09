@@ -13,10 +13,10 @@ function get(request, response) {
     '<h5 class="panel-title">Filter view</h5>',
     '</div>',
     '<div class="panel-body">',
-    '<table class="table table-bordered">',
-    '<tr><td class="td-middle">By device:</td><td><select id="devicetoview">{devicetoview}</select></td></tr>',
-    '<tr><td class="td-middle">Schedules with status:</td><td><select id="schedulestoview">{schedulestoview}</select></td></tr>',
-    '<tr><td><button class="btn btn-default" onclick="filter();">Filter</button></td></tr>',
+    '<table class="table table-bordered table-condensed">',
+    '<tr><td class="td-middle">By device:</td><td><select id="devicetoview" class="input-sm">{devicetoview}</select></td></tr>',
+    '<tr><td class="td-middle">Schedules with status:</td><td><select id="schedulestoview" class="input-sm">{schedulestoview}</select></td></tr>',
+    '<tr><td><button class="btn btn-default btn-sm" onclick="filter();">Filter</button></td></tr>',
     '</table>',
     '</div>',
     '</div>',
@@ -26,7 +26,7 @@ function get(request, response) {
     '</div>',
     '<div class="panel-body">',
     '<div class="table-responsive">',
-    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered table-condensed">',
     '{Timers}',
     '</table>',
     '</div>',
@@ -38,7 +38,7 @@ function get(request, response) {
     '</div>',
     '<div class="panel-body">',
     '<div class="table-responsive">',
-    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered table-condensed">',
     '{scheduled-devices}',
     '</table>',
     '</div>',
@@ -49,7 +49,7 @@ function get(request, response) {
     '<h5 class="panel-title">Schedules by day</h5>',
     '</div>',
     '<div class="panel-body">',
-    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered table-condensed">',
     '{scheduled-devices-by-day}',
     '</table>',
     '</div>',
@@ -80,8 +80,6 @@ function get(request, response) {
     var selected_scheduletype = '';
     var schedulesfound = false;
     var timersfound = false;
-    var watchersfound = false;
-
 
     if (typeof(request.query.deviceid) != 'undefined') {
       selected_deviceid = Number(request.query.deviceid);
@@ -137,10 +135,10 @@ function get(request, response) {
                 if (singleschedule.uniqueid.toString().indexOf('watcher') != -1) {
                   editable = 'disabled';
                 }
-                schedules += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + sharedfunctions.firstUpperCase(singleschedule.action) + '</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + criterias + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '" ' + editable + '>Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
+                schedules += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + sharedfunctions.firstUpperCase(variables.telldusstatus[singleschedule.action]) + '</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + criterias + '</td><td ' + activeschedule + '><a class="btn btn-default btn-sm" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '" ' + editable + '>Edit</a><button class="btn btn-default btn-sm" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
              } else {
                timersfound = true;
-               timers += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + singleschedule.duration + ' minutes</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + singleschedule.criterias[0].time + '</td><td ' + activeschedule + '><a class="btn btn-default" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '">Edit</a><button class="btn btn-default" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
+               timers += '<tr><td ' + activeschedule + ' onclick="showscheduleinfo(\'' + singleschedule.uniqueid + '\')">' + device.name + '</td><td ' + activeschedule + '>' + singleschedule.duration + ' minutes</td><td ' + activeschedule + '>' + dayname + '</td><td ' + activeschedule + '>' + singleschedule.criterias[0].time + '</td><td ' + activeschedule + '><a class="btn btn-default btn-sm" href="/editschedule?uniqueid=' + singleschedule.uniqueid + '">Edit</a><button class="btn btn-default btn-sm" onclick="removeschedule(\'' + singleschedule.uniqueid + '\')">Remove</button></td></tr>';
              }
             }
           }
@@ -153,11 +151,12 @@ function get(request, response) {
     var schedulesbyday = '';
     var schedulesbydayfound = false;
     for (var key in variables.schedulesbyday) {
-      if (variables.schedulesbyday[key].hasOwnProperty(key)) {
-
+     
+      if (variables.schedulesbyday[key].length > 0) {
+     
         var day = variables.schedulesbyday[key];
 
-        schedulesbyday += '<tr><th colspan="5">' + dayofweektranslate[key] + '</th></tr><tr><th>Name</th><th>Action</th><th>Controller</th><th>Time</th><th>Identifier</th></tr>';
+        schedulesbyday += '<tr><th colspan="5">' + dayofweektranslate[key] + '</th></tr><tr><th>Name</th><th class="td-140">Identifier</th></tr>';
         if (day.length > 0) {
           day.sort(sharedfunctions.dynamicSortMultiple('time'));
 
@@ -183,7 +182,7 @@ function get(request, response) {
                 }
                   var controller = schedule.criterias[criteria.criteriaid].controller;
                   var identifier = criteria.uniqueid + ':' + criteria.criteriaid;
-                  schedulesbyday += '<tr><td class="' + activeschedule + '">' + devicename + '</td><td class="' + activeschedule + '">' + sharedfunctions.firstUpperCase(schedule.action) + '</td><td class="' + activeschedule + '">' + controller + '</td><td class="' + activeschedule + '">' + criteria.time + '</td><td class="td-middle ' + activeschedule + '">' + identifier + '</td></tr>';
+                  schedulesbyday += '<tr><td class="' + activeschedule + '">' + devicename + '<br>' + sharedfunctions.firstUpperCase(variables.telldusstatus[schedule.action]) + ' at ' + controller + '(' + criteria.time + ')</td><td class="' + activeschedule + '">' + identifier + '</td></tr>';
              
               }
             }

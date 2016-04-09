@@ -1,10 +1,11 @@
+exports.get = get;
 function get(req, res) {
 	// Include the template view (Do all the presentation(?))
 	var variables = require('../templates/variables');
 	// Include the functions for handling files
 	var fs = require('fs');
 	var template = require(variables.rootdir + 'templates/template-main').build;
-	var devicefunctions = require(variables.rootdir + 'functions/device');
+
 	// Save via socket.io call, this means we can toss back a reply that it's done. Or not needed.. res.send('Complete') will suffice.
 	var headline = 'Changelog';
 	var body = ['<div class="panel panel-default">',
@@ -44,4 +45,3 @@ function get(req, res) {
 	res.send(template(headline, body, true));
 }
 
-exports.get = get;

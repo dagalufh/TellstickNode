@@ -13,10 +13,11 @@ function createwatcher(uniqueid) {
       'id': action[0],
       'status': action[1].toLocaleLowerCase(),
       'delay': action[2]
-    })
+    });
   });
 
   if (targetactions.length === 0) {
+    modal_error();
     $('#respons-modal-body').html('You need to have atleast one action in the list of actions to occur when watcher is triggered.');
     $('#myModal').modal('show');
     return false;
@@ -25,7 +26,7 @@ function createwatcher(uniqueid) {
   if ( (validoncommandsent === false) && (validonstatechanged === false) ) {
     $("#onstatechanged").parent().parent().addClass('bg-danger');
     $("#oncommandsent").parent().parent().addClass('bg-danger');
-    
+    modal_error();
     $('#respons-modal-body').html('You need to select atleast one of the watcher checking events.');
     $('#myModal').modal('show');
     return false;
@@ -44,6 +45,7 @@ function createwatcher(uniqueid) {
       onstatechanged: validonstatechanged,
       oncommandsent: validoncommandsent
     }, function(data) {
+      modal_notification();
       $('#respons-modal-body').html(data.message);
       $('#myModal').modal('show');
       //window.location.href = '/newschedule';
@@ -64,6 +66,7 @@ function createwatcher(uniqueid) {
       onstatechanged: validonstatechanged,
       oncommandsent: validoncommandsent
     }, function(data) {
+      modal_notification();
       $('#respons-modal-body').html(data);
       $('#myModal').modal('show');
       //window.location.href = '/';
@@ -82,10 +85,11 @@ function watcher_remove_action() {
 
 function watcher_add_action() {
   if (($.isNumeric($('#action_target_wait').val()) === false) && ($('#action_target_wait').val() >= 0) && ($('#action_target_wait').val() <= 1380)) {
+    modal_error();
     $('#action_target_wait').parent().addClass('has-error');
     $('#respons-modal-body').html('Incorrect value in duration. Needs to be numbers only.');
     $('#myModal').modal('show');
     return false;
   }
-  $('#watcher_actions_table TR').last().before('<tr><td><span class="checkbox"><label><input type="checkbox" id="target_action_' + $('#action_target_device').val() + '" value="' + $('#action_target_device').val() + ',' + $('#action_target_status').val() + ',' + $('#action_target_wait').val() + '"> Change "' + $('#action_target_device option:selected').text() + '" to "' + $('#action_target_status').val() + '" after ' + $('#action_target_wait').val() + ' minutes</label></span></td></tr>')
+  $('#watcher_actions_table TR').last().before('<tr><td><span class="checkbox"><label><input type="checkbox" id="target_action_' + $('#action_target_device').val() + '" value="' + $('#action_target_device').val() + ',' + $('#action_target_status').val() + ',' + $('#action_target_wait').val() + '"> Change "' + $('#action_target_device option:selected').text() + '" to "' + $('#action_target_status').val() + '" after ' + $('#action_target_wait').val() + ' minutes</label></span></td></tr>');
 }

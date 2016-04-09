@@ -14,7 +14,7 @@ function get(req, res) {
     '</div>',
     '<div class="panel-body">',
     '<table class="table table-bordered">',
-    '<tr><td class="td-middle">Logfile:</td><td><select id="logtoview">{logtoview}</select></td></tr>',
+    '<tr><td class="td-middle">Logfile:</td><td><select id="logtoview" class="input-sm">{logtoview}</select></td></tr>',
     '</table>',
     '</div>',
     '</div>',
@@ -43,7 +43,7 @@ function get(req, res) {
 
   logfolder.sort(function(a, b) {
     return a > b ? -1 : 1;
-  })
+  });
   var defaultlogfile = '';
   logfolder.forEach(function(folder) {
     var foldercontents = fs.readdirSync(variables.rootdir + 'logs/' + folder);

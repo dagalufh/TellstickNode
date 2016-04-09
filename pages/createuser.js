@@ -11,13 +11,13 @@ function get(req, res) {
     '<p class="text-info">No user detected. You have to create a new one to be able to proceed.</p>',
     '<div class="form-group">',
     '<label for="username">Username:</label>',
-    '<input type="text" class="form-control" name="username" placeholder="Username">',
+    '<input type="text" class="form-control input-sm" name="username" placeholder="Username">',
     '</div>',
     '<div class="form-group">',
     '<label for="password">Password:</label>',
-    '<input type="password" class="form-control" name="password" placeholder="Password">',
+    '<input type="password" class="form-control input-sm" name="password" placeholder="Password">',
     '</div>',
-    '<input class="btn btn-default" type="submit" value="Create User">',
+    '<input class="btn btn-default btn-sm" type="submit" value="Create User">',
     '</form>'
   ];
   body = body.join("\n");

@@ -1,5 +1,4 @@
 var variables = require('../templates/variables');
-var fs = require('fs');
 
 var devicecontrol = require(variables.rootdir + 'functions/device');
 var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
@@ -37,9 +36,6 @@ function removeschedule(schedulesidarray) {
     }
 
   });
-
-
-
 
   variables.savetofile = true;
 }
@@ -97,7 +93,7 @@ function getschedule(req, res) {
       '<tr><td>Days of the week:</td><td>' + dayname + '</td></tr>',
       '<tr><td>Duration:</td><td>' + requestedschedule.duration + ' Minutes</td></tr>',
       '<tr><td>Controller:</td><td>' + requestedschedule.criterias[0].controller + '</td></tr>',
-      '<tr><td>Action:</td><td>' + requestedschedule.action + '</td></tr>',
+      '<tr><td>Action:</td><td>' + variables.telldusstatus[requestedschedule.action] + '</td></tr>',
       '<tr><td>RunOnce:</td><td>' + runonce + '</td></tr>',
       '<tr><td>Send AutoRemote messages on trigger:</td><td>' + autoremote + '</td></tr>',
       '</table>'
@@ -113,7 +109,7 @@ function getschedule(req, res) {
       '<tr><td>Good Weather:</td><td>' + requestedschedule.weathergoodfunction + requestedschedule.weathergoodtime + ' Minutes' + '</td></tr>',
       '<tr><td>Bad Weather:</td><td>' + requestedschedule.weatherbadfunction + requestedschedule.weatherbadtime + ' Minutes' + '</td></tr>',
       '<tr><td>Send AutoRemote messages on trigger:</td><td>' + autoremote + '</td></tr>',
-      '<tr><td>Action:</td><td>' + requestedschedule.action + '</td></tr>',
+      '<tr><td>Action:</td><td>' + variables.telldusstatus[requestedschedule.action] + '</td></tr>',
       '<tr><td>Days of the week:</td><td>' + dayname + '</td></tr>',
       '</table>'
     ];
@@ -215,7 +211,7 @@ function highlightactiveschedule(callback) {
     var activescheduleIndex = -1;
     var nextscheduleIndex = -1;
     for (var key in variables.schedulesbyday) {
-      if (variables.schedulesbyday[key].hasOwnProperty(key)) {
+      if (variables.schedulesbyday[key].length > 0) {
         var day = variables.schedulesbyday[key];
         if (day.length > 0) {
           for (var d = 0; d < day.length; d++) {
@@ -269,9 +265,18 @@ function getscheduleproperty(param_uniqueid, param_property) {
         }
       }
     }
-
   }
+}
 
+function getcriteria(schedule,criteriaid) {
+  var criteriafound = false;
+  schedule.criterias.forEach(function(criteria) {
+
+    if (criteria.criteriaid == criteriaid) {      
+      criteriafound = criteria;
+    }
+  });
+  return criteriafound;
 }
 
 function getpauseschedules(req, res) {
@@ -296,4 +301,5 @@ exports.highlightactiveschedule = highlightactiveschedule;
 exports.removeschedule = removeschedule;
 exports.getremove = getremove;
 exports.getschedule = getschedule;
+exports.getcriteria = getcriteria;
 // Perhaps see if we can limit reading of schedules from file to only be when saving new schedule or removing old one. Not during runtime.

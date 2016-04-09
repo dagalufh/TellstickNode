@@ -1,3 +1,5 @@
+exports.post = post;
+
 function post(req, res) {
 	var variables = require('../templates/variables');
 	var devicefunctions = require(variables.rootdir + 'functions/device');
@@ -46,4 +48,3 @@ function post(req, res) {
 	}
 
 }
-exports.post = post;

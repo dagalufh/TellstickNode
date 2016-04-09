@@ -127,8 +127,16 @@ function logToFile(message, targetfile) {
 		totallength += 8;
 	}
 
-	if (targetfile.indexOf('Core') != -1) {
+	if ( (targetfile.indexOf('Core') != -1) || (process.argv[2] == '--dev') ) {
 		console.log("[" + targetfile + "]" + tabs + filemessage);
+	}
+	
+	var outputToLog = false;
+	if ( (targetfile.indexOf('dev') != -1) && (process.argv[2] == '--dev') ) {
+		outputToLog = true;
+	}
+	if (targetfile.indexOf('dev') == -1) {
+		outputToLog = true;
 	}
 	fs.appendFileSync(logdir + year.toString() + month.toString() + day.toString() + '/' + targetfile, filemessage + os.EOL);
 }
@@ -195,7 +203,7 @@ function createdropdown_alphanumeric(options, selecteditem) {
 	var dropdown = '';
 	options.forEach(function(option) {
 		var selected = '';
-		if (selecteditem.toLowerCase() == option[0].toLowerCase()) {
+		if (selecteditem.toString().toLowerCase() == option[0].toString().toLowerCase()) {
 			selected = 'selected';
 		}
 

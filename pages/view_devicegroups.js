@@ -11,7 +11,7 @@ function get(request, response) {
     '</div>',
     '<div class="panel-body">',
     '<div class="table-responsive">',
-    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered">',
+    '<table id="ScheduledEvents_Body_Table" cellpadding="0" cellspacing="0" class="table table-bordered table-condensed">',
     '{Devicegroups}',
     '</table>',
     '</div>',
@@ -29,7 +29,6 @@ function get(request, response) {
   var selected_scheduletype = '';
   var devicegroupsfound = false;
 
-
   if (typeof(request.query.deviceid) != 'undefined') {
     selected_deviceid = request.query.deviceid;
   }
@@ -39,35 +38,25 @@ function get(request, response) {
   }
 
 
-  variables.devices.forEach(function(device, index) {
+  variables.devices.forEach(function(device) {
     var status_on = '';
     var status_off = '';
-    var status_dim = '';
-    var dimbutton = '';
-    var selected_deviceid = 0;
-    var selected_scheduletype = '';
 
-    if (device.lastcommand.toLowerCase() == 'on') {
+    if (device.lastcommand == 1) {
       status_on = 'btn-success';
     }
-    if (device.lastcommand.toLowerCase() == 'off') {
+    if (device.lastcommand == 2) {
       status_off = 'btn-success';
     }
-    if (device.lastcommand.toLowerCase() == 'dim') {
-      status_dim = 'btn-success';
-    }
 
-    if (variables.options.showdimoption == 'true') {
-      dimbutton = '<button disabled class="btn btn-default ' + status_dim + '" id="commandbutton_' + device.id + '_dim" onClick="switchdevicestatus(\'' + device.id + '\',\'dim\');">DIM</button>';
-    }
-    if (device.type == 'group') {
+    if (device.type == 2) {
       devicegroupsfound = true;
-      devicegroups += '<tr><td class="devicestatus" ><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_on" onClick="switchdevicestatus(\'' + device.id + '\',\'on\');">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_off" onClick="switchdevicestatus(\'' + device.id + '\',\'off\');">OFF</button>' + dimbutton + '</td><td onclick="showdevicegroup(\'' + device.id + '\')">' + device.name + '</td><td>' + device.devices.length + '</td><td><a class="btn btn-default" href="/new_devicegroup?id=' + device.id + '">Edit</a><button class="btn btn-default" onclick="removedevicegroup(\'' + device.id + '\')">Remove</button></td></tr>';
+      devicegroups += '<tr><td class="devicestatus" ><button class="btn btn-default ' + status_on + '" id="commandbutton_' + device.id + '_1" onClick="switchdevicestatus(\'' + device.id + '\',1);">ON</button><button class="btn btn-default ' + status_off + '" id="commandbutton_' + device.id + '_2" onClick="switchdevicestatus(\'' + device.id + '\',2);">OFF</button></td><td onclick="showdevicegroup(\'' + device.id + '\')">' + device.name + '</td><td>' + device.devices.length + '</td><td><a class="btn btn-default" href="/new_devicegroup?id=' + device.id + '">Edit</a><button class="btn btn-default" onclick="removedevicegroup(\'' + device.id + '\')">Remove</button></td></tr>';
     }
 
   });
 
-  if (devicegroupsfound == false) {
+  if (devicegroupsfound === false) {
     devicegroups = '<tr><td><p class="text-info">No devicegroups found.</p></td></tr>';
   }
 

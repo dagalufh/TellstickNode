@@ -3,6 +3,7 @@ var fs = require('fs');
 var ip = require('ip');
 var variables = require('../templates/variables');
 var saltedpasswords = require(variables.rootdir + 'functions/saltedpasswords.js').saltedpasswords;
+var sharedfunctions = require(variables.rootdir + 'functions/sharedfunctions');
 var currentSession;
 module.exports = function(app) {
 
@@ -207,7 +208,7 @@ module.exports = function(app) {
         require(variables.rootdir + 'functions/return_devicegroup').get(req, res);
       }
     })
-  app.route('/view_devicegroups')
+  app.route('/view_devices')
     .get(function(req, res) {
       if (checklogin(req, res)) {
         require(variables.rootdir + 'pages/view_devicegroups').get(req, res);

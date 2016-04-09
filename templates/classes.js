@@ -1,5 +1,5 @@
 function device() {
-  this.id = '';
+  this.id = -1;
   this.name = '';
   this.type = '';
   this.lastcommand = '';
@@ -42,6 +42,7 @@ function schedule_criteria() {
   this.intervalnotaftercontroller = 'None';  
   this.intervalnotbefore = '';
   this.intervalnotafter = '';
+  this.disablemodifiers = 'false';
 }
 
 function devicegroup() {
@@ -60,8 +61,8 @@ function watcher() {
   this.autoremoteonschedule = 'false';
   this.actions = [];
   this.uniqueid = 0;
-  this.onstatechanged = true; // This represent the old way for watchers, when the device goes from on to off or reversed.
-  this.oncommandsent = false; // This will cause the watcher to be checked and triggered on device.send function
+  this.onstatechanged = 'true'; // This represent the old way for watchers, when the device goes from on to off or reversed.
+  this.oncommandsent = 'false'; // This will cause the watcher to be checked and triggered on device.send function
 }
 
 function day() {

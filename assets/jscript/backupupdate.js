@@ -9,7 +9,7 @@ function check_updates() {
         $('#githubversion').html(data.version + ' - No update needed.');
       }
     }
-  })
+  });
 }
 
 function showfiles (backup) {
@@ -22,7 +22,7 @@ function showfiles (backup) {
 }
 
 function restore () {
-    var folder = ''
+    var folder = '';
     var files = $('input[type="checkbox"]:checked').map(function() {
         folder = this.name;
         return this.value;
@@ -34,6 +34,7 @@ function restore () {
     data: {'folder':folder,'files':files},
     success: function(data) {
       if (data.status) {
+        modal_notification();
         $('#respons-modal-body').html('Backup has been successfully restored. See log for more info.');
         $('#myModal').modal('show');
         //window.location.href = '/newschedule';
@@ -41,6 +42,7 @@ function restore () {
             window.location.href='/logs';
         });
       } else {
+        modal_error();
         $('#respons-modal-body').html('Error occured while restoring. See log for more info.');
         $('#myModal').modal('show');
         //window.location.href = '/newschedule';
@@ -49,7 +51,7 @@ function restore () {
         });
       }
     }
-  })
+  });
     
     console.log(files);
 }
@@ -69,5 +71,5 @@ $(function(ready){
     } else {
       $("#restorebackup").prop('disabled',true);
     }
-  })
-})
+  });
+});
