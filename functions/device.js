@@ -191,6 +191,20 @@ function executewatcher(watcher) {
 			// Add the delay minutes to now when it triggered, so that the desired action is carried out at the correct time.
 			sharedfunctions.DateAdd('n', currenttime, Number(action.delay));
 			var triggertime = sharedfunctions.gettwodigit(currenttime.getHours()) + ":" + sharedfunctions.gettwodigit(currenttime.getMinutes());
+            
+            // If triggertime is in the "past" clockwise, the dayofweek needs to be +1
+            
+            
+            
+           // var watcherexecutedtime = new Date();
+
+           // var minutedifference_currenttime_watcherexecutedtime = Math.floor(((currenttime - watcherexecutedtime) / 1000) / 60);
+           // sharedfunctions.logToFile('IntervalNotAfter timediff: ' + minutedifference_currenttime_watcherexecutedtime, 'dev');
+
+            
+            
+            
+            
 
 			var watcherschedule = new classes.schedule();
 			watcherschedule.uniqueid = 'watcher' + currenttime.getTime();
@@ -201,6 +215,20 @@ function executewatcher(watcher) {
 			watcherschedule.controller = 'Time';
 			watcherschedule.runonce = 'true';
 			watcherschedule.sendautoremote = watcher.autoremoteonschedule;
+            
+            /*
+            if (minutedifference_currenttime_watcherexecutedtime < 0) {
+                // if less than 0, currenttime is before watcherexecutedtime (based on time of day)
+                // This means that the new schedule created by this watcher needs to be on the day after today.
+                
+                if (watcherschedule.dayofweek == 6) {
+                 watcherschedule.dayofweek = 0;
+                } else {
+                 watcherschedule.dayofweek++;
+                }
+            }
+            */
+            
 
 			var newcriteria = new classes.schedule_criteria();
 			newcriteria.controller = 'Time';
@@ -229,6 +257,11 @@ function executewatcher(watcher) {
 			variables.savetofile = true;
 		} else {
 			sendcommandtodevice(action.id, action.status, 'WatcherInstantTrigger');
+            if (watcher.autoremoteonschedule == 'true') {
+                sharedfunctions.autoremote(getdeviceproperty(action.id, 'name'), variables.telldusstatus[action.status]);
+            }
+            
+            
 		}
 	});
 }

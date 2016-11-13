@@ -113,7 +113,7 @@ function get(req, res) {
   var watcher_action_table = '';
   selected_watcher.actions.forEach(function(action) {
       //watcher_actions += '<option value="' + action.id + ',' + action.status + ',' + action.delay + '">Change "'+deviceaction.getdeviceproperty(action.id,'name')+'" to "'+action.status+'" after '+action.delay + ' minutes';
-      watcher_action_table += '<tr><td><span class="checkbox"><label><input type="checkbox" id="target_action_' + action.id + '" value="' + action.id + ',' + action.status + ',' + action.delay + '"> Change "' + deviceaction.getdeviceproperty(action.id, 'name') + '" to "' + action.status + '" after ' + action.delay + ' minutes</label></span></td></tr>';
+      watcher_action_table += '<tr><td><span class="checkbox"><label><input type="checkbox" id="target_action_' + action.id + '" value="' + action.id + ',' + action.status + ',' + action.delay + '"> Change "' + deviceaction.getdeviceproperty(action.id, 'name') + '" to "' + variables.telldusstatus[action.status] + '" after ' + action.delay + ' minutes</label></span></td></tr>';
     });
     // Update the body with the results of above calculations.
   body = body.replace(/{select_device}/g, device_options);

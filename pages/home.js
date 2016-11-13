@@ -48,7 +48,7 @@ function get(request, response) {
   var available_devicegroups = '';
 
   //var sortedbyday = schedulefunctions.getschedulesbyday();
-
+    
   variables.devices.forEach(function(device, index) {
     var status_on = '';
     var status_off = '';

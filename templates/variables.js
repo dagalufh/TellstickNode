@@ -18,7 +18,7 @@ module.exports = {
 	weather: {},
 	savetofile: false,
 	pauseschedules: false,
-	currentversion: '3.0.2',
+	currentversion: '3.0.3',
 	doubletap: [],
 	disabledoubletap: false,
 	rootdir: '',

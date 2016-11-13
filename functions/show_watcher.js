@@ -21,7 +21,7 @@ function get(req, res) {
 		status = 'Disabled';
 	}
 
-	if (requestedwatcher.sendautoremote == 'true') {
+	if (requestedwatcher.autoremoteonschedule == 'true') {
 		autoremote = 'Yes';
 	}
 	

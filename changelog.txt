@@ -3,6 +3,13 @@ Todo: Move Watchers to Device view/config. Create a seperate deviceconf.js under
 Todo: Add button to reboot computer if desired (linux only at this time)
 Todo: Add Device menu option - for managing devices, removal, renaming - Pushed to the future
 
+Version : 3.0.3
+device.js: Added send to AutoRemote on Watchers with instant triggers. (issue #46)
+device.js: Added sorting of device name on "getalldevices" function.
+show_watcher.js: modified to check against "autoremoteonschedule" instead.
+tellduswrapper.js: added a for loop that goes through the schedules for the current device and checks for any watcher created schedules that corresponds to the new status of the device. Those schedules are removed to stop duplicates. (Issue #45)
+variables.js: changed version number.
+editwatchers.js: Change display on actions to what status is to be set to be in words and not status id
 
 
 Version : 3.0.2

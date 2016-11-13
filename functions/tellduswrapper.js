@@ -67,9 +67,10 @@ function getalldevices() {
 				device.devices = devicesingroup.split(',');
 			}
 		}
-		sharedfunctions.logToFile(JSON.stringify(device), 'dev');
+		//sharedfunctions.logToFile(JSON.stringify(device), 'dev');
 		variables.devices.push(device);
 	}
+    variables.devices.sort(sharedfunctions.dynamicSortMultiple('name'));
 }
 
 function initiatedevicelistener() {
@@ -95,10 +96,39 @@ function initiatedevicelistener() {
 					statechange = true;
 				}
 				sharedfunctions.logToFile('DeviceEvent,Device with ID( ' + id + ' ) has changed status from ' + device.lastcommand + ' to ' + status, 'Core');
+                
+                 // Before we trigger a new watcher, check if there is a schedule that is for the new state of the device that is already created by a watcher, then remove it.
+                
+                
+                
+                // Check all schedules that are on the device, check if there is any schedule that is a watcher created one and for this specific statue.
+                // If it is, remove that schedule.
+                
+                if (typeof(device.schedule) != 'undefined')  {
+                    //sharedfunctions.logToFile('[Before forEach] deviceID ' + device.id + "; scheduleID " + JSON.stringify(device.schedule) , 'dev');
+                    device.schedule.forEach(function(singleschedule) {
+                        //sharedfunctions.logToFile('[Inside forEach] deviceID ' + device.id + "; scheduleID " + JSON.stringify(singleschedule) , 'dev');
+                       // sharedfunctions.logToFile('[inside forEach] deviceID ' + device.id + "; scheduleID " + JSON.stringify(schedule) , 'dev');
+                        if (singleschedule.uniqueid.toString().indexOf("watcher") != -1) {
+                            // The current schedule is created by a watcher
+                            if (singleschedule.action == status) {
+                                //sharedfunctions.logToFile('Schedule to be removed: ' + JSON.stringify(singleschedule) , 'dev');
+                                sharedfunctions.logToFile('DeviceEvent,Removed schedule (' + JSON.stringify(singleschedule) + ') from Device with ID( ' + id + ' )', 'Core');
+                                schedulefunctions.removeschedule([singleschedule.uniqueid]);
+                            }
+                        }                   
+
+                    })
+                }
+                
+                
+                
 				// -- INSERT WATCHER HERE --
 				device.watchers.forEach(function(watcher) {
 					if (((watcher.onstatechanged === "true") && (statechange === true)) || ((watcher.oncommandsent === "true") && (statechange === false))) {
 						
+                        
+                       
 						
 						// Incorporate below somehow
 						// if ((watcher.triggerstatus.toLowerCase() == currentdevice.lastcommand.toLowerCase()) && (watcher.enabled == 'true') && (watcher.oncommandsent == 'true')) {
